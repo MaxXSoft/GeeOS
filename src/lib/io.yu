@@ -1,0 +1,78 @@
+import arch.arch
+
+public struct IO {
+  addr: u8 volatile var*,
+}
+
+public let io: IO = [IO] {FLASH_ADDR as u8 volatile var*}
+
+// put character
+public def putChar(this: IO&, c: u8) {
+  *this.addr = c
+}
+
+// get character
+public def getChar(this: IO&): u8 {
+  *this.addr
+}
+
+// print string
+public def printString(this: IO&, str: u8*) {
+  var s = str
+  while *s != '\0' {
+    this.putChar(*s)
+    s += 1
+  }
+}
+
+// print integer in specific base
+public def printInt(this: IO&, int: u32, base: i32) {
+  var buf: u8[32], len = 0, digit: u32
+  if !int {
+    buf[0] = '0'
+    len = 1
+  }
+  else {
+    let b = base as u32
+    var n = int
+    while n != 0 as u32 {
+      digit = n % b
+      n /= b
+      buf[len] = if digit < 10 as u32 {
+        '0' + digit as u8
+      }
+      else {
+        'a' + (digit - 10 as u32) as u8
+      }
+      len += 1
+    }
+  }
+  while len > 0 {
+    this.putChar(buf[len])
+    len -= 1
+  }
+}
+
+// print character
+public def <<<(this: IO&, c: u8): IO& {
+  this.putChar(c)
+  this
+}
+
+// print string
+public def <<<(this: IO&, str: u8*): IO& {
+  this.printString(str)
+  this
+}
+
+// print signed integer (decimal)
+public def <<<(this: IO&, int: i32): IO& {
+  this.printInt(int as u32, 10)
+  this
+}
+
+// print unsigned integer (decimal)
+public def <<<(this: IO&, int: u32): IO& {
+  this.printInt(int, 10)
+  this
+}
