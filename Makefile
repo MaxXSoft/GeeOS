@@ -27,6 +27,7 @@ clean:
 	-rm -rf $(OBJ_DIR)
 	-rm $(LIB_TARGET)
 	-rm $(BOOT_TARGET)
+	-rm $(BOOT_TARGET).*
 
 libgee: $(BUILD_DIR) $(LIB_TARGET)
 
