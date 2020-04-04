@@ -1,5 +1,10 @@
 /*
 
+all architectures must define the following types:
+
+- USize: pointer-sized unsigned integer type
+- ISize: pointer-sized signed integer type
+
 all architectures must define the following constants:
 
 - FLASH_ADDR: boot flash address
