@@ -4,7 +4,7 @@ public struct IO {
   addr: u8 volatile var*,
 }
 
-public let io: IO = [IO] {FLASH_ADDR as u8 volatile var*}
+public let io: IO = [IO] {UART_ADDR as u8 volatile var*}
 
 // put character
 public def putChar(this: IO&, c: u8) {

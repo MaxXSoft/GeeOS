@@ -27,6 +27,7 @@ extern def memmove(dst: u8 var*, src: u8*, n: USize): u8 var* {
       *d = *s
       d += 1
       s += 1
+      n -= 1 as USize
     }
   }
   dst
