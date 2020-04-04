@@ -1,0 +1,58 @@
+import arch.arch
+import lib.io
+import boot.elf
+import lib.c.string
+
+// print panic message and halt
+def panic(str: u8*) {
+  io <<< str <<< '\n'
+  io <<< "========== Bootloader PANIC ==========\n"
+  halt(1)
+}
+
+// boot from specific address
+def boot(addr: u8*) {
+  io <<< "booting...\n\n"
+  asm { "jr a0" }
+}
+
+// load ELF file from flash to memory
+def loadElfFromFlash(): u8* {
+  // check ELF header
+  let ehdr = FLASH_ADDR as Elf32Ehdr*
+  if (*ehdr).e_ident[0] != ELF_MAGIC {
+    panic("ERROR: invalid ELF file")
+  }
+  if (*ehdr).e_machine != EM_RISCV {
+    panic("ERROR: invalid machine type, RISC-V required")
+  }
+  // copy ELF to RAM
+  io <<< "loading ELF...\n"
+  var phdr = (FLASH_ADDR as u32 + (*ehdr).e_phoff) as Elf32Phdr*
+  let last_phdr = (phdr as u32 + ((*ehdr).e_phentsize *
+                   (*ehdr).e_phnum) as u32) as Elf32Phdr*
+  let off = (*phdr).p_vaddr - (*phdr).p_paddr
+  while phdr < last_phdr {
+    let dst = (*phdr).p_paddr as u8 var*
+    let src = (FLASH_ADDR as u32 + (*phdr).p_offset) as u8*
+    memcpy(dst, src, (*phdr).p_filesz as USize)
+    phdr += 1
+  }
+  ((*ehdr).e_entry - off) as u8*
+}
+
+extern def entry() {
+  io <<< "Entering bootloader...\n"
+  let addr = loadElfFromFlash()
+  io <<< "Exiting bootloader...\n"
+  boot(addr)
+}
+
+extern def handleTrap(mepc: u32, mcause: u32, mtval: u32) {
+  // display messsage
+  io <<< "unexpected trap occurred while booting!\n"
+  io <<< "  mepc:   0x"; io.printInt(mepc, 16)
+  io <<< "  mcause: 0x"; io.printInt(mcause, 10)
+  io <<< "  mtval:  0x"; io.printInt(mtval, 16)
+  panic("")
+}
