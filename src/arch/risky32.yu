@@ -8,6 +8,6 @@ inline let UART_ADDR  = 0x90000104
 inline let MEM_ADDR   = 0x80000000
 
 inline def halt(code: i32) {
-  *(0x90000104 as i32 volatile var*) = 1
+  *(0x90000100 as u8 volatile var*) = 1 as u8
   while true {}
 }
