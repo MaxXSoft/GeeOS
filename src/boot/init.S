@@ -6,10 +6,21 @@ _start:
   # setup stack
   la    sp, _stack
   # setup trap handler
-  la    t0, handleTrap
+  la    t0, _handleTrap
   csrw  mtvec, t0
   # jump to YuLang entry
   j     entry
+
+
+# trap handler
+  .globl    _handleTrap
+_handleTrap:
+  # read value of important CSRs
+  csrr  a0, mepc
+  csrr  a1, mcause
+  csrr  a2, mtval
+  # jump to YuLang trap handler
+  j     handleTrap
 
 
 # bootloader stack
