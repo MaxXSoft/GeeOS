@@ -1,0 +1,44 @@
+// magic number of ELF
+inline let ELF_MAGIC  = 0x464c457f
+
+// e_type definitions
+inline let ET_NONE    = 0
+inline let ET_REL     = 1     // Relocatable file
+inline let ET_EXEC    = 2     // Executable
+inline let ET_DYN     = 3     // Shared object file
+inline let ET_CORE    = 4     // Core file
+
+// e_machine definitions
+inline let EM_386     = 0x03  // Intel x86
+inline let EM_MIPS    = 0x08  // MIPS
+inline let EM_RISCV   = 0xf3  // RISC-V
+
+// ELF header
+public struct Elf32Ehdr {
+  e_ident: u32[4],    // Magic number and other info
+  e_type: u16,        // Object file type
+  e_machine: u16,     // Architecture
+  e_version: u32,     // Object file version
+  e_entry: u32,       // Entry point virtual address
+  e_phoff: u32,       // Program header table file offset
+  e_shoff: u32,       // Section header table file offset
+  e_flags: u32,       // Processor-specific flags
+  e_ehsize: u16,      // ELF header size in bytes
+  e_phentsize: u16,   // Program header table entry size
+  e_phnum: u16,       // Program header table entry count
+  e_shentsize: u16,   // Section header table entry size
+  e_shnum: u16,       // Section header table entry count
+  e_shstrndx: u16,    // Section header string table index
+}
+
+// program header
+public struct Elf32Phdr {
+  p_type: u32,
+  p_offset: u32,      // Offset from beginning of file
+  p_vaddr: u32,
+  p_paddr: u32,
+  p_filesz: u32,      // Bytes of segment in file
+  p_memsz: u32,       // Bytes of segment in memory
+  p_flags: u32,
+  p_align: u32,
+}
