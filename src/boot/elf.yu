@@ -1,17 +1,17 @@
 // magic number of ELF
-inline let ELF_MAGIC  = 0x464c457f
+inline let ELF_MAGIC  = 0x464c457f as u32
 
 // e_type definitions
-inline let ET_NONE    = 0
-inline let ET_REL     = 1     // Relocatable file
-inline let ET_EXEC    = 2     // Executable
-inline let ET_DYN     = 3     // Shared object file
-inline let ET_CORE    = 4     // Core file
+inline let ET_NONE    = 0 as u16
+inline let ET_REL     = 1 as u16      // Relocatable file
+inline let ET_EXEC    = 2 as u16      // Executable
+inline let ET_DYN     = 3 as u16      // Shared object file
+inline let ET_CORE    = 4 as u16      // Core file
 
 // e_machine definitions
-inline let EM_386     = 0x03  // Intel x86
-inline let EM_MIPS    = 0x08  // MIPS
-inline let EM_RISCV   = 0xf3  // RISC-V
+inline let EM_386     = 0x03 as u16   // Intel x86
+inline let EM_MIPS    = 0x08 as u16   // MIPS
+inline let EM_RISCV   = 0xf3 as u16   // RISC-V
 
 // ELF header
 public struct Elf32Ehdr {
