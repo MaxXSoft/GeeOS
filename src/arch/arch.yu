@@ -6,8 +6,17 @@ all architectures must define the following constants:
 - UART_ADDR:  serial port address
 - MEM_ADDR:   memory start address
 
+all architectures must define the following functions:
+
+- halt: (i32): halt the CPU, and return exit code (if possible)
+
 */
 
 
 // use this architecture as target
 public import arch.risky32
+
+// just halt, returns nothing
+inline def halt() {
+  halt(0)
+}
