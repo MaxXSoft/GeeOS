@@ -1,0 +1,5 @@
+// arch definitions of Risky32 emulator
+
+inline let FLASH_ADDR = 0x90020000
+inline let UART_ADDR  = 0x90000104
+inline let MEM_ADDR   = 0x80000000

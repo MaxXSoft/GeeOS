@@ -1,0 +1,13 @@
+/*
+
+all architectures must define the following constants:
+
+- FLASH_ADDR: boot flash address
+- UART_ADDR:  serial port address
+- MEM_ADDR:   memory start address
+
+*/
+
+
+// use this architecture as target
+public import arch.risky32
