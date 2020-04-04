@@ -23,6 +23,12 @@ _handleTrap:
   j     handleTrap
 
 
+# jump to address
+  .globl    jumpToAddr
+jumpToAddr:
+  jr        a0
+
+
 # bootloader stack
   .section  .data
   .align    2

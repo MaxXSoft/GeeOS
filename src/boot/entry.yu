@@ -11,9 +11,10 @@ def panic(str: u8*) {
 }
 
 // boot from specific address
+extern declare jumpToAddr: (u8*)
 def boot(addr: u8*) {
   io <<< "booting...\n\n"
-  asm { "jr a0" }
+  jumpToAddr(addr)
 }
 
 // load ELF file from flash to memory
