@@ -1,0 +1,37 @@
+public import arch.arch
+
+extern def memset(dst: u8 var*, c: i32, n: USize): u8 var* {
+  var d = dst, i = 0 as USize
+  while i < n {
+    d[i] = c as u8
+    i += 1 as USize
+  }
+  dst
+}
+
+extern def memmove(dst: u8 var*, src: u8*, n: USize): u8 var* {
+  var s = src, d = dst, n = n
+  if s < d && s + n > d {
+    // overlapped
+    s += n
+    d += n
+    while n > 0 as USize {
+      d -= 1
+      s -= 1
+      (*d) = *s
+      n -= 1 as USize
+    }
+  }
+  else {
+    while n > 0 as USize {
+      *d = *s
+      d += 1
+      s += 1
+    }
+  }
+  dst
+}
+
+extern def memcpy(dst: u8 var*, src: u8*, n: USize): u8 var* {
+  memmove(dst, src, n)
+}
