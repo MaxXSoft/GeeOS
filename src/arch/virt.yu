@@ -26,10 +26,10 @@ inline let UART_LSR_RI      = 0x40 as u8
 
 // initialize UART
 inline def initIO() {
-  let divisor = UART_CLOCK_FREQ / (16 as u32 * UART_BAUD_RATE)
+  let divisor = UART_CLOCK_FREQ / ((16 as u32) * UART_BAUD_RATE)
   UART_ADDR[UART_LCR] = UART_LCR_DLAB
   UART_ADDR[UART_DLL] = divisor as u8
-  UART_ADDR[UART_DLM] = (divisor >> 8) as u8
+  UART_ADDR[UART_DLM] = (divisor >> 8 as u32) as u8
   UART_ADDR[UART_LCR] = UART_LCR_PODD | UART_LCR_8BIT
 }
 
@@ -42,7 +42,7 @@ inline def putChar(c: u8) {
 // get character
 inline def getChar(): i32 {
   if (UART_ADDR[UART_LSR] & UART_LSR_DA) != 0 as u8 {
-    UART_ADDR[UART_RBR]
+    UART_ADDR[UART_RBR] as i32
   }
   else {
     -1
