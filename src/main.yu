@@ -1,10 +1,12 @@
-import arch.arch
 import lib.io
-
-//
+import trap.trap
+import trap.timer
 
 // supervisor mode entry of GeeOS
 public def main() {
-  io <<< "Hello world!\n"
-  halt()
+  io <<< "initializing trap handler...\n"
+  initTrap()
+  initTimer()
+  io <<< "done!\n\n"
+  while true {}
 }
