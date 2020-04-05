@@ -1,0 +1,55 @@
+// arch definitions of QEMU virt
+
+// sized types
+public type USize = u32
+public type ISize = i32
+
+// constant address
+inline let FLASH_ADDR = 0x00000000
+inline let MEM_ADDR   = 0x80000000
+
+// UART related definitions
+inline let UART_ADDR        = 0x10000000 as u8 volatile var*
+inline let UART_CLOCK_FREQ  = 1843200 as u32
+inline let UART_BAUD_RATE   = 115200 as u32
+inline let UART_RBR         = 0x00 as u8
+inline let UART_THR         = 0x00 as u8
+inline let UART_DLL         = 0x00 as u8
+inline let UART_DLM         = 0x01 as u8
+inline let UART_LCR         = 0x03 as u8
+inline let UART_LSR         = 0x05 as u8
+inline let UART_LCR_DLAB    = 0x80 as u8
+inline let UART_LCR_8BIT    = 0x03 as u8
+inline let UART_LCR_PODD    = 0x08 as u8
+inline let UART_LSR_DA      = 0x01 as u8
+inline let UART_LSR_RI      = 0x40 as u8
+
+// initialize UART
+inline def initIO() {
+  let divisor = UART_CLOCK_FREQ / (16 as u32 * UART_BAUD_RATE)
+  UART_ADDR[UART_LCR] = UART_LCR_DLAB
+  UART_ADDR[UART_DLL] = divisor as u8
+  UART_ADDR[UART_DLM] = (divisor >> 8) as u8
+  UART_ADDR[UART_LCR] = UART_LCR_PODD | UART_LCR_8BIT
+}
+
+// put character
+inline def putChar(c: u8) {
+  while (UART_ADDR[UART_LSR] & UART_LSR_RI) == 0 as u8 {}
+  UART_ADDR[UART_THR] = c
+}
+
+// get character
+inline def getChar(): i32 {
+  if (UART_ADDR[UART_LSR] & UART_LSR_DA) != 0 as u8 {
+    UART_ADDR[UART_RBR]
+  }
+  else {
+    -1
+  }
+}
+
+// halt
+inline def halt(code: i32) {
+  while true {}
+}
