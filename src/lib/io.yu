@@ -1,19 +1,17 @@
 import arch.arch
 
-public struct IO {
-  addr: u8 volatile var*,
-}
+public struct IO {}
 
-public let io: IO = [IO] {UART_ADDR as u8 volatile var*}
+public let io: IO = [IO] {}
 
 // put character
 public def putChar(this: IO&, c: u8) {
-  *this.addr = c
+  putChar(c)
 }
 
 // get character
 public def getChar(this: IO&): u8 {
-  *this.addr
+  getChar() as u8
 }
 
 // print string
