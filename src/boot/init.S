@@ -1,6 +1,6 @@
   .section  .text.init, "ax"
 
-# entry of bootloader
+  # entry of bootloader
   .globl    _start
 _start:
   # setup stack
@@ -12,7 +12,7 @@ _start:
   j     entry
 
 
-# trap handler
+  # trap handler
   .globl    _handleTrap
 _handleTrap:
   # read value of important CSRs
@@ -23,13 +23,13 @@ _handleTrap:
   j     handleTrap
 
 
-# jump to address
+  # jump to address
   .globl    jumpToAddr
 jumpToAddr:
   jr        a0
 
 
-# bootloader stack
+  # bootloader stack
   .section  .data
   .align    2
   .zero     512
