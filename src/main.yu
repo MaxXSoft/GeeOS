@@ -1,0 +1,10 @@
+import arch.arch
+import lib.io
+
+//
+
+// supervisor mode entry of GeeOS
+public def main() {
+  io <<< "Hello world!\n"
+  halt()
+}
