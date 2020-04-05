@@ -6,22 +6,35 @@ BUILD_DIR := build
 OBJ_DIR := $(BUILD_DIR)/obj
 SRC_DIR := src
 LIB_DIR := $(SRC_DIR)/lib
+ARCH_DIR := $(SRC_DIR)/arch
 BOOT_DIR := $(SRC_DIR)/boot
 
-# source & targets
+# helper functions
+define make_obj
+	$(eval TEMP_VAR := $(patsubst $(SRC_DIR)/%.yu, $(OBJ_DIR)/%.o, $(2)));
+	$(eval TEMP_VAR := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(TEMP_VAR)));
+	$(eval TEMP_VAR := $(patsubst $(SRC_DIR)/%.S, $(OBJ_DIR)/%.o, $(TEMP_VAR)));
+	$(eval $(1)_OBJ := $(TEMP_VAR));
+endef
+
+# source & targets of library
 LIB_SRC := $(wildcard $(LIB_DIR)/*.yu) $(wildcard $(LIB_DIR)/**/*.yu)
-LIB_SRC += $(SRC_DIR)/arch/riscv.S
-LIB_OBJ := $(patsubst $(SRC_DIR)/%.yu, $(OBJ_DIR)/%.o, $(LIB_SRC))
-LIB_OBJ := $(patsubst $(SRC_DIR)/%.S, $(OBJ_DIR)/%.o, $(LIB_OBJ))
+LIB_SRC += $(ARCH_DIR)/riscv.S
+$(call make_obj, LIB, $(LIB_SRC))
 LIB_TARGET := $(BUILD_DIR)/libgee.a
+
+# source & targets of bootloader
 BOOT_SRC := $(wildcard $(BOOT_DIR)/*.yu) $(wildcard $(BOOT_DIR)/*.S)
-BOOT_OBJ := $(patsubst $(SRC_DIR)/%.yu, $(OBJ_DIR)/%.o, $(BOOT_SRC))
-BOOT_OBJ := $(patsubst $(SRC_DIR)/%.S, $(OBJ_DIR)/%.o, $(BOOT_OBJ))
+$(call make_obj, BOOT, $(BOOT_SRC))
 BOOT_LDS := $(BOOT_DIR)/linker.ld
 BOOT_TARGET := $(BUILD_DIR)/boot.bin
+
+# source & targets of kernel
 KERNEL_SRC := $(wildcard $(SRC_DIR)/*.yu) $(wildcard $(SRC_DIR)/*.S)
-KERNEL_OBJ := $(patsubst $(SRC_DIR)/%.yu, $(OBJ_DIR)/%.o, $(KERNEL_SRC))
-KERNEL_OBJ := $(patsubst $(SRC_DIR)/%.S, $(OBJ_DIR)/%.o, $(KERNEL_OBJ))
+KERNEL_SRC += $(wildcard $(SRC_DIR)/**/*.yu) $(wildcard $(SRC_DIR)/**/*.S)
+KERNEL_SRC := $(filter-out $(LIB_SRC) $(BOOT_SRC), $(KERNEL_SRC))
+KERNEL_SRC := $(filter-out $(wildcard $(ARCH_DIR)/*.*), $(KERNEL_SRC))
+$(call make_obj, KERNEL, $(KERNEL_SRC))
 KERNEL_LDS := $(SRC_DIR)/linker.ld
 KERNEL_TARGET := $(BUILD_DIR)/geeos.elf
 
