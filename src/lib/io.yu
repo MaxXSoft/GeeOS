@@ -46,8 +46,8 @@ public def printInt(this: IO&, int: u32, base: i32) {
     }
   }
   while len > 0 {
-    this.putChar(buf[len])
     len -= 1
+    this.putChar(buf[len])
   }
 }
 
@@ -65,7 +65,12 @@ public def <<<(this: IO&, str: u8*): IO& {
 
 // print signed integer (decimal)
 public def <<<(this: IO&, int: i32): IO& {
-  this.printInt(int as u32, 10)
+  var i = int
+  if i < 0 {
+    this.putChar('-')
+    i = -i
+  }
+  this.printInt(i as u32, 10)
   this
 }
 

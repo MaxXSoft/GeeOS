@@ -2,7 +2,8 @@ import arch.arch
 import lib.io
 
 public def panic(str: u8*) {
-  io <<< "KERNEL PANIC! message: " <<< str <<< '\n'
+  io <<< "===== KERNEL PANIC! =====\n"
+  io <<< "message: " <<< str <<< '\n'
   halt(1)
 }
 
