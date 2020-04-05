@@ -1,0 +1,18 @@
+import arch.arch
+import define.context
+import lib.io
+
+// trap handler in 'traphand.S'
+extern declare _handleTrap: ()
+
+// initialize trap handling
+public def initTrap() {
+  setSscratch(0 as USize)
+  setStvec((_handleTrap as u8*) as USize)
+}
+
+// trap handler
+extern def handleTrap(tf: TrapFrame var&) {
+  io <<< "trap!\n"
+  tf.incSepc()
+}
