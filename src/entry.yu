@@ -1,8 +1,32 @@
 import arch.arch
 import lib.io
+import main
 
+// initialize timer
+def initTimer() {
+  // TODO
+}
+
+// machine mode entry of GeeOS
 extern def entry() {
+  // initialize IO
   initIO()
-  io <<< "Hello world!\n"
-  halt()
+  io <<< "GeeOS is initializing...\n"
+  // set previous mode to S-mode
+  var ms = getMstatus()
+  ms &= ~MSTATUS_MPP_MASK
+  ms |= MSTATUS_MPP_S
+  setMstatus(ms)
+  // set mepc to S-mode entry
+  let entry_ptr = (main as u8*) as USize
+  setMepc(entry_ptr)
+  // disable paging
+  setSatp(0 as USize)
+  // delegate all interrupts & exceptions to S-mode
+  setMedeleg(0xffff as USize)
+  setMideleg(0xffff as USize)
+  // setup timer interrupts
+  initTimer()
+  // enter S-mode
+  io <<< "entering supervisor mode...\n"
 }
