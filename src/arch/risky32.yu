@@ -16,6 +16,26 @@ inline def getChar(): i32 {
   *(0x90000104 as u8 volatile var*) as i32
 }
 
+inline def initClint() {}
+
+inline def getTime(): u64 {
+  while true {
+    let hi: u32 = *(0x90010004 as u32 volatile var*)
+    let lo: u32 = *(0x90010000 as u32 volatile var*)
+    let temp: u32 = *(0x90010004 as u32 volatile var*)
+    if hi == temp {
+      return (hi as u64 << 32 as u64) | lo as u64
+    }
+  }
+  0 as u64
+}
+
+inline def setTimeCmp(val: u64) {
+  let hi = (val >> 32 as u64) as u32, lo = val as u32
+  (*(0x90010104 as u32 volatile var*)) = hi
+  (*(0x90010100 as u32 volatile var*)) = lo
+}
+
 inline def halt(code: i32) {
   *(0x90000100 as u8 volatile var*) = 1 as u8
   while true {}

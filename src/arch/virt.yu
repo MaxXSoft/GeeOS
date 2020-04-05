@@ -49,6 +49,27 @@ inline def getChar(): i32 {
   }
 }
 
+// initialize CLINT
+inline def initClint() {}
+
+// get 'time'
+inline def getTime(): u64 {
+  while true {
+    let hi: u32 = *(0x0200bffc as u32 volatile var*)
+    let lo: u32 = *(0x0200bff8 as u32 volatile var*)
+    let temp: u32 = *(0x0200bffc as u32 volatile var*)
+    if hi == temp {
+      return (hi as u64 << 32 as u64) | lo as u64
+    }
+  }
+  0 as u64
+}
+
+// set 'timecmp'
+inline def setTimeCmp(val: u64) {
+  *(0x02004000 as u64 volatile var*) = val
+}
+
 // halt
 inline def halt(code: i32) {
   while true {}

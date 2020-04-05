@@ -12,10 +12,13 @@ all architectures must define the following constants:
 
 all architectures must define the following functions:
 
-- initIO: ():       initialize IO driver (like UART)
-- putChar: (u8):    put a character to IO
-- getChar: (): i32: get a character from IO
-- halt: (i32):      halt the CPU, and return exit code (if possible)
+- initIO: ():         initialize IO driver (like UART)
+- putChar: (u8):      put a character to IO
+- getChar: (): i32:   get a character from IO
+- initClint: ():      initialize CLINT
+- getTime: (): u64:   read 'time' from CLINT
+- setTimeCmp: (u64):  set 'timecmp' in CLINT
+- halt: (i32):        halt the CPU, and return exit code (if possible)
 
 */
 
