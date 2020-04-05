@@ -10,7 +10,9 @@ BOOT_DIR := $(SRC_DIR)/boot
 
 # source & targets
 LIB_SRC := $(wildcard $(LIB_DIR)/*.yu) $(wildcard $(LIB_DIR)/**/*.yu)
+LIB_SRC += $(SRC_DIR)/arch/riscv.S
 LIB_OBJ := $(patsubst $(SRC_DIR)/%.yu, $(OBJ_DIR)/%.o, $(LIB_SRC))
+LIB_OBJ := $(patsubst $(SRC_DIR)/%.S, $(OBJ_DIR)/%.o, $(LIB_OBJ))
 LIB_TARGET := $(BUILD_DIR)/libgee.a
 BOOT_SRC := $(wildcard $(BOOT_DIR)/*.yu) $(wildcard $(BOOT_DIR)/*.S)
 BOOT_OBJ := $(patsubst $(SRC_DIR)/%.yu, $(OBJ_DIR)/%.o, $(BOOT_SRC))
