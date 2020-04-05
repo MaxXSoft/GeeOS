@@ -1,0 +1,11 @@
+import arch.arch
+import lib.io
+
+public def panic(str: u8*) {
+  io <<< "KERNEL PANIC! message: " <<< str <<< '\n'
+  halt(1)
+}
+
+public def abort() {
+  panic("abort")
+}
