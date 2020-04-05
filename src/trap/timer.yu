@@ -13,6 +13,7 @@ public def setNextTimerEvent() {
 
 public def initTimer() {
   initClint()
+  setNextTimerEvent()
 }
 
 public def getTick(): USize {
