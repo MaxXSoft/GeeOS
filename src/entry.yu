@@ -1,0 +1,8 @@
+import arch.arch
+import lib.io
+
+extern def entry() {
+  initIO()
+  io <<< "Hello world!\n"
+  halt()
+}
