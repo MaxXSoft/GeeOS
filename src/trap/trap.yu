@@ -2,18 +2,39 @@ public import define.context
 
 import arch.arch
 import lib.io
+import trap.timer
+import lib.except
 
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()
+
+// handle timer interrupt
+def handleTimer() {
+  setNextTimerEvent()
+  if getTick() % 100 as USize == 0 as USize {
+    io <<< "100 ticks!\n"
+  }
+}
 
 // initialize trap handling
 public def initTrap() {
   setSscratch(0 as USize)
   setStvec((_handleTrap as u8*) as USize)
+  setIntrOn()
 }
 
 // trap handler
 extern def handleTrap(tf: TrapFrame var&) {
-  io <<< "trap!\n"
-  tf.incSepc()
+  when tf.scause {
+    TRAP_S_TIMER_INT {
+      handleTimer()
+    }
+    else {
+      io <<< "sstatus = 0x"; io.printInt(tf.sstatus, 16); io <<< '\n'
+      io <<< "sepc    = 0x"; io.printInt(tf.sepc, 16); io <<< '\n'
+      io <<< "scause  = " <<< tf.scause <<< '\n'
+      io <<< "stval   = 0x"; io.printInt(tf.stval, 16); io <<< '\n'
+      panic("uexpected trap!")
+    }
+  }
 }
