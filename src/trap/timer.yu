@@ -1,0 +1,20 @@
+public import arch.arch
+
+// interval of timer
+let TIMER_INTERVAL = 100000 as u64
+
+// current tick
+var tick = 0 as USize
+
+public def setNextTimerEvent() {
+  setTimeCmp(getTime() + TIMER_INTERVAL)
+  tick += 1 as USize
+}
+
+public def initTimer() {
+  initClint()
+}
+
+public def getTick(): USize {
+  tick
+}
