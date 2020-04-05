@@ -43,6 +43,7 @@ def loadElfFromFlash(): u8* {
 }
 
 extern def entry() {
+  initIO()
   io <<< "GeeOS bootloader v0.0.1\n"
   let addr = loadElfFromFlash()
   io <<< "exiting bootloader...\n"
