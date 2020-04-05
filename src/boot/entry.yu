@@ -53,8 +53,8 @@ extern def entry() {
 extern def handleTrap(mepc: u32, mcause: u32, mtval: u32) {
   // display messsage
   io <<< "unexpected trap occurred while booting!\n"
-  io <<< "  mepc:   0x"; io.printInt(mepc, 16)
-  io <<< "  mcause: 0x"; io.printInt(mcause, 10)
-  io <<< "  mtval:  0x"; io.printInt(mtval, 16)
+  io <<< "  mepc:   0x"; io.printInt(mepc, 16); io <<< '\n'
+  io <<< "  mcause: 0x"; io.printInt(mcause, 10); io <<< '\n'
+  io <<< "  mtval:  0x"; io.printInt(mtval, 16); io <<< '\n'
   panic("")
 }
