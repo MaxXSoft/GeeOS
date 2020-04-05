@@ -1,0 +1,19 @@
+import arch.arch
+
+// definition of trap frame
+public struct TrapFrame {
+  // GPRs
+  x: USize[32],
+  // supervisor status register
+  sstatus: USize,
+  // supervisor exception program counter
+  sepc: USize,
+  // supervisor trap value
+  stval: USize,
+  // supervisor trap cause
+  scause: USize,
+}
+
+public def incSepc(this: TrapFrame var&) {
+  this.sepc += 4 as USize
+}
