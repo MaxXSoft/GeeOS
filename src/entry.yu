@@ -2,11 +2,6 @@ import arch.arch
 import lib.io
 import main
 
-// initialize timer
-def initTimer() {
-  // TODO
-}
-
 // machine mode entry of GeeOS
 extern def entry() {
   // initialize IO
@@ -25,8 +20,6 @@ extern def entry() {
   // delegate all interrupts & exceptions to S-mode
   setMedeleg(0xffff as USize)
   setMideleg(0xffff as USize)
-  // setup timer interrupts
-  initTimer()
   // enter S-mode
   io <<< "entering supervisor mode...\n"
 }
