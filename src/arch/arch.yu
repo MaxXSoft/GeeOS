@@ -21,7 +21,7 @@ all architectures must define the following functions:
 
 
 // use this architecture as target
-public import arch.risky32
+public import arch.virt
 
 // just halt, returns nothing
 inline def halt() {
