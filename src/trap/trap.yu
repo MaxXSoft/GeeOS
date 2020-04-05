@@ -1,5 +1,6 @@
+public import define.context
+
 import arch.arch
-import define.context
 import lib.io
 
 // trap handler in 'traphand.S'

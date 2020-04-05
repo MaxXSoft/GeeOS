@@ -1,4 +1,4 @@
-import arch.arch
+public import arch.arch
 
 // definition of trap frame
 public struct TrapFrame {
