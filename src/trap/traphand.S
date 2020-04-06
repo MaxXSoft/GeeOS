@@ -133,3 +133,40 @@ _handleTrap:
   RESTORE_ALL
   # return from S-mode
   sret
+
+
+  # M-mode timer interrupt handler
+  .globl    _handleTimer
+_handleTimer:
+  # the memory that mscratch points to has been defined in 'entry.yu'
+  # scratch[0, 4, 8]: register save area
+  # scratch[12]:      address of CLINT's 'mtimecmp' register
+  # scratch[16]:      desired interval between interrupts
+  csrrw a0, mscratch, a0
+  sw    a1, 0(a0)
+  sw    a2, 4(a0)
+  sw    a3, 8(a0)
+  # schedule the next timer interrupt
+  # by adding interval to 'mtimecmp'
+  lw    a1, 12(a0)    # CLINT_MTIMECMP
+  lw    a2, 16(a0)    # interval
+  # update lower 32-bit of 'mtimecmp'
+  lw    a3, 0(a1)
+  add   a2, a2, a3
+  sw    a2, 0(a1)
+  bgt   a2, a3, _skip_hi
+  # update higher 32-bit of 'mtimecmp'
+  addi  a1, a1, 4
+  lw    a3, 0(a1)
+  addi  a3, a3, 1
+  sw    a3, 0(a1)
+_skip_hi:
+  # raise a supervisor software interrupt
+  li    a1, 2
+  csrw  sip, a1
+  # restore registers
+  lw    a3, 8(a0)
+  lw    a2, 4(a0)
+  lw    a1, 0(a0)
+  csrrw a0, mscratch, a0
+  mret
