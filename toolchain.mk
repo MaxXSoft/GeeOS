@@ -40,7 +40,7 @@ OBJC := $(LLVM_BIN)/llvm-objcopy $(OBJCFLAGS)
 
 # objdump
 OBJDFLAGS := -D
-OBJD := $(LLVM_BIN)/llvm-objdump $(OBJDFLAGS)
+OBJD := objdump $(OBJDFLAGS)
 
 # archiver
 ARFLAGS := ru
