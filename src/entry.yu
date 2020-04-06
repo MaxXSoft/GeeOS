@@ -2,14 +2,14 @@ import arch.arch
 import lib.io
 import main
 
+// M-mode timer interrupt handler
+extern declare _handleTimer: ()
+
 // interval of timer
 let TIMER_INTERVAL = 100000
 
 // scratch area for M-mode timer interrupt
 var mscratch: USize[5]
-
-// M-mode timer interrupt handler
-extern declare _handleTimer: ()
 
 // initialize timer interrupt
 def initTimer() {
