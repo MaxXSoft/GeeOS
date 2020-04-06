@@ -1,0 +1,45 @@
+import sync.intr
+import lib.except
+
+// structure definition of spinlock
+public struct Spinlock {
+  // is the lock held
+  __locked: u32,
+  // name of lock
+  __name: u8*,
+}
+
+// implementation of spinlock, in 'slimpl.c'
+extern declare __acquire: (Spinlock var&)
+extern declare __release: (Spinlock var&)
+
+public def init(lock: Spinlock var&, name :u8*) {
+  lock.__locked = 0 as u32
+  lock.__name = name
+}
+
+public def isHold(lock: Spinlock&): bool {
+  pushOff()
+  let r = lock.__locked != 0 as u32
+  popOff()
+  r
+}
+
+public def acquire(lock: Spinlock var&) {
+  // disable interrupts to avoid deadlock
+  pushOff()
+  if lock.isHold() {
+    panic("acquire")
+  }
+  // perform acquire
+  __acquire(lock)
+}
+
+public def release(lock: Spinlock var&) {
+  if !lock.isHold() {
+    panic("release")
+  }
+  // perform release
+  __release(lock)
+  popOff()
+}
