@@ -6,10 +6,10 @@ import main
 extern declare _handleTimer: ()
 
 // interval of timer
-let TIMER_INTERVAL = 100000
+let TIMER_INTERVAL = 1000000
 
 // scratch area for M-mode timer interrupt
-var mscratch: USize[5]
+var mscratch: USize volatile[5]
 
 // initialize timer interrupt
 def initTimer() {
