@@ -2,18 +2,22 @@ public import define.context
 
 import arch.arch
 import lib.io
-import trap.timer
 import lib.except
 
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()
 
+// tick of timer
+var tick = 0 as USize
+
 // handle timer interrupt
 def handleTimer() {
-  setNextTimerEvent()
-  if getTick() % 100 as USize == 0 as USize {
+  tick += 1 as USize
+  if tick % 100 as USize == 0 as USize {
     io <<< "100 ticks!\n"
   }
+  // acknowledge soft interrupt
+  setSip(getSip() & ~SIE_SSIE)
 }
 
 // initialize trap handling
@@ -26,7 +30,7 @@ public def initTrap() {
 // trap handler
 extern def handleTrap(tf: TrapFrame var&) {
   when tf.scause {
-    TRAP_S_TIMER_INT {
+    TRAP_S_SOFT_INT {
       handleTimer()
     }
     else {
