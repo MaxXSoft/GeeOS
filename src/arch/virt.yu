@@ -5,8 +5,10 @@ public type USize = u32
 public type ISize = i32
 
 // constant address
-inline let FLASH_ADDR = 0x20000000
-inline let MEM_ADDR   = 0x80000000
+inline let FLASH_ADDR   = 0x20000000
+inline let MEM_ADDR     = 0x80000000
+inline let CLINT_MTIME  = 0x0200bff8
+inline let CLINT_MCMP   = 0x02004000
 
 // UART related definitions
 inline let UART_ADDR        = 0x10000000 as u8 volatile var*
@@ -47,19 +49,6 @@ inline def getChar(): i32 {
   else {
     -1
   }
-}
-
-// initialize CLINT
-inline def initClint() {}
-
-// get 'time'
-inline def getTime(): u64 {
-  *(0x0200bff8 as u64 volatile var*)
-}
-
-// set 'timecmp'
-inline def setTimeCmp(val: u64) {
-  *(0x02004000 as u64 volatile var*) = val
 }
 
 // halt
