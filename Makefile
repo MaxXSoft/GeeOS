@@ -30,8 +30,8 @@ BOOT_LDS := $(BOOT_DIR)/linker.ld
 BOOT_TARGET := $(BUILD_DIR)/boot.bin
 
 # source & targets of kernel
-KERNEL_SRC := $(wildcard $(SRC_DIR)/*.yu) $(wildcard $(SRC_DIR)/*.S)
-KERNEL_SRC += $(wildcard $(SRC_DIR)/**/*.yu) $(wildcard $(SRC_DIR)/**/*.S)
+KERNEL_SRC := $(wildcard $(SRC_DIR)/*.yu) $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/*.S)
+KERNEL_SRC += $(wildcard $(SRC_DIR)/**/*.yu) $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/**/*.S)
 KERNEL_SRC := $(filter-out $(LIB_SRC) $(BOOT_SRC), $(KERNEL_SRC))
 KERNEL_SRC := $(filter-out $(wildcard $(ARCH_DIR)/*.*), $(KERNEL_SRC))
 $(call make_obj, KERNEL, $(KERNEL_SRC))
