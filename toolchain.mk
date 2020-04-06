@@ -19,7 +19,7 @@ YU_BIN := /Users/maxxing/Programming/MyRepo/YuLang/build
 
 # Yu compiler
 YUFLAGS := -Werror $(YU_OPT_ARG)
-YUFLAGS := -tt riscv32-unknown-elf -tc generic-rv32 -tf +m,+a
+YUFLAGS += -tt riscv32-unknown-elf -tc generic-rv32 -tf +m,+a
 YUC := $(YU_BIN)/yuc $(YUFLAGS)
 
 # C compiler
