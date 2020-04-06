@@ -5,5 +5,3 @@ _start:
   la    sp, _stack_top
   # jump to machine mode entry
   call  entry
-  # switch to supervisor mode
-  mret
