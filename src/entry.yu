@@ -6,7 +6,7 @@ import main
 extern declare _handleTimer: ()
 
 // interval of timer
-let TIMER_INTERVAL = 1000000
+let TIMER_INTERVAL = 100000
 
 // scratch area for M-mode timer interrupt
 public var mscratch: USize[5] = [USize[5]] {}
