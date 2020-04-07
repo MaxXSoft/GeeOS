@@ -9,7 +9,7 @@ extern declare _handleTimer: ()
 let TIMER_INTERVAL = 1000000
 
 // scratch area for M-mode timer interrupt
-var mscratch: USize volatile[5]
+public var mscratch: USize[5]
 
 // initialize timer interrupt
 def initTimer() {
