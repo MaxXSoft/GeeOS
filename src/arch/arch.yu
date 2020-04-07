@@ -50,14 +50,17 @@ inline let MIE_MSIE         = (1 << 3) as USize
 // trap cause
 inline let TRAP_S_SOFT_INT  = ((1 << 31) | 1) as USize
 inline let TRAP_ILLEGAL     = 2 as USize
+inline let TRAP_INST_FAULT  = 12 as USize
+inline let TRAP_LOAD_FAULT  = 13 as USize
+inline let TRAP_STORE_FAULT = 15 as USize
 // page-based virtual memory
 inline let PAGE_SIZE        = 4096  // bytes per page
 inline let PAGE_PTE_SIZE    = 4     // bytes per PTE
 inline let PAGE_SHIFT       = 12    // bytes of offset within a page
-inline let PAGE_ADDR_V      = 1 << 0                // valid
-inline let PAGE_ADDR_R      = 1 << 1                // read-only
-inline let PAGE_ADDR_E      = 1 << 3                // executable
-inline let PAGE_ADDR_WR     = (1 << 1) | (1 << 2)   // writable & readable
+inline let PAGE_ATTR_V      = 1 << 0                // valid
+inline let PAGE_ATTR_R      = 1 << 1                // read-only
+inline let PAGE_ATTR_E      = 1 << 3                // executable
+inline let PAGE_ATTR_WR     = (1 << 1) | (1 << 2)   // writable & readable
 
 // declarations of functions in 'arch.S'
 extern declare getMstatus: (): USize
