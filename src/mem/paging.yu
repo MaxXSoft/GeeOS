@@ -67,7 +67,7 @@ public def set(this: InactivePageTable var&, start: USize, end: USize,
       page_table[pdx] = convPaddrPte(frame as USize) | PAGE_ATTR_V as USize
     }
     // get address to next-level page table by PDE
-    let page_table2 = (convPtePaddr(pde) + this.__offset) as USize var*
+    let page_table2 = (convPtePaddr(page_table[pdx]) + this.__offset) as USize var*
     // setup PTE by vpn[0] and next-level page table
     let pte = convPaddrPte(vaddr - this.__offset) | attr.getData()
     page_table2[getVpn0(vaddr)] = pte
