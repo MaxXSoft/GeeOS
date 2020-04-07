@@ -1,0 +1,81 @@
+public import arch.arch
+
+import mem.pm
+import lib.except
+import lib.c.string
+
+// attribute of page
+public struct MemoryAttr {
+  __data: USize,
+}
+
+public def newMemAttr(): MemoryAttr {
+  [MemoryAttr] {PAGE_ATTR_V as USize}
+}
+
+public def setRead(this: MemoryAttr): MemoryAttr {
+  [MemoryAttr] {this.__data | PAGE_ATTR_R as USize}
+}
+
+public def setExec(this: MemoryAttr): MemoryAttr {
+  [MemoryAttr] {this.__data | PAGE_ATTR_E as USize}
+}
+
+public def setWR(this: MemoryAttr): MemoryAttr {
+  [MemoryAttr] {this.__data | PAGE_ATTR_WR as USize}
+}
+
+public def getData(this: MemoryAttr&): USize {
+  this.__data
+}
+
+// inactive page table (linear mapping)
+public struct InactivePageTable {
+  __root_table: u8 var*,
+  __pdes: u8 var*,
+  __offset: USize,
+}
+
+def getPaddr(this: InactivePageTable&): USize {
+  this.__root_table as USize
+}
+
+def getVaddr(this: InactivePageTable&): USize {
+  this.getPaddr() + this.__offset
+}
+
+public def newPageTable(offset: USize): InactivePageTable {
+  let root_table = allocPhyMem(), pdes = allocPhyMem()
+  if root_table as i32 == 0 || pdes as i32 == 0 {
+    panic("newPageTable - OOM")
+  }
+  memset(root_table, 0, PAGE_SIZE as USize)
+  [InactivePageTable] {root_table, pdes, offset}
+}
+
+public def set(this: InactivePageTable var&, start: USize, end: USize,
+               attr: MemoryAttr) {
+  var vaddr = roundDownPage(start)
+  let page_table = this.getVaddr() as USize var*
+  while vaddr < end {
+    // get PDE by vpn[1]
+    let pdx = getVpn1(vaddr), pde = page_table[pdx]
+    // create if does not exist
+    if pde == 0 as USize {
+      let frame = allocPhyMem()
+      (this.__pdes as u8 var* var*)[pdx] = frame
+      page_table[pdx] = convPaddrPte(frame as USize) | PAGE_ATTR_V as USize
+    }
+    // get address to next-level page table by PDE
+    let page_table2 = (convPtePaddr(pde) + this.__offset) as USize var*
+    // setup PTE by vpn[0] and next-level page table
+    let pte = convPaddrPte(vaddr - this.__offset) | attr.getData()
+    page_table2[getVpn0(vaddr)] = pte
+    vaddr += PAGE_SIZE as USize
+  }
+}
+
+public def activate(this: InactivePageTable&) {
+  setSatp(makeSatp(this.getPaddr()))
+  runSfence()
+}
