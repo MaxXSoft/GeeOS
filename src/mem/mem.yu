@@ -1,0 +1,9 @@
+import arch.arch
+import mem.pm
+
+public def initMem() {
+  // enable user memory access in S-mode
+  setSstatus(getSstatus() | SSTATUS_SUM)
+  // initialize phyical memory
+  initPhyMem()
+}
