@@ -5,6 +5,10 @@ public type USize = u32
 
 inline let FLASH_ADDR   = 0x90020000
 inline let MEM_ADDR     = 0x80000000
+inline let UART_ADDR    = 0x90000104
+inline let UART_END     = 0x90000200
+inline let CLINT_ADDR   = 0x90010000
+inline let CLINT_END    = 0x90010200
 inline let CLINT_MTIME  = 0x90010000
 inline let CLINT_MCMP   = 0x90010100
 
