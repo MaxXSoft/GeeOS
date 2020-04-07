@@ -20,6 +20,13 @@ def handleTimer() {
   setSip(getSip() & ~SIE_SSIE)
 }
 
+// handle page fault
+def handlePageFault(tf: TrapFrame var&) {
+  io <<< "scause  = " <<< tf.scause <<< '\n'
+  io <<< "stval   = 0x"; io.printInt(tf.stval, 16); io <<< '\n'
+  panic("page fault!")
+}
+
 // initialize trap handling
 public def initTrap() {
   setSscratch(0 as USize)
@@ -32,6 +39,9 @@ extern def handleTrap(tf: TrapFrame var&) {
   when tf.scause {
     TRAP_S_SOFT_INT {
       handleTimer()
+    }
+    TRAP_INST_FAULT, TRAP_LOAD_FAULT, TRAP_STORE_FAULT {
+      handlePageFault(tf)
     }
     else {
       io <<< "sstatus = 0x"; io.printInt(tf.sstatus, 16); io <<< '\n'
