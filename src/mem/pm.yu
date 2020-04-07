@@ -1,0 +1,71 @@
+import arch.arch
+import sync.spinlock
+import lib.except
+import lib.c.string
+
+// first address after kernel
+// defined in 'linker.ld'
+extern declare _geeos_end: u8 var*
+
+// definitions about physical memory
+let RAM_SIZE_MIB    = 16
+let KERNEL_BASE     = MEM_ADDR
+let KERNEL_VM_BASE  = 0xc0000000
+let PHY_STOP        = KERNEL_BASE + RAM_SIZE_MIB * 1024 * 1024
+
+// structure of all free physical pages
+struct FreePage {
+  next: FreePage var*,
+}
+
+// physical memory structure
+struct PhyMemory {
+  lock: Spinlock,
+  free_list: FreePage var*,
+}
+var phy_mem: PhyMemory
+
+
+// free physical page
+public def freePhyMem(addr: u8 var*) {
+  // check if address is not aligned, or out of range
+  if addr as USize % PAGE_SIZE as USize != 0 as USize ||
+     addr < _geeos_end || addr >= PHY_STOP as u8 var* {
+    panic("freePhyMem")
+  }
+  // fill with junk to catch dangling refs
+  memset(addr, 1, PAGE_SIZE as USize)
+  // insert current page into 'free_list'
+  let fp = addr as FreePage var*
+  phy_mem.lock.acquire()
+  (*fp).next = phy_mem.free_list
+  phy_mem.free_list = fp
+  phy_mem.lock.release()
+}
+
+// initialize physical page allocator
+public def initPhyMem() {
+  phy_mem.lock.init("phy_mem")
+  // free all avaliable physical pages
+  var p = roundUpPage(_geeos_end as USize) as u8 var*
+  while p + PAGE_SIZE <= PHY_STOP as u8 var* {
+    freePhyMem(p)
+    p += PAGE_SIZE
+  }
+}
+
+// allocate physical page
+public def allocPhyMem(): u8 var* {
+  // pick a new free page from 'free_list'
+  phy_mem.lock.acquire()
+  let fp = phy_mem.free_list
+  if fp != null as FreePage var* {
+    phy_mem.free_list = (*fp).next
+  }
+  phy_mem.lock.release()
+  // fill with junk
+  if fp != null as FreePage var* {
+    memset(fp as u8 var*, 5, PAGE_SIZE as USize)
+  }
+  fp as u8 var*
+}
