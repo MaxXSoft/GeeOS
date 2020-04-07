@@ -29,8 +29,8 @@ SECTIONS
 		*(.bss)
 		*(.bss*)
 	}
-	_bss_end = .;
   . = ALIGN(4) + 0x1000;
   _stack_top = .;
+	_bss_end = .;
 	_geeos_end = .;
 }
