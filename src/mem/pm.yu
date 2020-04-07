@@ -47,7 +47,7 @@ public def freePhyMem(addr: u8 var*) {
 public def initPhyMem() {
   phy_mem.lock.init("phy_mem")
   // free all avaliable physical pages
-  var p = roundUpPage((_geeos_end as u8*) as USize) as u8 var*
+  var p = roundUpPage(_geeos_end as USize) as u8 var*
   while p + PAGE_SIZE <= PHY_STOP as u8 var* {
     freePhyMem(p)
     p += PAGE_SIZE

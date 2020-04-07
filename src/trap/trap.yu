@@ -23,7 +23,7 @@ def handleTimer() {
 // initialize trap handling
 public def initTrap() {
   setSscratch(0 as USize)
-  setStvec((_handleTrap as u8*) as USize)
+  setStvec(_handleTrap as USize)
   setIntrOn()
 }
 

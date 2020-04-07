@@ -19,9 +19,9 @@ def initTimer() {
   // initialize scratch area
   mscratch[3] = CLINT_MCMP as USize
   mscratch[4] = TIMER_INTERVAL as USize
-  setMscratch((mscratch as u8*) as USize)
+  setMscratch(mscratch as USize)
   // set M-mode handler
-  setMtvec((_handleTimer as u8*) as USize)
+  setMtvec(_handleTimer as USize)
   // enable timer interrupt
   setMstatus(getMstatus() | MSTATUS_MIE)
   setMie(getMie() | MIE_MTIE)
@@ -38,7 +38,7 @@ extern def entry() {
   ms |= MSTATUS_MPP_S
   setMstatus(ms)
   // set mepc to S-mode entry
-  setMepc((main as u8*) as USize)
+  setMepc(main as USize)
   // disable paging
   setSatp(0 as USize)
   // delegate all interrupts & exceptions to S-mode
