@@ -56,3 +56,18 @@ public def del(this: Thread&) {
 public def switchTo(this: Thread var&, target: Thread var&) {
   this.context.switchTo(target.context)
 }
+
+// definition of thread status
+public enum Status {
+  Unused,
+  Ready,
+  Running,
+  Sleeping,
+  Exited,
+}
+
+// definition of thread status with code
+public struct StatusCode {
+  status: Status,
+  code: USize,
+}
