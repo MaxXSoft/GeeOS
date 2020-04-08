@@ -4,33 +4,37 @@ SECTIONS
 {
   . = 0x80000000;
 	_geeos_start = .;
-	_text_start = .;
   .text : {
+		_text_start = .;
 	 	*(.text.init)
 	 	*(.text)
 	 	*(.text*)
+		. = ALIGN(4K);
+		_text_end = .;
 	}
-	_text_end = .;
-	_rodata_start = .;
   .rodata : {
+		_rodata_start = .;
 		*(.rodata)
 		*(.rodata*)
+		. = ALIGN(4K);
+		_rodata_end = .;
   }
-	_rodata_end = .;
-	_data_start = .;
   .data : {
+		_data_start = .;
 		*(.data)
 		*(.data*)
 		*(.sdata)
+		_data_end = .;
 	}
-	_data_end = .;
-	_bss_start = .;
   .bss : {
+		_bss_start = .;
 		*(.bss)
 		*(.bss*)
+		_bss_end = .;
 	}
+	_stack_start = .;
   . = ALIGN(4) + 0x1000;
   _stack_top = .;
-	_bss_end = .;
+	_stack_end = .;
 	_geeos_end = .;
 }
