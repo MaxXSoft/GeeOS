@@ -1,5 +1,8 @@
 public import arch.arch
 
+// type alias for thread entry function
+public type ThreadEntry = (USize)
+
 // definition of trap frame
 public struct TrapFrame {
   // GPRs
@@ -17,3 +20,51 @@ public struct TrapFrame {
 public def incSepc(this: TrapFrame var&) {
   this.sepc += 4 as USize
 }
+
+// definition of context of thread context
+public struct ContextContext {
+  // return address
+  ra: USize,
+  // page table
+  satp: USize,
+  // saved registers
+  s: USize[12],
+}
+
+// definition of thread context
+public struct Context {
+  context_addr: ContextContext var*,
+}
+
+// create new context of kernel context
+def newKernelCC(entry: ThreadEntry, arg: USize,
+                stack_top: u8 var*, satp: USize): ContextContext {
+  // make sure privilege mode after 'sret' in kernel thread is still S-mode
+  let ss = getSstatus() | SSTATUS_SPP
+  [ContextContext] {
+    entry as USize,
+    satp,
+    [USize[12]] {arg, ss}
+  }
+}
+
+def pushAt(this: ContextContext, stack_top: u8 var*): Context {
+  let ptr = stack_top as ContextContext var* - 1
+  (*ptr) = this
+  [Context] {ptr}
+}
+
+// create new null context
+public def newNullContext(): Context {
+  [Context] {null as ContextContext var*}
+}
+
+// create new kernel thread context
+public def newKernelContext(entry: ThreadEntry, arg: USize,
+                            stack_top: u8 var*, satp: USize): Context {
+  newKernelCC(entry, arg, stack_top, satp).pushAt(stack_top)
+}
+
+// switch to another context
+// defined in 'proc/switch.S'
+extern declare switchTo: (Context var&, Context var&)
