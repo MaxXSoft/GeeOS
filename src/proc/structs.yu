@@ -1,0 +1,58 @@
+public import define.context
+
+import arch.arch
+import mem.pm
+
+// size of kernel stack
+// must be page size because stack is allocated by frame allocator
+let STACK_SIZE  = PAGE_SIZE as USize
+
+// definition of kernel thread stack
+public struct KernelStack {
+  addr: u8 var*,
+}
+
+// create new kernel stack
+public def newKernelStack(): KernelStack {
+  [KernelStack] {allocPhyMem()}
+}
+
+// release kernel stack
+public def del(this: KernelStack&) {
+  freePhyMem(this.addr)
+}
+
+// get top of kernel stack
+public def getTop(this: KernelStack&): u8 var* {
+  this.addr + STACK_SIZE
+}
+
+// definition of thread
+public struct Thread {
+  context: Context,
+  kstack: KernelStack,
+}
+
+// create new idle thread
+public def newIdleThread(): Thread {
+  [Thread] {newNullContext(), newKernelStack()}
+}
+
+// create new kernel thread
+public def newKernelThread(entry: ThreadEntry, arg: USize): Thread {
+  let kstack = newKernelStack()
+  [Thread] {
+    newKernelContext(entry, arg, kstack.getTop(), getSatp()),
+    kstack,
+  }
+}
+
+// release current thread structure
+public def del(this: Thread&) {
+  this.kstack.del()
+}
+
+// switch to target thread
+public def switchTo(this: Thread var&, target: Thread var&) {
+  this.context.switchTo(target.context)
+}
