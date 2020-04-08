@@ -1,0 +1,15 @@
+import arch.arch
+import proc.structs
+import lib.io
+
+def helloThread(arg: USize) {
+  io <<< "hello thread\n"
+  io <<< "arg is " <<< arg <<< '\n'
+  while true {}
+}
+
+public def initThread() {
+  var loop_thread = newIdleThread()
+  var hello_thread = newKernelThread(helloThread, 666 as USize)
+  loop_thread.switchTo(hello_thread)
+}
