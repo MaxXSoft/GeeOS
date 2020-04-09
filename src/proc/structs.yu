@@ -2,6 +2,7 @@ public import define.context
 
 import arch.arch
 import mem.pm
+import lib.except
 
 // size of kernel stack
 // must be page size because stack is allocated by frame allocator
@@ -14,12 +15,18 @@ public struct KernelStack {
 
 // create new kernel stack
 public def newKernelStack(): KernelStack {
-  [KernelStack] {allocPhyMem()}
+  let addr = allocPhyMem()
+  if addr as i32 == 0 {
+    panic("newKernelStack - OOM")
+  }
+  [KernelStack] {addr}
 }
 
 // release kernel stack
 public def del(this: KernelStack&) {
-  freePhyMem(this.addr)
+  if this.addr as i32 != 0 {
+    freePhyMem(this.addr)
+  }
 }
 
 // get top of kernel stack
@@ -55,6 +62,15 @@ public def del(this: Thread&) {
 // switch to target thread
 public def switchTo(this: Thread var&, target: Thread var&) {
   this.context.switchTo(target.context)
+}
+
+// move content of this thread to another thread, and clear current thread
+// like 'std::move' in C++
+public def move(this: Thread var&): Thread {
+  let thread = this
+  this.context = newNullContext()
+  this.kstack.addr = null as u8 var*
+  thread
 }
 
 // definition of thread status
