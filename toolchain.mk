@@ -29,6 +29,11 @@ CFLAGS += -fno-builtin -fno-pic
 CFLAGS += -target riscv32-unknown-elf -march=rv32ima -mabi=ilp32
 CC := $(LLVM_BIN)/clang $(CFLAGS)
 
+# LLVM compiler
+LLCFLAGS := $(C_OPT_ARG) -filetype=obj
+LLCFLAGS += -march=riscv32 -mcpu=generic-rv32 -mattr=+m,+a
+LLC := $(LLVM_BIN)/llc $(LLCFLAGS)
+
 # linker
 # LDFLAGS := -nostartfiles -nostdlib -nostdinc -melf32lriscv
 LDFLAGS :=
