@@ -9,6 +9,7 @@ all architectures must define the following constants:
 
 - FLASH_ADDR: i32:    boot flash address, used by the bootloader
 - MEM_ADDR: i32:      physical memory start address
+- MEM_SIZE_MIB: i32:  physical memory size (MiB)
 - UART_ADDR: i32:     address of UART device
 - UART_END: i32:      end address of UART device
 - CLINT_ADDR: i32:    address of CLINT
