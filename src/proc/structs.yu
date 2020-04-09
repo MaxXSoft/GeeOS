@@ -23,10 +23,11 @@ public def newKernelStack(): KernelStack {
 }
 
 // release kernel stack
-public def del(this: KernelStack&) {
+public def del(this: KernelStack var&) {
   if this.addr as i32 != 0 {
     freePhyMem(this.addr)
   }
+  this.addr = null as u8 var*
 }
 
 // get top of kernel stack
@@ -55,7 +56,7 @@ public def newKernelThread(entry: ThreadEntry, arg: USize): Thread {
 }
 
 // release current thread structure
-public def del(this: Thread&) {
+public def del(this: Thread var&) {
   this.kstack.del()
 }
 
