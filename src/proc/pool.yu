@@ -84,6 +84,11 @@ public def retrieve(this: ThreadPool var&, tid: Tid, thread: Thread*) {
     info.status.status = Status.Ready
     this.scheduler.push(tid)
   }
+  else {
+    // release resource of thread
+    info.status.status = Status.Unused
+    info.thread.del()
+  }
 }
 
 // tell scheduler a tick passed
@@ -97,9 +102,6 @@ public def exit(this: ThreadPool var&, tid: Tid, code: USize) {
   info.status.status = Status.Exited
   info.status.code = code
   info.present = false
-  // release resource of thread
-  info.thread.del()
-  info.thread.move()
   // tell scheduler thread exited
   this.scheduler.exit(tid)
   // TODO: remove this log
