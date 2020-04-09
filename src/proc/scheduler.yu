@@ -1,0 +1,98 @@
+public import arch.arch
+
+// type of thread id
+public type Tid = USize
+
+// maximum number of thread
+inline let MAX_THREAD_COUNT = 64
+
+// info of each thread
+public struct RoundRobinInfo {
+  // is current thread valid
+  is_valid: bool,
+  // time slice of current thread
+  time: USize,
+  // index of previous element in queue
+  prev: Tid,
+  // index of next element in queue
+  next: Tid,
+}
+
+// definition of round robin thread scheduler
+public struct Scheduler {
+  // info of all threads (threads[0] for head of queue)
+  threads: RoundRobinInfo[MAX_THREAD_COUNT + 1],
+  // maximum time slice
+  max_time: USize,
+  // index of current thread
+  current: Tid,
+}
+
+// initialize current scheduler
+public def init(this: Scheduler var&, max_time: USize) {
+  var i = 0
+  while i < MAX_THREAD_COUNT + 1 {
+    this.threads[i] = [RoundRobinInfo] {false}
+    i += 1
+  }
+  this.max_time = max_time
+  this.current = 0 as Tid
+}
+
+// add thread to scheduler
+public def push(this: Scheduler var&, tid: Tid) {
+  let tid = tid + 1 as Tid
+  // allocate time slice for new thread
+  let info: RoundRobinInfo var& = this.threads[tid]
+  info.is_valid = true
+  if !info.time {
+    info.time = this.max_time
+  }
+  // push into queue
+  let prev = this.threads[0].prev
+  this.threads[prev].next = tid
+  this.threads[tid].prev = prev
+  this.threads[0].prev = tid
+  this.threads[tid].next = 0 as Tid
+}
+
+// get next thread from scheduler
+public def pop(this: Scheduler var&, tid: Tid var&): bool {
+  let ret = this.threads[0].next
+  if ret != 0 as Tid {
+    // pop from queue
+    let prev = this.threads[ret].prev, next = this.threads[ret].next
+    this.threads[next].prev = prev
+    this.threads[prev].next = next
+    this.threads[ret].prev = 0 as Tid
+    this.threads[ret].next = 0 as Tid
+    // set as current thread
+    this.threads[ret].is_valid = false
+    this.current = ret
+    tid = ret - 1 as Tid
+    true
+  }
+  else {
+    false
+  }
+}
+
+// tell scheduler a tick passed
+// returns true if there is no current thread
+// or current thread run out of time slice
+public def tick(this: Scheduler var&): bool {
+  let tid = this.current
+  if tid != 0 as Tid {
+    this.threads[tid].time -= 1 as USize
+    !this.threads[tid].time
+  }
+  true
+}
+
+// remove thread from scheduler
+public def exit(this: Scheduler var&, tid: Tid) {
+  let tid = tid + 1 as Tid
+  if this.current == tid {
+    this.current = 0 as Tid
+  }
+}
