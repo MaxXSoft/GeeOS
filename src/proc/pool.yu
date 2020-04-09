@@ -1,0 +1,107 @@
+public import proc.structs
+public import proc.scheduler
+
+import lib.except
+import lib.io
+
+public struct ThreadInfo {
+  status: StatusCode,
+  present: bool,
+  thread: Thread,
+}
+
+// definition of thread pool
+public struct ThreadPool {
+  threads: ThreadInfo[MAX_THREAD_COUNT],
+  scheduler: Scheduler,
+}
+
+def allocTid(this: ThreadPool&): Tid {
+  var i = 0
+  while i < MAX_THREAD_COUNT {
+    if this.threads[i].status.status == Status.Unused {
+      return i as Tid
+    }
+    i += 1
+  }
+  panic("allocTid")
+  0 as Tid
+}
+
+def getInfo(this: ThreadPool var&, tid: Tid): ThreadInfo var& {
+  var info: ThreadInfo var& = this.threads[tid]
+  if info.status.status == Status.Unused {
+    panic("thread does not exist")
+  }
+  info
+}
+
+// initialize thread pool
+public def init(this: ThreadPool var&, max_time: USize) {
+  var i = 0
+  while i < MAX_THREAD_COUNT {
+    this.threads[i] = [ThreadInfo] {[StatusCode] {Status.Unused}}
+    i += 1
+  }
+  this.scheduler.init(max_time)
+}
+
+// add thread to pool
+public def add(this: ThreadPool var&, thread: Thread) {
+  let tid = this.allocTid()
+  this.threads[tid] = [ThreadInfo] {
+    [StatusCode] {Status.Ready, 0 as USize},
+    true,
+    thread,
+  }
+  this.scheduler.push(tid)
+  // TODO: remove this log
+  io <<< "tid to alloc: " <<< tid <<< '\n'
+}
+
+// acquire a thread
+public def acquire(this: ThreadPool var&, tid: Tid var&): Thread var* {
+  if this.scheduler.pop(tid) {
+    // get thread info of specific tid
+    let info: ThreadInfo var& = this.getInfo(tid)
+    // update thread info
+    info.status.status = Status.Running
+    info.status.code = tid
+    (&info.thread)
+  }
+  else {
+    null as Thread var*
+  }
+}
+
+// retrieve thread to pool
+public def retrieve(this: ThreadPool var&, tid: Tid, thread: Thread*) {
+  let info: ThreadInfo var& = this.getInfo(tid)
+  if info.present {
+    if &info.thread != thread {
+      panic("retrieve")
+    }
+    info.status.status = Status.Ready
+    this.scheduler.push(tid)
+  }
+}
+
+// tell scheduler a tick passed
+public def tick(this: ThreadPool var&): bool {
+  this.scheduler.tick()
+}
+
+// mark specific thread as exited
+public def exit(this: ThreadPool var&, tid: Tid, code: USize) {
+  let info: ThreadInfo var& = this.getInfo(tid)
+  info.status.status = Status.Exited
+  info.status.code = code
+  info.present = false
+  // release resource of thread
+  info.thread.del()
+  info.thread.move()
+  // tell scheduler thread exited
+  this.scheduler.exit(tid)
+  // TODO: remove this log
+  io <<< "thread " <<< tid <<< " exited, code: " <<< code <<< '\n'
+}
