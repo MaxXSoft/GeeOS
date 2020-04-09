@@ -8,10 +8,9 @@ import lib.c.string
 extern declare _geeos_end: ()
 
 // definitions about physical memory
-inline let RAM_SIZE_MIB   = 16
 inline let KERNEL_BASE    = MEM_ADDR
 inline let KERNEL_VM_BASE = 0xc0000000
-inline let PHY_STOP       = KERNEL_BASE + RAM_SIZE_MIB * 1024 * 1024
+inline let PHY_STOP       = KERNEL_BASE + MEM_SIZE_MIB * 1024 * 1024
 
 // structure of all free physical pages
 struct FreePage {
