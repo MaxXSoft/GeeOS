@@ -77,7 +77,8 @@ $(KERNEL_TARGET): $(KERNEL_OBJ) $(KERNEL_LDS) $(LIB_TARGET)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.yu
 	-mkdir -p $(dir $@)
-	$(YUC) -I $(SRC_DIR) -o $@ $^
+	$(YUC) -I $(SRC_DIR) -ot llvm $^ > $@.ll
+	$(LLC) -o $@ $@.ll
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	-mkdir -p $(dir $@)
