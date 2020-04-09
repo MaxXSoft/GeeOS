@@ -39,6 +39,6 @@ public def initMem() {
   setSstatus(getSstatus() | SSTATUS_SUM)
   // initialize phyical memory
   initPhyMem()
-  // remap kernel
-  remapKernel()
+  // // remap kernel
+  // remapKernel()
 }

@@ -1,15 +1,45 @@
 import arch.arch
+import proc.processor
 import proc.structs
 import lib.io
+
+// maximum time slice of round robin scheduler
+let TIME_SLICE  = 1 as USize
+
+// current processor
+var cpu: Processor
 
 def helloThread(arg: USize) {
   io <<< "hello thread\n"
   io <<< "arg is " <<< arg <<< '\n'
-  while true {}
+  // do something
+  var i = 0
+  while i < 100 {
+    io <<< arg <<< arg <<< arg <<< arg <<< arg <<< arg <<< '\n'
+    var j = 0
+    while j < 1000 {
+      j += 1
+    }
+    i += 1
+  }
+  // exit thread
+  io <<< "end of thread " <<< arg <<< '\n'
+  cpu.exit(0 as USize)
 }
 
 public def initThread() {
-  var loop_thread = newIdleThread()
-  var hello_thread = newKernelThread(helloThread, 666 as USize)
-  loop_thread.switchTo(hello_thread)
+  // initialize cpu
+  cpu.init(TIME_SLICE)
+  // create threads
+  cpu.addThread(newKernelThread(helloThread, 0 as USize))
+  cpu.addThread(newKernelThread(helloThread, 1 as USize))
+  cpu.addThread(newKernelThread(helloThread, 2 as USize))
+  cpu.addThread(newKernelThread(helloThread, 3 as USize))
+  cpu.addThread(newKernelThread(helloThread, 4 as USize))
+  // run scheduler
+  cpu.run()
+}
+
+public def tick() {
+  cpu.tick()
 }
