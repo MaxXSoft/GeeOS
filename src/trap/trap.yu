@@ -3,6 +3,7 @@ public import define.context
 import arch.arch
 import lib.io
 import lib.except
+import proc.thread
 
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()
@@ -16,6 +17,8 @@ def handleTimer() {
   if tick % 100 as USize == 0 as USize {
     io <<< "100 ticks!\n"
   }
+  // tell processor a tick passed
+  tick()
   // acknowledge soft interrupt
   setSip(getSip() & ~SIE_SSIE)
 }
