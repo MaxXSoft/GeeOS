@@ -30,9 +30,7 @@ def allocTid(this: ThreadPool&): Tid {
 
 def getInfo(this: ThreadPool var&, tid: Tid): ThreadInfo var& {
   var info: ThreadInfo var& = this.threads[tid]
-  if info.status.status == Status.Unused {
-    panic("thread does not exist")
-  }
+  assert(info.status.status != Status.Unused, "thread does not exist")
   info
 }
 
@@ -78,9 +76,7 @@ public def acquire(this: ThreadPool var&, tid: Tid var&): Thread var* {
 public def retrieve(this: ThreadPool var&, tid: Tid, thread: Thread*) {
   let info: ThreadInfo var& = this.getInfo(tid)
   if info.present {
-    if &info.thread != thread {
-      panic("retrieve")
-    }
+    assert(&info.thread == thread, "retrieve")
     info.status.status = Status.Ready
     this.scheduler.push(tid)
   }

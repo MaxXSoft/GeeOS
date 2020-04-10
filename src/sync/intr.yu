@@ -21,13 +21,9 @@ public def pushOff() {
 }
 
 public def popOff() {
-  if getIntr() {
-    panic("popOff - interruptible")
-  }
+  assert(!getIntr(), "popOff - interruptible")
   push_offset -= 1
-  if push_offset < 0 {
-    panic("popOff")
-  }
+  assert(push_offset >= 0, "popOff")
   if !push_offset && last_intr {
     setIntrOn()
   }

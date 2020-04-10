@@ -28,17 +28,13 @@ public def isHold(lock: Spinlock&): bool {
 public def acquire(lock: Spinlock var&) {
   // disable interrupts to avoid deadlock
   pushOff()
-  if lock.isHold() {
-    panic("acquire")
-  }
+  assert(!lock.isHold(), "acquire")
   // perform acquire
   __acquire(lock)
 }
 
 public def release(lock: Spinlock var&) {
-  if !lock.isHold() {
-    panic("release")
-  }
+  assert(lock.isHold(), "release")
   // perform release
   __release(lock)
   popOff()

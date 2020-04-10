@@ -16,9 +16,7 @@ public struct KernelStack {
 // create new kernel stack
 public def newKernelStack(): KernelStack {
   let addr = allocPhyMem()
-  if addr as i32 == 0 {
-    panic("newKernelStack - OOM")
-  }
+  assert(addr as i32 != 0, "newKernelStack - OOM")
   [KernelStack] {addr}
 }
 
