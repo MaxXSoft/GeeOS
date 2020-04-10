@@ -1,0 +1,151 @@
+public import arch.arch
+public import arch.riscv.pagetable
+public import arch.riscv.addr
+public import arch.riscv.csr
+public import arch.riscv.framealloc
+
+import lib.except
+
+// helper struct for mappers (like `RecursivePageTable`)
+public struct MapperFlush {
+  page: Page,
+}
+
+def newMapperFlush(page: Page): MapperFlush {
+  [MapperFlush] {page}
+}
+
+// flush current page
+inline def flush(this: MapperFlush) {
+  let addr = this.page.getAddr()
+  runSfence(0 as USize, addr.getAddr())
+}
+
+// helper struct for `RecursivePageTable`
+public struct TempMap {
+  entry: PageTableEntry var*,
+  pt_addr: VirtAddr,
+}
+
+inline def newTempMap(index: USize): TempMap {
+  let va = newVirtAddr(index, index + 1 as USize,
+                       (index + 2 as USize) * 4 as USize)
+  [TempMap] {
+    va.getAddr() as PageTableEntry var*,
+    newVirtAddr(index, index + 1 as USize, 0 as USize),
+  }
+}
+
+inline def map(this: TempMap var&, frame: Frame): PageTable var* {
+  (*this.entry).set(frame, PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W)
+  runSfence(0 as USize, this.pt_addr.getAddr())
+  this.pt_addr.getAddr() as PageTable var*
+}
+
+// a recursive page table is a last level page table
+// with an entry mapped to the table itself
+public struct RecursivePageTable {
+  root_table: PageTable var*,
+  // Recursive index as `R`
+  //  `R`:   point to root frame, flags: V
+  //  `R+1`: point to root frame, flags: V+R+W
+  //  `R+2`: point to temp frame, flags: V+R+W
+  // At any time, we can access root page table through (R, R, ..., R+1, 0)
+  // To access a temp frame,
+  // first set `root[R+2]` pointing to the frame with R+W+X,
+  // then we can access the frame through (R, R, ..., R+2, 0).
+  index: USize,
+  temp_map: TempMap,
+}
+
+def createP1IfNotExist(this: RecursivePageTable var&, vpn1: USize,
+                       alloc: FrameAllocator var*): PageTable var* {
+  assert(vpn1 < this.index || vpn1 > this.index + 2 as USize,
+         "invalid vpn1")
+  var pte: PageTableEntry var& = this.root_table.getPte(vpn1)
+  if pte.isUnused() {
+    let frame = alloc.alloc()
+    pte.set(frame, PTE_FLAG_V)
+    let p1_table = this.temp_map.map(frame)
+    p1_table.zero()
+    p1_table
+  }
+  else {
+    let frame = pte.getFrame()
+    let p1_table = this.temp_map.map(frame)
+    p1_table
+  }
+}
+
+// Creates a new RecursivePageTable from the passed level 2 PageTable.
+// The page table must be recursively mapped, that means:
+// - The page table must have one recursive entry,
+//   i.e. an entry that points to the table itself.
+// - The page table must be active,
+//   i.e. the satp register must contain its physical address.
+public def newRecursivePageTable(pt: PageTable var*): RecursivePageTable {
+  let page = newPage(newVirtAddr(pt as USize))
+  let index = page.getVpn1()
+  // check if is valid
+  let satp_frame = newFrame(getSatp() & 0x3fffff as USize)
+  if page.getVpn0() != index + 1 as USize ||
+     satp_frame != pt.getPte(index).getFrame() ||
+     satp_frame != pt.getPte(index + 1 as USize).getFrame() ||
+     !(pt.getPte(index).getFlags() & PTE_FLAG_V) ||
+     !(!(pt.getPte(index).getFlags() & (PTE_FLAG_R | PTE_FLAG_W))) ||
+     !(pt.getPte(index + 1 as USize).getFlags() &
+       (PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W)) {
+    panic("newRecursivePageTable")
+  }
+  // create page table
+  [RecursivePageTable] {pt, index, newTempMap(index)}
+}
+
+// Creates a new RecursivePageTable without performing any checks.
+// The `index` parameter must be the index of the recursively mapped entry.
+public def newUncheckedRecursivePageTable(
+    pt: PageTable var*, index: USize): RecursivePageTable {
+  [RecursivePageTable] {pt, index, newTempMap(index)}
+}
+
+// Creates a new mapping in the page table.
+// This function might need additional physical frames to
+// create new page tables. These frames are allocated from
+// the `alloc` argument. At most three frames are required.
+public def mapTo(this: RecursivePageTable var&, page: Page, frame: Frame,
+                 flags: USize, alloc: FrameAllocator var*): MapperFlush {
+  let p1_table = this.createP1IfNotExist(page.getVpn1(), alloc)
+  if !p1_table.getPte(page.getVpn0()).isUnused() {
+    panic("mapTo - page already mapped")
+  }
+  p1_table.getPte(page.getVpn0()).set(frame, flags)
+  newMapperFlush(page)
+}
+
+// Removes a mapping from the page table.
+// Note that no page tables or pages are deallocated.
+public def unmap(this: RecursivePageTable var&, page: Page): MapperFlush {
+  if this.root_table.getPte(page.getVpn1()).isUnused() {
+    panic("unmap - page not mapped")
+  }
+  let p1_frame = this.root_table.getPte(page.getVpn1()).getFrame()
+  let p1_table = this.temp_map.map(p1_frame)
+  var p1_entry: PageTableEntry var& = p1_table.getPte(page.getVpn0())
+  if !(p1_entry.getFlags() & PTE_FLAG_V) {
+    panic("unmap - page not mapped")
+  }
+  let frame = p1_entry.getFrame()
+  p1_entry.setUnused()
+  newMapperFlush(page)
+}
+
+// Get the reference of the specified `page` entry
+public def getPteRef(this: RecursivePageTable var&,
+                     page: Page): PageTableEntry var& {
+  if this.root_table.getPte(page.getVpn1()).isUnused() {
+    panic("getPteRef - page not mapped")
+  }
+  let p1_frame = this.root_table.getPte(page.getVpn1()).getFrame()
+  let p1_table = this.temp_map.map(p1_frame)
+  p1_table.getPte(page.getVpn0())
+}
