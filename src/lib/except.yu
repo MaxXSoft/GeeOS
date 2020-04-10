@@ -10,3 +10,11 @@ public def panic(str: u8*) {
 public def abort() {
   panic("abort")
 }
+
+public def assert(cond: bool, str: u8*) {
+  if !cond { panic(str) }
+}
+
+public def assert(cond: bool) {
+  if !cond { abort() }
+}
