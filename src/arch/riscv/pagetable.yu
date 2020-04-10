@@ -57,15 +57,15 @@ public struct PageTable {
   ptes: PageTableEntry[PTE_COUNT],
 }
 
-inline def getPte(this: PageTable var&, i: USize): PageTableEntry var& {
-  this.ptes[i]
+inline def getPte(this: PageTable var*, i: USize): PageTableEntry var& {
+  (*this).ptes[i]
 }
 
 // clear all PTEs
-inline def zero(this: PageTable var&) {
+inline def zero(this: PageTable var*) {
   var i = 0
   while i < PTE_COUNT {
-    this.ptes[i].setUnused()
+    (*this).ptes[i].setUnused()
     i += 1
   }
 }
@@ -74,13 +74,13 @@ inline def zero(this: PageTable var&) {
 // root page table resides, it can be anywhere in the main memory.
 // Denote `recursive_index` by K, then virtual address of the
 // root page table is (K, K+1, 0) in Sv32.
-inline def setRecursive(this: PageTable var&, index: USize, frame: Frame) {
-  this.ptes[index].set(frame, PTE_FLAG_V)
-  this.ptes[index + 1 as USize].set(frame, PTE_FLAG_V | PTE_FLAG_R |
-                                           PTE_FLAG_W)
+inline def setRecursive(this: PageTable var*, index: USize, frame: Frame) {
+  (*this).ptes[index].set(frame, PTE_FLAG_V)
+  (*this).ptes[index + 1 as USize].set(frame, PTE_FLAG_V | PTE_FLAG_R |
+                                              PTE_FLAG_W)
 }
 
 // setup identity map for the page with `PPN[1]`
-inline def mapIdentity(this: PageTable var&, ppn1: USize, flags: USize) {
-  this.ptes[ppn1].set(newFrame(newPhysAddr(ppn1 << 22 as USize)), flags)
+inline def mapIdentity(this: PageTable var*, ppn1: USize, flags: USize) {
+  (*this).ptes[ppn1].set(newFrame(newPhysAddr(ppn1 << 22 as USize)), flags)
 }
