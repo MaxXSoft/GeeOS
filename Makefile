@@ -20,7 +20,8 @@ BOOT_DIR := $(SRC_DIR)/boot
 
 # source & targets of library
 LIB_SRC := $(call rwildcard, $(LIB_DIR), *.yu)
-LIB_SRC += $(call rwildcard, $(ARCH_DIR), *.S)
+LIB_SRC += $(call rwildcard, $(ARCH_DIR)/riscv, *.yu)
+LIB_SRC += $(call rwildcard, $(ARCH_DIR)/riscv, *.S)
 $(call make_obj, LIB, $(LIB_SRC))
 LIB_TARGET := $(BUILD_DIR)/libgee.a
 
