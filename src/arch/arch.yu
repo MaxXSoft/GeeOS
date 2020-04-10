@@ -99,7 +99,10 @@ extern declare getScause: (): USize
 extern declare getStval: (): USize
 extern declare getSp: (): USize
 extern declare getRa: (): USize
-extern declare runSfence: ()
+extern declare runSfence: (USize, USize)
+inline def runSfence() {
+  asm { "sfence.vma" }
+}
 
 // just halt, returns nothing
 inline def halt() {
