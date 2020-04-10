@@ -142,3 +142,7 @@ inline def getPpn0(this: Frame&): USize {
 inline def getPpn(this: Frame&): USize {
   this.addr.getPpn()
 }
+
+inline def !=(this: Frame&, that: Frame): bool {
+  this.addr.getAddr() != that.addr.getAddr()
+}
