@@ -1,0 +1,82 @@
+public import arch.arch
+public import arch.riscv.addr
+
+// PTE flags
+inline let PTE_FLAG_V = (1 << 0) as USize
+inline let PTE_FLAG_R = (1 << 1) as USize
+inline let PTE_FLAG_W = (1 << 2) as USize
+inline let PTE_FLAG_X = (1 << 3) as USize
+inline let PTE_FLAG_U = (1 << 4) as USize
+inline let PTE_FLAG_G = (1 << 5) as USize
+inline let PTE_FLAG_A = (1 << 6) as USize
+inline let PTE_FLAG_D = (1 << 7) as USize
+
+// count of PTEs per page
+inline let PTE_COUNT  = PAGE_SIZE / 4
+
+// definition of RISC-V PTE
+public struct PageTableEntry {
+  data: USize,
+}
+
+inline def newPte(data: USize) {
+  [PageTableEntry] {data}
+}
+
+inline def isUnused(this: PageTableEntry&): bool {
+  this.data == 0 as USize
+}
+
+inline def setUnused(this: PageTableEntry var&) {
+  this.data = 0 as USize
+}
+
+inline def getFlags(this: PageTableEntry&): USize {
+  this.data & 0xf as USize
+}
+
+inline def getPpn(this: PageTableEntry&): USize {
+  this.data >> 10 as USize
+}
+
+inline def getAddr(this: PageTableEntry&): PhysAddr {
+  newPhysAddr(this.getPpn() << 12 as USize)
+}
+
+inline def getFrame(this: PageTableEntry&): Frame {
+  newFrame(this.getPpn())
+}
+
+inline def set(this: PageTableEntry var&, frame: Frame, flags: USize) {
+  let flags = flags | PTE_FLAG_A | PTE_FLAG_D
+  this.data = (frame.getPpn() << 10 as USize) | flags
+}
+
+// RISC-V page table
+public struct PageTable {
+  ptes: PageTableEntry[PTE_COUNT],
+}
+
+// clear all PTEs
+inline def zero(this: PageTable var&) {
+  var i = 0
+  while i < PTE_COUNT {
+    this.ptes[i].setUnused()
+    i += 1
+  }
+}
+
+// Parameter `frame` is the actual physical frame where the
+// root page table resides, it can be anywhere in the main memory.
+// Denote `recursive_index` by K, then virtual address of the
+// root page table is (K, K+1, 0) in Sv32.
+inline def setRecursive(this: PageTable var&, index: USize, frame: Frame) {
+  this.ptes[index].set(frame, PTE_FLAG_V)
+  this.ptes[index + 1 as USize].set(frame, PTE_FLAG_V | PTE_FLAG_R |
+                                           PTE_FLAG_W)
+}
+
+// setup identity map for the page with `PPN[1]`
+inline def mapIdentity(this: PageTable var&, ppn1: USize, flags: USize) {
+  this.ptes[ppn1].set(newFrame(newPhysAddr(ppn1 << 22 as USize)), flags)
+}
