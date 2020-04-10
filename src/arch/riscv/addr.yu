@@ -1,0 +1,144 @@
+// definitions about RISC-V paging system
+
+// bytes per page
+inline let PAGE_SIZE  = 4096
+
+// 32-bit virtual addresss
+public struct VirtAddr {
+  addr: USize,
+}
+
+inline def newVirtAddr(addr: USize): VirtAddr {
+  [VirtAddr] {addr}
+}
+
+inline def newVirtAddr(vpn1: USize, vpn0: USize, offset: USize): VirtAddr {
+  [VirtAddr] {(vpn1 << 22 as USize) | (vpn0 << 12 as USize) | offset}
+}
+
+inline def getAddr(this: VirtAddr&): USize {
+  this.addr
+}
+
+inline def getVpn1(this: VirtAddr&): USize {
+  this.addr >> 22 as USize
+}
+
+inline def getVpn0(this: VirtAddr&): USize {
+  (this.addr >> 12 as USize) & 0x3ff as USize
+}
+
+inline def getVpn(this: VirtAddr&): USize {
+  this.addr >> 12 as USize
+}
+
+inline def getOffset(this: VirtAddr&): USize {
+  this.addr & 0xfff as USize
+}
+
+inline def roundUp(this: VirtAddr&): VirtAddr {
+  [VirtAddr] {(this.addr + 0xfff as USize) & (~0xfff as USize)}
+}
+
+inline def roundDown(this: VirtAddr&): VirtAddr {
+  [VirtAddr] {this.addr & (~0xfff as USize)}
+}
+
+// 32-bit physical address
+public struct PhysAddr {
+  addr: USize,
+}
+
+inline def newPhysAddr(addr: USize): PhysAddr {
+  [PhysAddr] {addr}
+}
+
+inline def getAddr(this: PhysAddr&): USize {
+  this.addr
+}
+
+inline def getPpn1(this: PhysAddr&): USize {
+  this.addr >> 22 as USize
+}
+
+inline def getPpn0(this: PhysAddr&): USize {
+  (this.addr >> 12 as USize) & 0x3ff as USize
+}
+
+inline def getPpn(this: PhysAddr&): USize {
+  this.addr >> 12 as USize
+}
+
+inline def getOffset(this: PhysAddr&): USize {
+  this.addr & 0xfff as USize
+}
+
+inline def roundUp(this: PhysAddr&): PhysAddr {
+  [PhysAddr] {(this.addr + 0xfff as USize) & (~0xfff as USize)}
+}
+
+inline def roundDown(this: PhysAddr&): PhysAddr {
+  [PhysAddr] {this.addr & (~0xfff as USize)}
+}
+
+// virtual page address
+public struct Page {
+  addr: VirtAddr,
+}
+
+inline def newPage(addr: VirtAddr): Page {
+  [Page] {addr.roundDown()}
+}
+
+inline def newPage(vpn: USize): Page {
+  [Page] {newVirtAddr(vpn << 12 as USize)}
+}
+
+inline def newPage(vpn1: USize, vpn0: USize): Page {
+  [Page] {newVirtAddr(vpn1, vpn0, 0 as USize)}
+}
+
+inline def getAddr(this: Page&): VirtAddr {
+  this.addr
+}
+
+inline def getVpn1(this: Page&): USize {
+  this.addr.getVpn1()
+}
+
+inline def getVpn0(this: Page&): USize {
+  this.addr.getVpn0()
+}
+
+inline def getVpn(this: Page&): USize {
+  this.addr.getVpn()
+}
+
+// physical frame address
+public struct Frame {
+  addr: PhysAddr,
+}
+
+inline def newFrame(addr: PhysAddr): Frame {
+  [Frame] {addr.roundDown()}
+}
+
+inline def newFrame(ppn: USize): Frame {
+  [Frame] {newPhysAddr(ppn << 12 as USize)}
+}
+
+inline def getAddr(this: Frame&): PhysAddr {
+  this.addr
+}
+
+inline def getPpn1(this: Frame&): USize {
+  this.addr.getPpn1()
+}
+
+inline def getPpn0(this: Frame&): USize {
+  this.addr.getPpn0()
+}
+
+inline def getPpn(this: Frame&): USize {
+  this.addr.getPpn()
+}
