@@ -57,6 +57,10 @@ public struct PageTable {
   ptes: PageTableEntry[PTE_COUNT],
 }
 
+inline def getPte(this: PageTable var&, i: USize): PageTableEntry var& {
+  this.ptes[i]
+}
+
 // clear all PTEs
 inline def zero(this: PageTable var&) {
   var i = 0
