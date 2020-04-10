@@ -2,12 +2,12 @@ public import arch.riscv.addr
 
 // interface of frame allocator
 public struct FrameAllocator {
-  alloc: (FrameAllocator var*, Frame var&): bool,
+  alloc: (FrameAllocator var*): Frame,
 }
 
-// Allocate a frame of the appropriate size and return it if possible.
-inline def alloc(this: FrameAllocator var*, frame: Frame var&): bool {
-  ((*this).alloc)(this, frame)
+// Allocate a frame of the appropriate size, panic on error.
+inline def alloc(this: FrameAllocator var*): Frame {
+  ((*this).alloc)(this)
 }
 
 // interface of frame deallocator
