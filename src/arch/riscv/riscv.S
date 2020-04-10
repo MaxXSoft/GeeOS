@@ -142,5 +142,5 @@ getRa:
 
   .globl  runSfence
 runSfence:
-  sfence.vma
+  sfence.vma a0, a1
   ret
