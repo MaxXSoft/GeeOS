@@ -1,10 +1,5 @@
 /*
 
-all targets must define the following types:
-
-- USize: pointer-sized unsigned integer type
-- ISize: pointer-sized signed integer type
-
 all targets must define the following constants:
 
 - FLASH_ADDR: i32:    boot flash address, used by the bootloader
@@ -27,14 +22,14 @@ all targets must define the following functions:
 */
 
 
-// definitions about RISC-V
-public import arch.riscv.csr
-public import arch.riscv.paging
-
 // use the following target
-public import arch.virt
+public import arch.target.virt
 
-// just halt, returns nothing
+// sized types
+public type ISize = i32
+public type USize = u32
+
+// halt the CPU
 inline def halt() {
   halt(0)
 }
