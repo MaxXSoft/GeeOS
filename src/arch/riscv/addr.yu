@@ -1,4 +1,5 @@
 public import arch.arch
+public import arch.riscv.csr
 
 // 32-bit virtual addresss
 public struct VirtAddr {
@@ -122,6 +123,10 @@ inline def newFrame(addr: PhysAddr): Frame {
 
 inline def newFrame(ppn: USize): Frame {
   [Frame] {newPhysAddr(ppn << 12 as USize)}
+}
+
+inline def newFrameFromSatp(): Frame {
+  newFrame(getSatp() & 0x3fffff as USize)
 }
 
 inline def getAddr(this: Frame&): PhysAddr {
