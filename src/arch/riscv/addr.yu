@@ -1,8 +1,5 @@
 public import arch.arch
 
-// bytes per page
-inline let PAGE_SIZE  = 4096
-
 // 32-bit virtual addresss
 public struct VirtAddr {
   addr: USize,
