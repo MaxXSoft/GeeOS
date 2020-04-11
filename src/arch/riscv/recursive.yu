@@ -138,13 +138,14 @@ public def unmap(this: RecursivePageTable var&, page: Page): MapperFlush {
   newMapperFlush(page)
 }
 
-// Get the reference of the specified `page` entry
-public def getPteRef(this: RecursivePageTable var&,
-                     page: Page): PageTableEntry var& {
+// Get the pointer of the specified `page` entry.
+// Returns null if not mapped.
+public def getPtePtr(this: RecursivePageTable var&,
+                     page: Page): PageTableEntry var* {
   if this.root_table.getPte(page.getVpn1()).isUnused() {
-    panic("getPteRef - page not mapped")
+    return null as PageTableEntry var*
   }
   let p1_frame = this.root_table.getPte(page.getVpn1()).getFrame()
   let p1_table = this.temp_map.map(p1_frame)
-  p1_table.getPte(page.getVpn0())
+  &p1_table.getPte(page.getVpn0())
 }
