@@ -32,7 +32,29 @@ inline def setUnused(this: PageTableEntry var&) {
 }
 
 inline def getFlags(this: PageTableEntry&): USize {
-  this.data & 0xf as USize
+  this.data & 0xff as USize
+}
+
+inline def getFlag(this: PageTableEntry&, flag: USize): bool {
+  (this.getFlags() & flag) != 0 as USize
+}
+
+inline def setFlags(this: PageTableEntry var&, flags: USize) {
+  this.data = (this.data & ~(0xff as USize)) | flags
+}
+
+inline def setFlag(this: PageTableEntry var&, flag: USize, value: bool) {
+  let flags = if value {
+    this.getFlags() | flag
+  }
+  else {
+    this.getFlags() & ~flag
+  }
+  this.setFlags(flags)
+}
+
+inline def clearFlag(this: PageTableEntry var&, flag: USize) {
+  this.setFlag(flag, false)
 }
 
 inline def getPpn(this: PageTableEntry&): USize {
