@@ -1,7 +1,6 @@
 public import arch.arch
 public import arch.riscv.pagetable
 public import arch.riscv.addr
-public import arch.riscv.csr
 public import arch.riscv.framealloc
 
 import lib.except
@@ -87,7 +86,7 @@ public def newRecursivePageTable(pt: PageTable var*): RecursivePageTable {
   let page = newPage(newVirtAddr(pt as USize))
   let index = page.getVpn1()
   // check if is valid
-  let satp_frame = newFrame(getSatp() & 0x3fffff as USize)
+  let satp_frame = newFrameFromSatp()
   if page.getVpn0() != index + 1 as USize ||
      satp_frame != pt.getPte(index).getFrame() ||
      satp_frame != pt.getPte(index + 1 as USize).getFrame() ||
