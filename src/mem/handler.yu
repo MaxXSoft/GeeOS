@@ -1,0 +1,70 @@
+public import arch.arch
+public import mem.attr
+public import mem.paging
+
+import mem.pm
+import lib.except
+
+// interface of memory handler
+public struct MemoryHandler {
+  map: (MemoryHandler*, ActivePageTable var&, USize, MemoryAttr&),
+  unmap: (MemoryHandler*, ActivePageTable var&, USize),
+}
+
+// map address to page table
+public def map(this: MemoryHandler*, page_table: ActivePageTable var&,
+               addr: USize, attr: MemoryAttr&) {
+  ((*this).map)(this, page_table, addr, attr)
+}
+
+// unmap address in page table
+public def unmap(this: MemoryHandler*, page_table: ActivePageTable var&,
+                 addr: USize) {
+  ((*this).unmap)(this, page_table, addr)
+}
+
+// linear mapping
+public struct LinearHandler {
+  base: MemoryHandler,
+  offset: ISize,
+}
+
+def mapLinear(this: MemoryHandler*, page_table: ActivePageTable var&,
+              addr: USize, attr: MemoryAttr&) {
+  let this: LinearHandler& = *(this as LinearHandler*)
+  attr.apply(page_table.map(addr, (addr as ISize + this.offset) as USize))
+}
+
+def unmapLinear(this: MemoryHandler*, page_table: ActivePageTable var&,
+                addr: USize) {
+  page_table.unmap(addr)
+}
+
+public def newLinerHandler(offset: ISize): LinearHandler {
+  [LinearHandler] {
+    [MemoryHandler] {mapLinear, unmapLinear},
+    offset,
+  }
+}
+
+// map by frame
+public struct FrameHandler {
+  base: MemoryHandler,
+}
+
+def mapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
+             addr: USize, attr: MemoryAttr&) {
+  // TODO: release allocated frame?
+  let target = allocPhyMem() as USize
+  assert(target != 0 as USize, "mapFrame - OOM")
+  attr.apply(page_table.map(addr, target))
+}
+
+def unmapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
+                addr: USize) {
+  page_table.unmap(addr)
+}
+
+def newFrameHandler(): FrameHandler {
+  [FrameHandler] {[MemoryHandler] {mapFrame, unmapFrame}}
+}
