@@ -54,7 +54,7 @@ public struct FrameHandler {
 
 def mapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
              addr: USize, attr: MemoryAttr&) {
-  // TODO: release allocated frame?
+  // allocate new frame
   let target = allocPhyMem() as USize
   assert(target != 0 as USize, "mapFrame - OOM")
   attr.apply(page_table.map(addr, target))
@@ -62,7 +62,10 @@ def mapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
 
 def unmapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
                 addr: USize) {
-  page_table.unmap(addr)
+  let frame = page_table.unmap(addr)
+  // release allocated frame
+  let pa = frame.getAddr()
+  freePhyMem(pa.getAddr() as u8 var*)
 }
 
 def newFrameHandler(): FrameHandler {
