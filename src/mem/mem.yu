@@ -1,37 +1,30 @@
 import arch.arch
+import mem.mset
+import mem.consts
 import mem.pm
-import mem.paging
-
-// position definitions in 'linker.ld'
-extern declare _text_start: ()
-extern declare _text_end: ()
-extern declare _rodata_start: ()
-extern declare _rodata_end: ()
-extern declare _data_start: ()
-extern declare _data_end: ()
-extern declare _bss_start: ()
-extern declare _bss_end: ()
-extern declare _stack_start: ()
-extern declare _stack_end: ()
+import arch.riscv.csr
 
 // remapping kernel address space
 def remapKernel() {
-  var page_table = newPageTable(0 as USize)
-  page_table.set(_text_start as USize, _text_end as USize,
-                 newMemAttr().setRead().setExec())
-  page_table.set(_rodata_start as USize, _rodata_end as USize,
-                 newMemAttr().setRead())
-  page_table.set(_data_start as USize, _data_end as USize,
-                 newMemAttr().setWR())
-  page_table.set(_bss_start as USize, _bss_end as USize,
-                 newMemAttr().setWR())
-  page_table.set(_stack_start as USize, _stack_end as USize,
-                 newMemAttr().setWR())
-  page_table.set(UART_ADDR as USize, UART_END as USize,
-                 newMemAttr().setWR())
-  page_table.set(CLINT_ADDR as USize, CLINT_END as USize,
-                 newMemAttr().setWR())
-  page_table.activate()
+  let offset = 0 as ISize
+  var mset = newMemSet()
+  let linear = newLinearHandler(offset)
+  let handler = &linear as MemoryHandler*
+  mset.push(_text_start as USize, _text_end as USize,
+            newMemAttr().setExecute().setReadonly(), handler)
+  mset.push(_rodata_start as USize, _rodata_end as USize,
+            newMemAttr().setReadonly(), handler)
+  mset.push(_data_start as USize, _data_end as USize,
+            newMemAttr(), handler)
+  mset.push(_bss_start as USize, _bss_end as USize,
+            newMemAttr(), handler)
+  mset.push(_stack_start as USize, _stack_end as USize,
+            newMemAttr(), handler)
+  mset.push(UART_ADDR as USize, UART_END as USize,
+            newMemAttr(), handler)
+  mset.push(CLINT_ADDR as USize, CLINT_END as USize,
+            newMemAttr(), handler)
+  mset.activate()
 }
 
 public def initMem() {
@@ -39,6 +32,6 @@ public def initMem() {
   setSstatus(getSstatus() | SSTATUS_SUM)
   // initialize phyical memory
   initPhyMem()
-  // // remap kernel
-  // remapKernel()
+  // remap kernel
+  remapKernel()
 }
