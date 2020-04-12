@@ -1,0 +1,13 @@
+// position definitions in 'linker.ld'
+extern declare _geeos_start: ()
+extern declare _geeos_end: ()
+extern declare _text_start: ()
+extern declare _text_end: ()
+extern declare _rodata_start: ()
+extern declare _rodata_end: ()
+extern declare _data_start: ()
+extern declare _data_end: ()
+extern declare _bss_start: ()
+extern declare _bss_end: ()
+extern declare _stack_start: ()
+extern declare _stack_end: ()
