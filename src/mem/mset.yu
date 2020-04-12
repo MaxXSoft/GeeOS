@@ -1,0 +1,46 @@
+public import arch.arch
+public import mem.paging
+public import mem.attr
+public import mem.handler
+public import mem.area
+
+import lib.except
+
+public struct MemorySet {
+  page_table: InactivePageTable,
+}
+
+public def newMemSet(): MemorySet {
+  [MemorySet] {newInactivePageTable()}
+}
+
+public def newKernelMemSet(): MemorySet {
+  var table = newInactivePageTable()
+  table.mapKernel()
+  [MemorySet] {table}
+}
+
+public def push(this: MemorySet var&, start: USize, end: USize,
+                attr: MemoryAttr, handler: MemoryHandler*) {
+  assert(start <= end, "invalid memory area")
+  let area = newMemArea(start, end, handler, attr)
+  var pt: ActivePageTable var& = this.page_table.editBegin(); {
+    area.map(pt)
+  }; this.page_table.editEnd()
+}
+
+public def activate(this: MemorySet&) {
+  this.page_table.activate()
+}
+
+public def withBegin(this: MemorySet&) {
+  this.page_table.withBegin()
+}
+
+public def withEnd(this: MemorySet&) {
+  this.page_table.withEnd()
+}
+
+public def token(this: MemorySet&): USize {
+  this.page_table.token()
+}
