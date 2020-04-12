@@ -1,0 +1,40 @@
+public import arch.arch
+public import mem.handler
+public import mem.attr
+public import mem.paging
+
+// representation of a memory area 
+public struct MemoryArea {
+  start: USize,
+  end: USize,
+  handler: MemoryHandler*,
+  attr: MemoryAttr,
+}
+
+public def newMemArea(start: USize, end: USize, handler: MemoryHandler*,
+                      attr: MemoryAttr): MemoryArea {
+  [MemoryArea] {start, end, handler, attr}
+}
+
+// map memory area to page table
+public def map(this: MemoryArea&, page_table: ActivePageTable var&) {
+  for page in newPageRange(this.start, this.end) {
+    this.handler.map(page_table, page, this.attr)
+  }
+}
+
+// unmap memory area in page table
+public def unmap(this: MemoryArea&, page_table: ActivePageTable var&) {
+  for page in newPageRange(this.start, this.end) {
+    this.handler.unmap(page_table, page)
+  }
+}
+
+// check if is overlaps with specific address range
+public def isOverlap(this: MemoryArea&, start: USize, end: USize): bool {
+  let p1 = this.start / PAGE_SIZE as USize
+  let p2 = (this.end - 1 as USize) / (PAGE_SIZE + 1) as USize
+  let p3 = start / PAGE_SIZE as USize
+  let p4 = (end - 1 as USize) / (PAGE_SIZE + 1) as USize
+  !(p1 >= p4 || p2 <= p3)
+}
