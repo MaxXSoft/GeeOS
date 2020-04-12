@@ -1,0 +1,34 @@
+public import mem.paging
+
+// attribute of page
+public struct MemoryAttr {
+  // is user accessable
+  user: bool,
+  // is readonly
+  readonly: bool,
+  // is executable
+  execute: bool,
+}
+
+public def newMemAttr(): MemoryAttr {
+  [MemoryAttr] {false, false, false}
+}
+
+public def setUser(this: MemoryAttr): MemoryAttr {
+  [MemoryAttr] {true, this.readonly, this.execute}
+}
+
+public def setReadonly(this: MemoryAttr): MemoryAttr {
+  [MemoryAttr] {this.user, true, this.execute}
+}
+
+public def setExecute(this: MemoryAttr): MemoryAttr {
+  [MemoryAttr] {this.user, this.readonly, true}
+}
+
+public def apply(this: MemoryAttr&, entry: PageEntry var&) {
+  entry.setPresent(true)
+  entry.setUser(this.user)
+  entry.setWritable(!this.readonly)
+  entry.setExecute(this.execute)
+}
