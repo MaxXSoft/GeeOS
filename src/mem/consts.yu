@@ -1,3 +1,5 @@
+public import arch.arch
+
 // position definitions in 'linker.ld'
 extern declare _geeos_start: ()
 extern declare _geeos_end: ()
@@ -11,3 +13,8 @@ extern declare _bss_start: ()
 extern declare _bss_end: ()
 extern declare _stack_start: ()
 extern declare _stack_end: ()
+
+// definitions about physical memory
+inline let KERNEL_BASE    = MEM_ADDR
+inline let KERNEL_VM_BASE = 0xc0000000
+inline let PHY_STOP       = KERNEL_BASE + MEM_SIZE_MIB * 1024 * 1024

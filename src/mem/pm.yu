@@ -6,11 +6,6 @@ import mem.consts
 import lib.except
 import lib.c.string
 
-// definitions about physical memory
-inline let KERNEL_BASE    = MEM_ADDR
-inline let KERNEL_VM_BASE = 0xc0000000
-inline let PHY_STOP       = KERNEL_BASE + MEM_SIZE_MIB * 1024 * 1024
-
 // structure of all free physical pages
 struct FreePage {
   next: FreePage var*,
