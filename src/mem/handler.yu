@@ -40,7 +40,7 @@ def unmapLinear(this: MemoryHandler*, page_table: ActivePageTable var&,
   page_table.unmap(addr)
 }
 
-public def newLinerHandler(offset: ISize): LinearHandler {
+public def newLinearHandler(offset: ISize): LinearHandler {
   [LinearHandler] {
     [MemoryHandler] {mapLinear, unmapLinear},
     offset,
