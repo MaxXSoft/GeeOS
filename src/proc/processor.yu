@@ -2,6 +2,7 @@ public import proc.pool
 public import proc.structs
 
 import arch.arch
+import arch.riscv.csr
 import sync.intr
 import lib.io
 

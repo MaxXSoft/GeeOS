@@ -1,4 +1,5 @@
 import arch.arch
+import arch.riscv.csr
 import lib.io
 import main
 

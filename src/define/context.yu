@@ -1,5 +1,7 @@
 public import arch.arch
 
+import arch.riscv.csr
+
 // type alias for thread entry function
 public type ThreadEntry = (USize)
 

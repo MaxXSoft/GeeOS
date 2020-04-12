@@ -1,4 +1,4 @@
-import arch.arch
+import arch.riscv.csr
 import lib.except
 
 // pushOff/popOff are like setIntrOff()/setIntrOn(),

@@ -1,6 +1,8 @@
 public import define.context
 
 import arch.arch
+import arch.riscv.consts
+import arch.riscv.csr
 import mem.pm
 import lib.except
 
