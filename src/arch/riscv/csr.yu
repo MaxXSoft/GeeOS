@@ -1,4 +1,4 @@
-import arch.arch
+public import arch.arch
 
 // definitions about RISC-V CSR
 
