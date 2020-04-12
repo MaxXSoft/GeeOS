@@ -1,78 +1,326 @@
-public import arch.arch
+public import arch.riscv.pagetable
+public import arch.riscv.addr
+public import arch.riscv.framealloc
+public import arch.riscv.recursive
 
+import arch.riscv.csr
+import arch.riscv.consts
 import mem.pm
 import lib.except
-import lib.c.string
+import lib.io
+import mem.consts
 
-// attribute of page
-public struct MemoryAttr {
-  data: USize,
+// address for temporary mapping
+let TEMP_PAGE_ADDR  = 0xcafeb000 as USize
+// address of root page table
+let ROOT_PAGE_TABLE =
+    ((RECURSIVE_INDEX << 22 as USize) |
+     ((RECURSIVE_INDEX + 1 as USize) << 12 as USize)) as PageTable var*
+
+
+// page entry representation
+public struct PageEntry {
+  pte: PageTableEntry var*,
+  page: Page,
 }
 
-public def newMemAttr(): MemoryAttr {
-  [MemoryAttr] {PAGE_ATTR_V as USize}
+public def newPageEntry(pte: PageTableEntry var*, page: Page): PageEntry {
+  [PageEntry] {pte, page}
 }
 
-public def setRead(this: MemoryAttr): MemoryAttr {
-  [MemoryAttr] {this.data | PAGE_ATTR_R as USize}
+public def update(this: PageEntry var&) {
+  let pa = this.page.getAddr()
+  runSfence(0 as USize, pa.getAddr())
 }
 
-public def setExec(this: MemoryAttr): MemoryAttr {
-  [MemoryAttr] {this.data | PAGE_ATTR_E as USize}
+public def isAccessed(this: PageEntry&): bool {
+  (*this.pte).getFlag(PTE_FLAG_A)
 }
 
-public def setWR(this: MemoryAttr): MemoryAttr {
-  [MemoryAttr] {this.data | PAGE_ATTR_WR as USize}
+public def clearAccessed(this: PageEntry var&) {
+  (*this.pte).clearFlag(PTE_FLAG_A)
 }
 
-// inactive page table (linear mapping)
+public def isDirty(this: PageEntry&): bool {
+  (*this.pte).getFlag(PTE_FLAG_D)
+}
+
+public def clearDirty(this: PageEntry var&) {
+  (*this.pte).clearFlag(PTE_FLAG_A)
+}
+
+public def isWritable(this: PageEntry&): bool {
+  (*this.pte).getFlag(PTE_FLAG_W)
+}
+
+public def setWritable(this: PageEntry var&, value: bool) {
+  (*this.pte).setFlag(PTE_FLAG_W, value)
+}
+
+public def isPresent(this: PageEntry&): bool {
+  (*this.pte).getFlag(PTE_FLAG_V)
+}
+
+public def setPresent(this: PageEntry var&, value: bool) {
+  (*this.pte).setFlag(PTE_FLAG_V, value)
+}
+
+public def getTarget(this: PageEntry&): USize {
+  let pa = (*this.pte).getAddr()
+  pa.getAddr()
+}
+
+public def setTarget(this: PageEntry var&, target: USize) {
+  let flags = (*this.pte).getFlags()
+  let frame = newFrame(newPhysAddr(target))
+  (*this.pte).set(frame, flags)
+}
+
+public def isUser(this: PageEntry&): bool {
+  (*this.pte).getFlag(PTE_FLAG_U)
+}
+
+public def setUser(this: PageEntry var&, value: bool) {
+  (*this.pte).setFlag(PTE_FLAG_U, value)
+}
+
+public def isExecute(this: PageEntry&): bool {
+  (*this.pte).getFlag(PTE_FLAG_X)
+}
+
+public def setExecute(this: PageEntry var&, value: bool) {
+  (*this.pte).setFlag(PTE_FLAG_X, value)
+}
+
+// physical frame allocator
+struct PhysFrameAlloc {
+  base: FrameAllocator
+}
+
+def allocPhysFrame(this: FrameAllocator var*): Frame {
+  let addr = allocPhyMem() as USize
+  if addr == 0 as USize {
+    panic("allocPhysFrame - OOM")
+  }
+  newFrame(newPhysAddr(addr))
+}
+
+def newPhysFrameAlloc(): PhysFrameAlloc {
+  [PhysFrameAlloc] {[FrameAllocator] {allocPhysFrame}}
+}
+
+// page table for user threads
+public struct ActivePageTable {
+  page_table: RecursivePageTable,
+  entry: PageEntry,
+}
+
+def getEntry(this: ActivePageTable var&, vaddr: USize): PageEntry var& {
+  let page = newPage(newVirtAddr(vaddr))
+  let pte_ptr = this.page_table.getPtePtr(page)
+  if pte_ptr == null as PageTableEntry var* {
+    panic("getEntry - fail to get entry")
+  }
+  this.entry = newPageEntry(pte_ptr, page)
+  this.entry
+}
+
+def getEntryPtr(this: ActivePageTable var&, vaddr: USize): PageEntry var* {
+  let page = newPage(newVirtAddr(vaddr))
+  let pte_ptr = this.page_table.getPtePtr(page)
+  if pte_ptr == null as PageTableEntry var* {
+    null as PageEntry var*
+  }
+  else {
+    this.entry = newPageEntry(pte_ptr, page)
+    &this.entry
+  }
+}
+
+public def newActivePageTable(): ActivePageTable {
+  [ActivePageTable] {newRecursivePageTable(ROOT_PAGE_TABLE)}
+}
+
+public def map(this: ActivePageTable var&, addr: USize,
+               target: USize): PageEntry var& {
+  let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
+  let page = newPage(newVirtAddr(addr))
+  let frame = newFrame(newPhysAddr(target))
+  var frame_alloc = newPhysFrameAlloc()
+  let alloc = &frame_alloc as FrameAllocator var*
+  this.page_table.mapTo(page, frame, flags, alloc).flush()
+  this.getEntry(addr)
+}
+
+public def unmap(this: ActivePageTable var&, addr: USize) {
+  let page = newPage(newVirtAddr(addr))
+  this.page_table.unmap(page).flush()
+}
+
+def getPageSlice(addr: VirtAddr): PageTable var* {
+  let addr = addr.roundDown()
+  addr.getAddr() as PageTable var*
+}
+
+def withTempMapBegin(this: ActivePageTable var&,
+                     target: PhysAddr): PageTable var* {
+  this.map(TEMP_PAGE_ADDR, target.getAddr())
+  getPageSlice(newVirtAddr(TEMP_PAGE_ADDR))
+}
+
+def withTempMapEnd(this: ActivePageTable var&) {
+  this.unmap(TEMP_PAGE_ADDR)
+}
+
+// spare spaces for `InactivatePageTable`
+struct IptTempMem {
+  act_pt: ActivePageTable,
+  root_table: PageTable var*,
+  backup: PageTableEntry,
+  old_token: USize,
+  new_token: USize,
+}
+var ipt: IptTempMem
+
+// page table for kernel threads
 public struct InactivePageTable {
-  root_table: u8 var*,
-  pdes: u8 var*,
-  offset: USize,
+  root_frame: Frame,
 }
 
-def getPaddr(this: InactivePageTable&): USize {
-  this.root_table as USize
+// TODO: remove this log
+def printSwitch(old_token: USize, new_token: USize) {
+  io <<< "switch table "; io.printInt(old_token, 16)
+  io <<< " -> "; io.printInt(new_token, 16); io <<< '\n'
 }
 
-def getVaddr(this: InactivePageTable&): USize {
-  this.getPaddr() + this.offset
+public def newInactivePageTable(): InactivePageTable {
+  let frame = allocPhysFrame(null as FrameAllocator var*)
+  let target = frame.getAddr()
+  var act_pt = newActivePageTable()
+  let temp_pt = act_pt.withTempMapBegin(target); {
+    temp_pt.zero()
+    temp_pt.setRecursive(RECURSIVE_INDEX, frame)
+  }; act_pt.withTempMapEnd()
+  [InactivePageTable] {frame}
 }
 
-public def newPageTable(offset: USize): InactivePageTable {
-  let root_table = allocPhyMem(), pdes = allocPhyMem()
-  if root_table as i32 == 0 || pdes as i32 == 0 {
-    panic("newPageTable - OOM")
-  }
-  memset(root_table, 0, PAGE_SIZE as USize)
-  [InactivePageTable] {root_table, pdes, offset}
+public def token(this: InactivePageTable&): USize {
+  this.root_frame.getPpn() | SATP_SV32
 }
 
-public def set(this: InactivePageTable var&, start: USize, end: USize,
-               attr: MemoryAttr) {
-  var vaddr = roundDownPage(start)
-  let page_table = this.getVaddr() as USize var*
-  while vaddr < end {
-    // get PDE by vpn[1]
-    let pdx = getVpn1(vaddr), pde = page_table[pdx]
-    // create if does not exist
-    if pde == 0 as USize {
-      let frame = allocPhyMem()
-      (this.pdes as u8 var* var*)[pdx] = frame
-      page_table[pdx] = convPaddrPte(frame as USize) | PAGE_ATTR_V as USize
-    }
-    // get address to next-level page table by PDE
-    let paddr = convPtePaddr(page_table[pdx])
-    let page_table2 = (paddr + this.offset) as USize var*
-    // setup PTE by vpn[0] and next-level page table
-    let pte = convPaddrPte(vaddr - this.offset) | attr.data
-    page_table2[getVpn0(vaddr)] = pte
-    vaddr += PAGE_SIZE as USize
-  }
-}
-
-public def activate(this: InactivePageTable&) {
-  setSatp(makeSatp(this.getPaddr()))
+// activate current inactive page table temporarily
+// and provide the current page table for editing
+public def editBegin(this: InactivePageTable var&): ActivePageTable var& {
+  let frame = newFrameFromSatp()
+  ipt.act_pt = newActivePageTable()
+  ipt.root_table = ipt.act_pt.withTempMapBegin(frame.getAddr())
+  ipt.backup = ipt.root_table.getPte(RECURSIVE_INDEX)
+  ipt.root_table.getPte(RECURSIVE_INDEX).set(this.root_frame, PTE_FLAG_V)
   runSfence()
+  ipt.act_pt
+}
+
+// end edit, pair with `editBegin`
+public def editEnd(this: InactivePageTable var&) {
+  ipt.root_table.getPte(RECURSIVE_INDEX) = ipt.backup
+  runSfence()
+  ipt.act_pt.withTempMapEnd()
+}
+
+// activate current inactive page table temporarily
+// and run specific function in new context
+public def withBegin(this: InactivePageTable&) {
+  ipt.old_token = getSatp()
+  ipt.new_token = this.token()
+  printSwitch(ipt.old_token, ipt.new_token)
+  // switch to new context
+  if ipt.old_token != ipt.new_token {
+    setSatp(ipt.new_token)
+    runSfence()
+  }
+}
+
+// pair with `withBegin`
+public def withEnd(this: InactivePageTable&) {
+  // switch back to old context
+  printSwitch(ipt.new_token, ipt.old_token)
+  if ipt.old_token != ipt.new_token {
+    setSatp(ipt.old_token)
+    runSfence()
+  }
+}
+
+public def map(this: InactivePageTable var&, addr: USize,
+               target: USize, flags: USize) {
+  var pt: ActivePageTable var& = this.editBegin(); {
+    if pt.getEntryPtr(addr) == null as PageEntry var* {
+      var entry = pt.map(addr, target)
+      entry.setExecute((flags & PTE_FLAG_X) != 0 as USize)
+      entry.setWritable((flags & PTE_FLAG_W) != 0 as USize)
+    }
+  }; this.editEnd()
+}
+
+public def unmap(this: InactivePageTable var&, addr: USize) {
+  var pt: ActivePageTable var& = this.editBegin(); {
+    pt.unmap(addr)
+  }; this.editEnd()
+}
+
+// map kernel address space to current page table
+public def mapKernel(this: InactivePageTable var&) {
+  let table = ROOT_PAGE_TABLE
+  // TODO: make the length enough
+  var entrys: PageTableEntry[16], i: i32
+  let entry_start = _geeos_start as USize >> 22 as USize
+  let entry_end = (_geeos_end as USize >> 22 as USize) + 1 as USize
+  let entry_count = entry_end - entry_start
+  // record PTE info in current page table
+  i = 0
+  while i as USize < entry_count {
+    entrys[i] = table.getPte(entry_start + i as USize)
+    i += 1
+  }
+  var pt: ActivePageTable var& = this.editBegin(); {
+    // NOTE: `table` now refers to new page table
+    i = 0
+    while i as USize < entry_count {
+      table.getPte(entry_start + i as USize) = entrys[i]
+      i += 1
+    }
+  }; this.editEnd()
+}
+
+// activate current page table
+public def activate(this: InactivePageTable&) {
+  let old_token = getSatp()
+  let new_token = this.token()
+  printSwitch(old_token, new_token)
+  if old_token != new_token {
+    setSatp(new_token)
+    runSfence()
+  }
+}
+
+// iterator for pages
+public struct PageRange {
+  start: USize,
+  end: USize,
+}
+
+public def newPageRange(start_addr: USize, end_addr: USize): PageRange {
+  [PageRange] {
+    start_addr / PAGE_SIZE as USize,
+    (end_addr - 1 as USize) / (PAGE_SIZE + 1) as USize,
+  }
+}
+
+public def next(this: PageRange var&): USize {
+  let page = this.start << 12 as USize
+  this.start += 1 as USize
+  page
+}
+
+public def last(this: PageRange&): bool {
+  this.start >= this.end
 }
