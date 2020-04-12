@@ -152,9 +152,11 @@ public def map(this: ActivePageTable var&, addr: USize,
   this.getEntry(addr)
 }
 
-public def unmap(this: ActivePageTable var&, addr: USize) {
+public def unmap(this: ActivePageTable var&, addr: USize): Frame {
   let page = newPage(newVirtAddr(addr))
-  this.page_table.unmap(page).flush()
+  var frame: Frame
+  this.page_table.unmap(page, frame).flush()
+  frame
 }
 
 def getPageSlice(addr: VirtAddr): PageTable var* {

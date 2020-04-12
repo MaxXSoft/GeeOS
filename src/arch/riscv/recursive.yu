@@ -121,9 +121,11 @@ public def mapTo(this: RecursivePageTable var&, page: Page, frame: Frame,
   newMapperFlush(page)
 }
 
-// Removes a mapping from the page table.
+// Removes a mapping from the page table,
+// set `frame` to the frame that used to be mapped.
 // Note that no page tables or pages are deallocated.
-public def unmap(this: RecursivePageTable var&, page: Page): MapperFlush {
+public def unmap(this: RecursivePageTable var&, page: Page,
+                 frame: Frame var&): MapperFlush {
   if this.root_table.getPte(page.getVpn1()).isUnused() {
     panic("unmap - page not mapped")
   }
@@ -133,7 +135,7 @@ public def unmap(this: RecursivePageTable var&, page: Page): MapperFlush {
   if !(p1_entry.getFlags() & PTE_FLAG_V) {
     panic("unmap - page not mapped")
   }
-  let frame = p1_entry.getFrame()
+  frame = p1_entry.getFrame()
   p1_entry.setUnused()
   newMapperFlush(page)
 }
