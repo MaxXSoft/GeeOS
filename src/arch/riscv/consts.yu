@@ -1,7 +1,8 @@
 public import arch.arch
 
 // bytes per page
-inline let PAGE_SIZE  = 4096
+inline let PAGE_SIZE      = (1 << 12)
+inline let MEGAPAGE_SIZE  = (1 << 22)
 
 // count of PTEs per page
 inline let PTE_COUNT  = PAGE_SIZE / 4
