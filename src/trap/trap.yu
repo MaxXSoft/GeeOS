@@ -28,6 +28,7 @@ def handleTimer() {
 def handlePageFault(tf: TrapFrame var&) {
   io <<< "scause  = " <<< tf.scause <<< '\n'
   io <<< "stval   = 0x"; io.printInt(tf.stval, 16); io <<< '\n'
+  io <<< "sepc    = 0x"; io.printInt(tf.sepc, 16); io <<< '\n'
   panic("page fault!")
 }
 
