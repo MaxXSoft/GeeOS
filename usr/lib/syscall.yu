@@ -1,0 +1,23 @@
+// definition of sized type
+public type ISize = i32
+public type USize = u32
+
+// id of system call
+public enum SyscallId {
+  Write = 64,
+  Exit = 93,
+}
+
+// defined in 'syscall.S'
+extern declare syscall: (i32, i32, i32, i32, i32, i32, i32, SyscallId): i32
+
+// put a character to console
+inline def write(c: u8): i32 {
+  syscall(c as i32, 0, 0, 0, 0, 0, 0, SyscallId.Write)
+}
+
+// exit current thread
+inline def exit(code: USize) {
+  syscall(code as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exit)
+  while true {}
+}
