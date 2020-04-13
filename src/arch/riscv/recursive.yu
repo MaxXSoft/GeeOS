@@ -26,16 +26,16 @@ public struct TempMap {
   pt_addr: VirtAddr,
 }
 
-inline def newTempMap(index: USize): TempMap {
+def newTempMap(index: USize): TempMap {
   let va = newVirtAddr(index, index + 1 as USize,
                        (index + 2 as USize) * 4 as USize)
   [TempMap] {
     va.getAddr() as PageTableEntry var*,
-    newVirtAddr(index, index + 1 as USize, 0 as USize),
+    newVirtAddr(index, index + 2 as USize, 0 as USize),
   }
 }
 
-inline def map(this: TempMap var&, frame: Frame): PageTable var* {
+def map(this: TempMap var&, frame: Frame): PageTable var* {
   (*this.entry).set(frame, PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W)
   runSfence(0 as USize, this.pt_addr.getAddr())
   this.pt_addr.getAddr() as PageTable var*
