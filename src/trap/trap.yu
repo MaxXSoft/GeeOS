@@ -3,6 +3,7 @@ public import define.context
 import arch.arch
 import arch.riscv.csr
 import lib.io
+import trap.syscall
 import lib.except
 import proc.thread
 
@@ -22,6 +23,25 @@ def handleTimer() {
   tick()
   // acknowledge soft interrupt
   setSip(getSip() & ~SIE_SSIE)
+}
+
+// handle system call
+def handleSyscall(tf: TrapFrame var&) {
+  tf.sepc += 4 as USize
+  when tf.x[17] {
+    SYS_WRITE {
+      io <<< tf.x[10] as u8
+    }
+    SYS_EXIT {
+      // TODO: remove this log
+      io <<< "exit!\n"
+      exit(tf.x[10])
+    }
+    else {
+      // TODO: remove this log
+      io <<< "unknown user system call!\n"
+    }
+  }
 }
 
 // handle page fault
@@ -44,6 +64,9 @@ extern def handleTrap(tf: TrapFrame var&) {
   when tf.scause {
     TRAP_S_SOFT_INT {
       handleTimer()
+    }
+    TRAP_U_SYSCALL {
+      handleSyscall(tf)
     }
     TRAP_INST_FAULT, TRAP_LOAD_FAULT, TRAP_STORE_FAULT {
       handlePageFault(tf)
