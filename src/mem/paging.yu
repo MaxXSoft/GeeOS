@@ -313,12 +313,12 @@ public struct PageRange {
 public def newPageRange(start_addr: USize, end_addr: USize): PageRange {
   [PageRange] {
     start_addr / PAGE_SIZE as USize,
-    (end_addr - 1 as USize) / (PAGE_SIZE + 1) as USize,
+    (end_addr - 1 as USize) / PAGE_SIZE as USize + 1 as USize,
   }
 }
 
 public def next(this: PageRange var&): USize {
-  let page = this.start << 12 as USize
+  let page = this.start * PAGE_SIZE as USize
   this.start += 1 as USize
   page
 }
