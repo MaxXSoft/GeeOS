@@ -14,7 +14,7 @@ extern declare _bss_end: ()
 extern declare _stack_start: ()
 extern declare _stack_end: ()
 
-// root page table in 'pagetable.S'
+// root page table in 'init.S'
 extern declare _root_table: ()
 
 // definitions about physical memory
