@@ -8,16 +8,14 @@ import mem.consts
 import mem.pm
 
 // set linear mapping of address range
-def mapRange(pt: PageTable var*, begin: USize, end: USize,
-             va: USize, flags: USize) {
-  let from = begin / MEGAPAGE_SIZE as USize
-  let to = end / MEGAPAGE_SIZE as USize
-  let offset = (va - begin) / MEGAPAGE_SIZE as USize
-  var addr = from
-  while addr <= to {
+def mapRange(pt: PageTable var*, begin: USize, end: USize, flags: USize) {
+  let begin = begin / MEGAPAGE_SIZE as USize
+  let end = end / MEGAPAGE_SIZE as USize
+  var addr = begin
+  while addr <= end {
     let pa = newPhysAddr(addr * MEGAPAGE_SIZE as USize)
     let frame = newFrame(pa)
-    pt.getPte(pa.getPpn1() + offset).set(frame, flags)
+    pt.getPte(pa.getPpn1()).set(frame, flags)
     addr += 1 as USize
   }
 }
@@ -26,43 +24,31 @@ def mapRange(pt: PageTable var*, begin: USize, end: USize,
 def initRootTable() {
   let root_table = _root_table as PageTable var*
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
-  let len = _geeos_end as USize - _geeos_start as USize
   // set identity mapping vm(KERNEL_BASE) -> pm(KERNEL_BASE)
-  root_table.mapRange(KERNEL_BASE as USize, KERNEL_BASE as USize + len,
-                      KERNEL_BASE as USize, flags | PTE_FLAG_X)
-  // set linear mapping vm(KERNEL_VM_BASE) -> pm(KERNEL_BASE)
-  root_table.mapRange(KERNEL_BASE as USize, KERNEL_BASE as USize + len,
-                      KERNEL_VM_BASE as USize, flags | PTE_FLAG_X)
+  root_table.mapRange(KERNEL_BASE as USize, PHY_STOP as USize,
+                      flags | PTE_FLAG_X)
   // set identity mapping vm(UART_ADDR) -> pm(UART_ADDR)
-  root_table.mapRange(UART_ADDR as USize, UART_END as USize,
-                      UART_ADDR as USize, flags)
+  root_table.mapRange(UART_ADDR as USize, UART_END as USize, flags)
   // set recursive mapping
   let root_frame = newFrame(newPhysAddr(_root_table as USize))
   root_table.setRecursive(RECURSIVE_INDEX, root_frame)
-  // switch to higher address space
+  // activate root page table
   setSatp(root_frame.getPpn() | SATP_SV32)
   runSfence()
 }
 
 // remapping kernel address space
 def remapKernel() {
-  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as ISize
   var mset = newMemSet()
-  let linear = newLinearHandler(offset)
+  let linear = newLinearHandler(0 as ISize)
   let handler = &linear as MemoryHandler*
   mset.push(_text_start as USize, _text_end as USize,
             newMemAttr().setExecute().setReadonly(), handler)
   mset.push(_rodata_start as USize, _rodata_end as USize,
             newMemAttr().setReadonly(), handler)
-  mset.push(_data_start as USize, _data_end as USize,
-            newMemAttr(), handler)
-  mset.push(_bss_start as USize, _bss_end as USize,
-            newMemAttr(), handler)
-  mset.push(_stack_start as USize, _stack_end as USize,
+  mset.push(_data_start as USize, PHY_STOP as USize,
             newMemAttr(), handler)
   mset.push(UART_ADDR as USize, UART_END as USize,
-            newMemAttr(), handler)
-  mset.push(CLINT_ADDR as USize, CLINT_END as USize,
             newMemAttr(), handler)
   mset.activate()
 }
@@ -74,6 +60,6 @@ public def initMem() {
   initPhyMem()
   // initialize page table
   initRootTable()
-  // // remap kernel
-  // remapKernel()
+  // remap kernel
+  remapKernel()
 }
