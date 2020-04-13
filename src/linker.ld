@@ -29,7 +29,7 @@ SECTIONS
   .bss : {
     _bss_start = .;
     *(.bss)
-    *(.bss*)
+    *(.sbss*)
     _bss_end = .;
   }
   _stack_start = .;
