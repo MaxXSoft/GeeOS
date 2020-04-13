@@ -20,21 +20,24 @@ def mapRange(pt: PageTable var*, begin: USize, end: USize, flags: USize) {
   }
 }
 
-// initialize root page table for kernel
-def initRootTable() {
-  let root_table = _root_table as PageTable var*
+// initialize temporary root page table for kernel
+// returns temporary allocated root page table
+def initTempTable(): PageTable var* {
+  let root_table = allocPhyMem() as PageTable var*
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
+  root_table.zero()
   // set identity mapping vm(KERNEL_BASE) -> pm(KERNEL_BASE)
   root_table.mapRange(KERNEL_BASE as USize, PHY_STOP as USize,
                       flags | PTE_FLAG_X)
   // set identity mapping vm(UART_ADDR) -> pm(UART_ADDR)
   root_table.mapRange(UART_ADDR as USize, UART_END as USize, flags)
   // set recursive mapping
-  let root_frame = newFrame(newPhysAddr(_root_table as USize))
+  let root_frame = newFrame(newPhysAddr(root_table as USize))
   root_table.setRecursive(RECURSIVE_INDEX, root_frame)
   // activate root page table
   setSatp(root_frame.getPpn() | SATP_SV32)
   runSfence()
+  root_table
 }
 
 // remapping kernel address space
@@ -58,8 +61,10 @@ public def initMem() {
   setSstatus(getSstatus() | SSTATUS_SUM)
   // initialize phyical memory
   initPhyMem()
-  // initialize page table
-  initRootTable()
+  // initialize temporary page table
+  let temp_table = initTempTable()
   // remap kernel
   remapKernel()
+  // free temporary page table
+  freePhyMem(temp_table as u8 var*)
 }
