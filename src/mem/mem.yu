@@ -7,20 +7,18 @@ import mem.mset
 import mem.consts
 import mem.pm
 
-// defined in 'pagetable.S'
-extern declare switchToVm: (USize)
-
 // set linear mapping of address range
-def mapRange(pt: PageTable var*, begin: i32, end: i32,
-             va: i32, flags: USize) {
-  let begin = begin / MEGAPAGE_SIZE, end = end / MEGAPAGE_SIZE
-  let offset = (va - begin) / MEGAPAGE_SIZE
-  var addr = begin
-  while addr < end + 1 {
-    let pa = newPhysAddr((addr * MEGAPAGE_SIZE) as USize)
+def mapRange(pt: PageTable var*, begin: USize, end: USize,
+             va: USize, flags: USize) {
+  let from = begin / MEGAPAGE_SIZE as USize
+  let to = end / MEGAPAGE_SIZE as USize
+  let offset = (va - begin) / MEGAPAGE_SIZE as USize
+  var addr = from
+  while addr <= to {
+    let pa = newPhysAddr(addr * MEGAPAGE_SIZE as USize)
     let frame = newFrame(pa)
-    pt.getPte(pa.getPpn1() + offset as USize).set(frame, flags)
-    addr += 1
+    pt.getPte(pa.getPpn1() + offset).set(frame, flags)
+    addr += 1 as USize
   }
 }
 
@@ -28,21 +26,22 @@ def mapRange(pt: PageTable var*, begin: i32, end: i32,
 def initRootTable() {
   let root_table = _root_table as PageTable var*
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
-  let kernel_len = _geeos_end as i32 - _geeos_start as i32
+  let len = _geeos_end as USize - _geeos_start as USize
   // set identity mapping vm(KERNEL_BASE) -> pm(KERNEL_BASE)
-  root_table.mapRange(KERNEL_BASE, KERNEL_BASE + kernel_len,
-                      KERNEL_BASE, flags | PTE_FLAG_X)
+  root_table.mapRange(KERNEL_BASE as USize, KERNEL_BASE as USize + len,
+                      KERNEL_BASE as USize, flags | PTE_FLAG_X)
   // set linear mapping vm(KERNEL_VM_BASE) -> pm(KERNEL_BASE)
-  root_table.mapRange(KERNEL_BASE, KERNEL_BASE + kernel_len,
-                      KERNEL_VM_BASE, flags | PTE_FLAG_X)
+  root_table.mapRange(KERNEL_BASE as USize, KERNEL_BASE as USize + len,
+                      KERNEL_VM_BASE as USize, flags | PTE_FLAG_X)
   // set identity mapping vm(UART_ADDR) -> pm(UART_ADDR)
-  root_table.mapRange(UART_ADDR, UART_END, UART_ADDR, flags)
+  root_table.mapRange(UART_ADDR as USize, UART_END as USize,
+                      UART_ADDR as USize, flags)
   // set recursive mapping
   let root_frame = newFrame(newPhysAddr(_root_table as USize))
   root_table.setRecursive(RECURSIVE_INDEX, root_frame)
   // switch to higher address space
-  let token = root_frame.getPpn() | SATP_SV32
-  switchToVm(token)
+  setSatp(root_frame.getPpn() | SATP_SV32)
+  runSfence()
 }
 
 // remapping kernel address space
