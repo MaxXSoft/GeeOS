@@ -20,37 +20,35 @@ YU_BIN := /Users/maxxing/Programming/MyRepo/YuLang/build
 # Yu compiler
 YUFLAGS := -Werror $(YU_OPT_ARG)
 YUFLAGS += -tt riscv32-unknown-elf -tc generic-rv32 -tf +m,+a
-YUC := $(YU_BIN)/yuc $(YUFLAGS)
+export YUC := $(YU_BIN)/yuc $(YUFLAGS)
 
 # C compiler
 CFLAGS := -Wall -Werror -c -static $(C_DEBUG_ARG) $(C_OPT_ARG)
-# TODO: there is no '-mstrict-align' flag in clang
 CFLAGS += -fno-builtin -fno-pic
 CFLAGS += -target riscv32-unknown-elf -march=rv32ima -mabi=ilp32
-CC := $(LLVM_BIN)/clang $(CFLAGS)
+export CC := $(LLVM_BIN)/clang $(CFLAGS)
 
 # LLVM compiler
 LLCFLAGS := $(C_OPT_ARG) -filetype=obj
 LLCFLAGS += -march=riscv32 -mcpu=generic-rv32 -mattr=+m,+a
-LLC := $(LLVM_BIN)/llc $(LLCFLAGS)
+export LLC := $(LLVM_BIN)/llc $(LLCFLAGS)
 
 # linker
-# LDFLAGS := -nostartfiles -nostdlib -nostdinc -melf32lriscv
-LDFLAGS :=
-LD := $(LLVM_BIN)/ld.lld $(LDFLAGS)
+LDFLAGS := -nostdlib -melf32lriscv
+export LD := $(LLVM_BIN)/ld.lld $(LDFLAGS)
 
 # objcopy
 OBJCFLAGS := -O binary
-OBJC := $(LLVM_BIN)/llvm-objcopy $(OBJCFLAGS)
+export OBJC := $(LLVM_BIN)/llvm-objcopy $(OBJCFLAGS)
 
 # objdump
 OBJDFLAGS := -D
-OBJD := objdump $(OBJDFLAGS)
+export OBJD := objdump $(OBJDFLAGS)
 
 # archiver
 ARFLAGS := ru
-AR := $(LLVM_BIN)/llvm-ar $(ARFLAGS)
+export AR := $(LLVM_BIN)/llvm-ar $(ARFLAGS)
 
 # ranlib
 RANLIBFLAGS :=
-RANLIB := $(LLVM_BIN)/llvm-ranlib $(RANLIBFLAGS)
+export RANLIB := $(LLVM_BIN)/llvm-ranlib $(RANLIBFLAGS)
