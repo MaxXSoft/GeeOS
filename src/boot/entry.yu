@@ -1,6 +1,6 @@
 import arch.arch
 import lib.io
-import boot.elf
+import lib.elf
 import lib.c.string
 
 // print panic message and halt
