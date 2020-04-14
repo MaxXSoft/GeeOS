@@ -6,6 +6,7 @@ import arch.riscv.csr
 import mem.mset
 import mem.consts
 import mem.pm
+import mem.heap
 
 // set linear mapping of address range
 def mapRange(pt: PageTable var*, begin: USize, end: USize, flags: USize) {
@@ -43,7 +44,7 @@ def initTempTable(): PageTable var* {
 // remapping kernel address space
 def remapKernel() {
   var mset = newMemSet()
-  let linear = newLinearHandler(0 as ISize)
+  let linear = newLinearHandler((KERNEL_VM_BASE - KERNEL_BASE) as ISize)
   let handler = &linear as MemoryHandler*
   mset.push(_text_start as USize, _text_end as USize,
             newMemAttr().setExecute().setReadonly(), handler)
@@ -61,6 +62,8 @@ public def initMem() {
   setSstatus(getSstatus() | SSTATUS_SUM)
   // initialize phyical memory
   initPhyMem()
+  // initialize heap memory
+  initHeapMem()
   // initialize temporary page table
   let temp_table = initTempTable()
   // remap kernel
