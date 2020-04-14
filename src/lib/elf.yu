@@ -1,17 +1,15 @@
 // magic number of ELF
-inline let ELF_MAGIC  = 0x464c457f as u32
-
-// e_type definitions
-inline let ET_NONE    = 0 as u16
-inline let ET_REL     = 1 as u16      // Relocatable file
-inline let ET_EXEC    = 2 as u16      // Executable
-inline let ET_DYN     = 3 as u16      // Shared object file
-inline let ET_CORE    = 4 as u16      // Core file
+inline let ELF_MAGIC      = 0x464c457f as u32
 
 // e_machine definitions
-inline let EM_386     = 0x03 as u16   // Intel x86
-inline let EM_MIPS    = 0x08 as u16   // MIPS
-inline let EM_RISCV   = 0xf3 as u16   // RISC-V
+inline let ELF_EM_386     = 0x03 as u16   // Intel x86
+inline let ELF_EM_MIPS    = 0x08 as u16   // MIPS
+inline let ELF_EM_RISCV   = 0xf3 as u16   // RISC-V
+
+// p_flags definitions
+inline let ELF_PF_EXEC    = (1 << 0) as u32
+inline let ELF_PF_WRITE   = (1 << 1) as u32
+inline let ELF_PF_READ    = (1 << 2) as u32
 
 // ELF header
 public struct Elf32Ehdr {
@@ -41,4 +39,128 @@ public struct Elf32Phdr {
   p_memsz: u32,       // Bytes of segment in memory
   p_flags: u32,
   p_align: u32,
+}
+
+// ELF header type
+public enum ElfEtype: u16 {
+  None, Relocatable, Executable, SharedObj, Core,
+}
+
+// ELF program header type
+public enum ElfPtype: u32 {
+  Load = 1 as u32,
+}
+
+// check if current header is a valid RISC-V ELF file header
+inline def isValid(this: Elf32Ehdr*): bool {
+  (*this).e_ident[0] == ELF_MAGIC && (*this).e_machine == ELF_EM_RISCV
+}
+
+// get type of ELF file
+inline def getType(this: Elf32Ehdr*): ElfEtype {
+  (*this).e_type as ElfEtype
+}
+
+// get entry of ELF file
+inline def getEntry(this: Elf32Ehdr*): u32 {
+  (*this).e_entry
+}
+
+// get address of first program header
+inline def getPhdr(this: Elf32Ehdr*): Elf32Phdr* {
+  (this as u32 + (*this).e_phoff) as Elf32Phdr*
+}
+
+// get address of last program header
+inline def getLastPhdr(this: Elf32Ehdr*): Elf32Phdr* {
+  let phdr = this.getPhdr()
+  (phdr as u32 + ((*this).e_phentsize *
+                  (*this).e_phnum) as u32) as Elf32Phdr*
+}
+
+// get type of current program header
+inline def getType(this: Elf32Phdr*): ElfPtype {
+  (*this).p_type as ElfPtype
+}
+
+// get offset of current program header
+inline def getOffset(this: Elf32Phdr*): u32 {
+  (*this).p_offset
+}
+
+// get virtual address of current program header
+inline def getVaddr(this: Elf32Phdr*): u32 {
+  (*this).p_vaddr
+}
+
+// get physical address of current program header
+inline def getPaddr(this: Elf32Phdr*): u32 {
+  (*this).p_paddr
+}
+
+// get file size of current program header
+inline def getFileSize(this: Elf32Phdr*): u32 {
+  (*this).p_filesz
+}
+
+// get memory size of current program header
+inline def getMemSize(this: Elf32Phdr*): u32 {
+  (*this).p_memsz
+}
+
+// check if current program header is executable
+inline def isExecute(this: Elf32Phdr*): bool {
+  ((*this).p_flags & ELF_PF_EXEC) != 0 as u32
+}
+
+// check if current program header is writable
+inline def isWrite(this: Elf32Phdr*): bool {
+  ((*this).p_flags & ELF_PF_WRITE) != 0 as u32
+}
+
+// check if current program header is readable
+inline def isRead(this: Elf32Phdr*): bool {
+  ((*this).p_flags & ELF_PF_READ) != 0 as u32
+}
+
+// ELF file reader
+public struct ElfFile {
+  ehdr: Elf32Ehdr*,
+}
+
+// iterator for ELF program headers
+public struct ElfPhdrIter {
+  cur: Elf32Phdr*,
+  end: Elf32Phdr*,
+}
+
+inline def newElfFile(data: u8*): ElfFile {
+  [ElfFile] {data as Elf32Ehdr*}
+}
+
+// get ELF header
+inline def getEhdr(this: ElfFile&): Elf32Ehdr* {
+  this.ehdr
+}
+
+// get program header
+inline def getPhdr(this: ElfFile&): Elf32Phdr* {
+  this.ehdr.getPhdr()
+}
+
+// get program header iter
+inline def getPhdrIter(this: ElfFile&): ElfPhdrIter {
+  [ElfPhdrIter] {this.getPhdr(), this.ehdr.getLastPhdr()}
+}
+
+// iterator method 'next'
+inline def next(this: ElfPhdrIter var&): Elf32Phdr* {
+  let cur = this.cur
+  this.cur += 1
+  cur
+}
+
+// iterator method 'last'
+inline def last(this: ElfPhdrIter&): bool {
+  this.cur >= this.end
 }
