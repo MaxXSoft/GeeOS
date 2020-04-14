@@ -12,5 +12,5 @@ public def main() {
   io <<< "initializing threads...\n"
   initThread()
   io <<< "done!\n\n"
-  while true {}
+  runCpu()
 }
