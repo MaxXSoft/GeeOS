@@ -191,8 +191,7 @@ public struct InactivePageTable {
 
 // TODO: remove this log
 def printSwitch(old_token: USize, new_token: USize) {
-  io <<< "switch table "; io.printInt(old_token, 16)
-  io <<< " -> "; io.printInt(new_token, 16); io <<< '\n'
+  io <<< "switch table " <<$ old_token <<< " -> " <<$ new_token <<< '\n'
 }
 
 public def newInactivePageTable(): InactivePageTable {

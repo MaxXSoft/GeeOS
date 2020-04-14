@@ -47,8 +47,8 @@ def handleSyscall(tf: TrapFrame var&) {
 // handle page fault
 def handlePageFault(tf: TrapFrame var&) {
   io <<< "scause  = " <<< tf.scause <<< '\n'
-  io <<< "stval   = 0x"; io.printInt(tf.stval, 16); io <<< '\n'
-  io <<< "sepc    = 0x"; io.printInt(tf.sepc, 16); io <<< '\n'
+  io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
+  io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
   panic("page fault!")
 }
 
@@ -72,10 +72,10 @@ extern def handleTrap(tf: TrapFrame var&) {
       handlePageFault(tf)
     }
     else {
-      io <<< "sstatus = 0x"; io.printInt(tf.sstatus, 16); io <<< '\n'
-      io <<< "sepc    = 0x"; io.printInt(tf.sepc, 16); io <<< '\n'
+      io <<< "sstatus = 0x" <<$ tf.sstatus <<< '\n'
+      io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
       io <<< "scause  = " <<< tf.scause <<< '\n'
-      io <<< "stval   = 0x"; io.printInt(tf.stval, 16); io <<< '\n'
+      io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
       panic("uexpected trap!")
     }
   }
