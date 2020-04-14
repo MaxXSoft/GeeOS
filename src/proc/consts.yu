@@ -1,0 +1,4 @@
+// some constants about process managing
+
+// maximum number of thread
+inline let MAX_THREAD_COUNT = 64
