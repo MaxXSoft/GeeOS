@@ -23,12 +23,12 @@ SUB_MAKE := $(SRC_DIR) $(USR_DIR)
 
 
 .SILENT:
-.PHONY: all clean libgee boot kernel user $(SUB_MAKE)
+.PHONY: all clean libgee boot kernel libgrt user $(SUB_MAKE)
 
-all: libgee boot kernel user
+all: libgee boot kernel libgrt user
 
 clean:
-	echo "cleaning..."
+	$(info cleaning...)
 	-rm -rf $(OBJ_DIR)
 	-$(MAKE) -C $(SRC_DIR) $@
 	-$(MAKE) -C $(USR_DIR) $@
@@ -39,10 +39,12 @@ boot: $(BUILD_DIR) $(SRC_DIR)
 
 kernel: $(BUILD_DIR) $(SRC_DIR)
 
+libgrt: $(BUILD_DIR) $(USR_DIR)
+
 user: $(BUILD_DIR) $(USR_DIR)
 
 $(SUB_MAKE):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 $(BUILD_DIR):
-	mkdir $(BUILD_DIR)
+	mkdir $@
