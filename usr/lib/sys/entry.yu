@@ -1,0 +1,9 @@
+import lib.sys.syscall
+
+// user defined main function
+extern declare main: (i32, u8**): i32
+
+// entry of user threads
+extern def _start(argc: i32, argv: u8**) {
+  exit(main(argc, argv) as USize)
+}
