@@ -1,4 +1,4 @@
-import lib.syscall
+import lib.sys.syscall
 
 // IO object
 public struct IO {}
