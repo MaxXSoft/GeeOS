@@ -56,7 +56,6 @@ def handlePageFault(tf: TrapFrame var&) {
 public def initTrap() {
   setSscratch(0 as USize)
   setStvec(_handleTrap as USize)
-  setIntrOn()
 }
 
 // trap handler
