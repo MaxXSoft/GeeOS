@@ -2,13 +2,14 @@ public import arch.arch
 
 import proc.processor
 import proc.structs
+import proc.consts
 import lib.io
-
-// maximum time slice of round robin scheduler
-let TIME_SLICE  = 1 as USize
+import mem.heap
+import arch.riscv.csr
 
 // current processor
-var cpu: Processor
+// allocated on heap
+var cpu: Processor var*
 
 def helloThread(arg: USize) {
   io <<< "hello thread\n"
@@ -30,6 +31,7 @@ def helloThread(arg: USize) {
 
 public def initThread() {
   // initialize cpu
+  cpu = allocHeapMem(sizeof Processor) as Processor var*
   cpu.init(TIME_SLICE)
   // create threads
   cpu.addThread(newKernelThread(helloThread, 0 as USize))
@@ -37,7 +39,11 @@ public def initThread() {
   cpu.addThread(newKernelThread(helloThread, 2 as USize))
   cpu.addThread(newKernelThread(helloThread, 3 as USize))
   cpu.addThread(newKernelThread(helloThread, 4 as USize))
-  // run scheduler
+}
+
+// turn interrupt on and run scheduler on current CPU
+public def runCpu() {
+  setIntrOn()
   cpu.run()
 }
 
