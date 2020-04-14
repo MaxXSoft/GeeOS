@@ -7,8 +7,6 @@ all targets must define the following constants:
 - MEM_SIZE_MIB: i32:  physical memory size (MiB)
 - UART_ADDR: i32:     address of UART device
 - UART_END: i32:      end address of UART device
-- CLINT_ADDR: i32:    address of CLINT
-- CLINT_END: i32:     end address of CLINT
 - CLINT_MTIME: i32:   address of CLINT's 'mtime' register
 - CLINT_MCMP: i32:    address of CLINT's 'mtimecmp' register
 
