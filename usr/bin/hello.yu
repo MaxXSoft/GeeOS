@@ -1,0 +1,6 @@
+import io
+
+extern def main(argc: i32, argv: u8**): i32 {
+  io <<< "hello world!\n"
+  0
+}
