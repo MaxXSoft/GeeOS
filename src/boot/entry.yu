@@ -1,14 +1,8 @@
 import arch.arch
 import lib.io
+import lib.except
 import lib.elf
 import lib.c.string
-
-// print panic message and halt
-def panic(str: u8*) {
-  io <<< str <<< '\n'
-  io <<< "========== Bootloader PANIC ==========\n"
-  halt(1)
-}
 
 // boot from specific address
 extern declare jumpToAddr: (u8*)
@@ -19,27 +13,23 @@ def boot(addr: u8*) {
 
 // load ELF file from flash to memory
 def loadElfFromFlash(): u8* {
-  // check ELF header
-  let ehdr = FLASH_ADDR as Elf32Ehdr*
-  if (*ehdr).e_ident[0] != ELF_MAGIC {
-    panic("ERROR: invalid ELF file")
-  }
-  if (*ehdr).e_machine != EM_RISCV {
-    panic("ERROR: invalid machine type, RISC-V required")
+  // get ELF file from flash
+  let elf = newElfFile(FLASH_ADDR as u8*)
+  let ehdr = elf.getEhdr()
+  if !ehdr.isValid() {
+    panic("invalid ELF file")
   }
   // copy ELF to RAM
   io <<< "loading ELF...\n"
-  var phdr = (FLASH_ADDR as u32 + (*ehdr).e_phoff) as Elf32Phdr*
-  let last_phdr = (phdr as u32 + ((*ehdr).e_phentsize *
-                   (*ehdr).e_phnum) as u32) as Elf32Phdr*
-  let off = (*phdr).p_vaddr - (*phdr).p_paddr
-  while phdr < last_phdr {
-    let dst = (*phdr).p_paddr as u8 var*
-    let src = (FLASH_ADDR as u32 + (*phdr).p_offset) as u8*
-    memcpy(dst, src, (*phdr).p_filesz as USize)
-    phdr += 1
+  for phdr in elf.getPhdrIter() {
+    let dst = phdr.getPaddr() as u8 var*
+    let src = (FLASH_ADDR as u32 + phdr.getOffset()) as u8*
+    memcpy(dst, src, phdr.getFileSize() as USize)
   }
-  ((*ehdr).e_entry - off) as u8*
+  // get address of entry
+  let phdr = elf.getPhdr()
+  let off = phdr.getVaddr() - phdr.getPaddr()
+  (ehdr.getEntry() - off) as u8*
 }
 
 extern def entry() {
@@ -52,9 +42,8 @@ extern def entry() {
 
 extern def handleTrap(mepc: u32, mcause: u32, mtval: u32) {
   // display messsage
-  io <<< "unexpected trap occurred while booting!\n"
   io <<< "  mepc:   0x" <<$ mepc <<< '\n'
   io <<< "  mcause: 0x" <<$ mcause <<< '\n'
   io <<< "  mtval:  0x" <<$ mtval <<< '\n'
-  panic("")
+  panic("unexpected trap occurred while booting!")
 }
