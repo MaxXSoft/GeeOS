@@ -1,10 +1,8 @@
 public import arch.arch
+public import proc.consts
 
 // type of thread id
 public type Tid = USize
-
-// maximum number of thread
-inline let MAX_THREAD_COUNT = 64
 
 // info of each thread
 public struct RoundRobinInfo {
