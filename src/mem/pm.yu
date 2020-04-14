@@ -23,7 +23,7 @@ var phy_mem: PhyMemory
 public def freePhyMem(addr: u8 var*) {
   // check if address is not aligned, or out of range
   if addr as USize % PAGE_SIZE as USize != 0 as USize ||
-     addr < _geeos_end as u8 var* || addr >= PHY_STOP as u8 var* {
+     addr < _geeos_end as u8 var* || addr >= HEAP_BASE as u8 var* {
     panic("freePhyMem")
   }
   // fill with junk to catch dangling refs
@@ -43,7 +43,7 @@ public def initPhyMem() {
   let pa = newPhysAddr(_geeos_end as USize)
   let pa_4k = pa.roundUp()
   var p = pa_4k.getAddr() as u8 var*
-  while p + PAGE_SIZE <= PHY_STOP as u8 var* {
+  while p + PAGE_SIZE <= HEAP_BASE as u8 var* {
     freePhyMem(p)
     p += PAGE_SIZE
   }
