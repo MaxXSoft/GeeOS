@@ -15,4 +15,4 @@ $(OBJ_DIR)/%.o: $(OBJ_DIR)/%.ll
 $(OBJ_DIR)/%.S.o: $(TOP_DIR)/%.S
 	$(info AS  $@)
 	-mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(ASFLAGS) -o $@ $^

@@ -30,6 +30,7 @@ KERNEL_TARGET := $(BUILD_DIR)/geeos.elf
 # compiler flags
 YUCFLAGS := -I $(SRC_DIR)
 CFLAGS := -I$(SRC_DIR)
+ASFLAGS := -I$(BUILD_DIR)
 
 
 .PHONY: all clean libgee boot kernel

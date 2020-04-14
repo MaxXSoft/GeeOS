@@ -41,7 +41,7 @@ $(LIB_TARGET): $(LIB_OBJ)
 	$(RANLIB) $@
 
 $(BIN_TARGET_DIR)/%: $(BIN_OBJ_DIR)/%.yu.o
-	$(info making user binary $(basename $@)...)
+	$(info making user binary "$(notdir $@)"...)
 	$(LD) -L$(BUILD_DIR) -lgrt -o $@ $^
 	$(OBJD) $@ > $@.dump
 

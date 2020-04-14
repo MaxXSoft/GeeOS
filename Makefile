@@ -46,5 +46,7 @@ user: $(BUILD_DIR) $(USR_DIR)
 $(SUB_MAKE):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
+$(SRC_DIR): $(USR_DIR)
+
 $(BUILD_DIR):
 	mkdir $@
