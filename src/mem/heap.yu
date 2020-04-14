@@ -2,7 +2,6 @@ public import arch.arch
 
 import mem.consts
 import sync.spinlock
-import lib.except
 
 // Memory allocator by Kernighan and Ritchie,
 // The C programming Language, 2nd ed.  Section 8.7.
