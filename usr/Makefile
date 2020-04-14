@@ -40,9 +40,9 @@ $(LIB_TARGET): $(LIB_OBJ)
 	$(AR) $@ $^
 	$(RANLIB) $@
 
-$(BIN_TARGET_DIR)/%: $(BIN_OBJ_DIR)/%.yu.o
+$(BIN_TARGET_DIR)/%: $(BIN_OBJ_DIR)/%.yu.o $(LIB_TARGET)
 	$(info making user binary "$(notdir $@)"...)
-	$(LD) -L$(BUILD_DIR) -lgrt -o $@ $^
+	$(LD) -L$(BUILD_DIR) -lgrt -o $@ $<
 	$(OBJD) $@ > $@.dump
 
 include $(TOP_DIR)/rules.mk
