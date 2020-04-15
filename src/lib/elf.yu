@@ -148,6 +148,11 @@ inline def getPhdr(this: ElfFile&): Elf32Phdr* {
   this.ehdr.getPhdr()
 }
 
+// get data of specific program header
+inline def getPhdrData(this: ElfFile&, phdr: Elf32Phdr*): u8* {
+  this.ehdr as u8* + phdr.getOffset()
+}
+
 // get program header iter
 inline def getPhdrIter(this: ElfFile&): ElfPhdrIter {
   [ElfPhdrIter] {this.getPhdr(), this.ehdr.getLastPhdr()}
