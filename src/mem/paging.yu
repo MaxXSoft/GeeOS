@@ -276,7 +276,7 @@ public def mapKernel(this: InactivePageTable var&) {
   let entry_start = _geeos_start as USize >> 22 as USize
   let entry_end = (_geeos_end as USize >> 22 as USize) + 1 as USize
   let entry_count = entry_end - entry_start
-  // record PTE info in current page table
+  // record PTE info in root page table
   i = 0
   while i as USize < entry_count {
     entrys[i] = table.getPte(entry_start + i as USize)
