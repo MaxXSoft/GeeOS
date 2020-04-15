@@ -12,5 +12,3 @@ _start:
   .globl    _user_img_start
 _user_img_start:
   .incbin   "usr/hello"
-  .globl    _user_img_end
-_user_img_end:
