@@ -23,7 +23,7 @@ def loadElfFromFlash(): u8* {
   io <<< "loading ELF...\n"
   for phdr in elf.getPhdrIter() {
     let dst = phdr.getPaddr() as u8 var*
-    let src = (FLASH_ADDR as u32 + phdr.getOffset()) as u8*
+    let src = elf.getPhdrData(phdr)
     memcpy(dst, src, phdr.getFileSize() as USize)
   }
   // get address of entry
