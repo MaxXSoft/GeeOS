@@ -4,20 +4,11 @@ public import mem.attr
 public import mem.handler
 public import mem.area
 
+import mem.consts
 import lib.except
 
 public struct MemorySet {
   page_table: InactivePageTable,
-}
-
-public def newMemorySet(): MemorySet {
-  [MemorySet] {newInactivePageTable()}
-}
-
-public def newKernelMemorySet(): MemorySet {
-  var table = newInactivePageTable()
-  table.mapKernel()
-  [MemorySet] {table}
 }
 
 public def push(this: MemorySet var&, start: USize, end: USize,
@@ -27,6 +18,25 @@ public def push(this: MemorySet var&, start: USize, end: USize,
   var pt: ActivePageTable var& = this.page_table.editBegin(); {
     area.map(pt)
   }; this.page_table.editEnd()
+}
+
+def mapKernel(this: MemorySet var&) {
+  let linear = newLinearHandler((KERNEL_VM_BASE - KERNEL_BASE) as ISize)
+  let handler = &linear as MemoryHandler*
+  this.push(_text_start as USize, _text_end as USize,
+            newMemoryAttr().setExecute().setReadonly(), handler)
+  this.push(_rodata_start as USize, _rodata_end as USize,
+            newMemoryAttr().setReadonly(), handler)
+  this.push(_data_start as USize, PHY_STOP as USize,
+            newMemoryAttr(), handler)
+  this.push(UART_ADDR as USize, UART_END as USize,
+            newMemoryAttr(), handler)
+}
+
+public def newMemorySet(): MemorySet {
+  var ms = [MemorySet] {newInactivePageTable()}
+  ms.mapKernel()
+  ms
 }
 
 public def activate(this: MemorySet&) {
