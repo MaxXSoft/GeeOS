@@ -87,10 +87,7 @@ public struct Thread {
 def toAttr(this: Elf32Phdr*): MemoryAttr {
   var attr = newMemoryAttr().setUser()
   if this.isExecute() {
-    attr.setExecute()
-  }
-  if !this.isWrite() {
-    attr.setReadonly()
+    attr = attr.setExecute()
   }
   attr
 }
