@@ -91,3 +91,14 @@ public def <<$(this: IO&, int: u32): IO& {
   this.printInt(int, 16)
   this
 }
+
+// print boolean
+public def <<<(this: IO&, b: bool): IO& {
+  if b {
+    this.printString("true")
+  }
+  else {
+    this.printString("false")
+  }
+  this
+}
