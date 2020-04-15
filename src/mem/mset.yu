@@ -10,11 +10,11 @@ public struct MemorySet {
   page_table: InactivePageTable,
 }
 
-public def newMemSet(): MemorySet {
+public def newMemorySet(): MemorySet {
   [MemorySet] {newInactivePageTable()}
 }
 
-public def newKernelMemSet(): MemorySet {
+public def newKernelMemorySet(): MemorySet {
   var table = newInactivePageTable()
   table.mapKernel()
   [MemorySet] {table}

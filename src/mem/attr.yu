@@ -10,7 +10,7 @@ public struct MemoryAttr {
   execute: bool,
 }
 
-public def newMemAttr(): MemoryAttr {
+public def newMemoryAttr(): MemoryAttr {
   [MemoryAttr] {false, false, false}
 }
 
