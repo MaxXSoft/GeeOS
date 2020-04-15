@@ -44,16 +44,6 @@ def initTempTable(): PageTable var* {
 // remapping kernel address space
 def remapKernel() {
   var mset = newMemorySet()
-  let linear = newLinearHandler((KERNEL_VM_BASE - KERNEL_BASE) as ISize)
-  let handler = &linear as MemoryHandler*
-  mset.push(_text_start as USize, _text_end as USize,
-            newMemoryAttr().setExecute().setReadonly(), handler)
-  mset.push(_rodata_start as USize, _rodata_end as USize,
-            newMemoryAttr().setReadonly(), handler)
-  mset.push(_data_start as USize, PHY_STOP as USize,
-            newMemoryAttr(), handler)
-  mset.push(UART_ADDR as USize, UART_END as USize,
-            newMemoryAttr(), handler)
   mset.activate()
 }
 

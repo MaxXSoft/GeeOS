@@ -98,7 +98,7 @@ def toAttr(this: Elf32Phdr*): MemoryAttr {
 // create memory set by ELF file
 def makeMemorySet(this: ElfFile&): MemorySet {
   // create a new memory set with kernel mapping
-  var ms = newKernelMemorySet()
+  var ms = newMemorySet()
   // traverse program headers in ELF file
   for ph in this.getPhdrIter() {
     if ph.getType() != ElfPtype.Load {
