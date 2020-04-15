@@ -68,6 +68,6 @@ def unmapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
   freePhyMem(pa.getAddr() as u8 var*)
 }
 
-def newFrameHandler(): FrameHandler {
+public def newFrameHandler(): FrameHandler {
   [FrameHandler] {[MemoryHandler] {mapFrame, unmapFrame}}
 }
