@@ -1,10 +1,18 @@
 public import define.context
+public import mem.mset
 
 import arch.arch
 import arch.riscv.consts
 import arch.riscv.csr
 import mem.pm
+import mem.heap
+import mem.attr
+import mem.handler
 import lib.except
+import lib.elf
+import lib.c.string
+import lib.io
+import proc.consts
 
 // size of kernel stack
 // must be page size because stack is allocated by frame allocator
@@ -31,33 +39,147 @@ public def del(this: KernelStack var&) {
 }
 
 // get top of kernel stack
-public def getTop(this: KernelStack&): u8 var* {
-  this.addr + STACK_SIZE
+public def getTop(this: KernelStack&): USize {
+  this.addr as USize + STACK_SIZE
+}
+
+// definition of process
+public struct Process {
+  vm: MemorySet,
+  thread_count: i32,
+}
+
+public def newProcess(vm: MemorySet): Process var* {
+  let proc = allocHeapMem(sizeof Process) as Process var*
+  *proc = [Process] {vm, 0}
+  proc
+}
+
+public def del(this: Process var*) {
+  // TODO: release all allocated pages
+  freeHeapMem(this as u8 var*)
+}
+
+public def incCounter(this: Process var*): Process var* {
+  (*this).thread_count += 1
+  this
+}
+
+public def decCounter(this: Process var*): Process var* {
+  (*this).thread_count -= 1
+  if (*this).thread_count < 0 {
+    panic("decCounter")
+  }
+  else if (*this).thread_count == 0 {
+    this.del()
+  }
+  this
 }
 
 // definition of thread
 public struct Thread {
   context: Context,
   kstack: KernelStack,
+  proc: Process var*,
+}
+
+// create memory attribute by ELF program header
+def toAttr(this: Elf32Phdr*): MemoryAttr {
+  var attr = newMemoryAttr().setUser()
+  if this.isExecute() {
+    attr.setExecute()
+  }
+  if !this.isWrite() {
+    attr.setReadonly()
+  }
+  attr
+}
+
+// create memory set by ELF file
+def makeMemorySet(this: ElfFile&): MemorySet {
+  // create a new memory set with kernel mapping
+  var ms = newKernelMemorySet()
+  // traverse program headers in ELF file
+  for ph in this.getPhdrIter() {
+    if ph.getType() != ElfPtype.Load {
+      continue
+    }
+    // get address info
+    let virt_addr = ph.getVaddr(), mem_size = ph.getMemSize()
+    // get data of program header
+    let data = this.getPhdrData(ph), data_len = ph.getFileSize()
+    // get slice of target virtual address
+    let target = {
+      let frame_handler = newFrameHandler()
+      let handler = &frame_handler as MemoryHandler*
+      ms.push(virt_addr, virt_addr + mem_size, ph.toAttr(), handler)
+      virt_addr as u8 var*
+    }
+    // copy data to page
+    ms.withBegin(); {
+      memcpy(target, data, data_len as USize)
+      memset(target + data_len, 0, (mem_size - data_len) as USize)
+    }; ms.withEnd()
+  }
+  ms
 }
 
 // create new idle thread
 public def newIdleThread(): Thread {
-  [Thread] {newNullContext(), newKernelStack()}
+  [Thread] {newNullContext(), newKernelStack(), null as Process var*}
 }
 
 // create new kernel thread
-public def newKernelThread(entry: ThreadEntry, arg: USize): Thread {
+public def newKernelThread(entry: USize): Thread {
   let kstack = newKernelStack()
   [Thread] {
-    newKernelContext(entry, arg, kstack.getTop(), getSatp()),
+    newKernelContext(entry, kstack.getTop(), getSatp()),
     kstack,
+    null as Process var*,
+  }
+}
+
+// create new user thread
+public def newUserThread(data: u8*): Thread {
+  let elf = newElfFile(data), ehdr = elf.getEhdr()
+  // TODO: do not panic in kernel
+  assert(ehdr.isValid(), "failed to read ELF")
+  // check ELF type
+  assert(ehdr.getType() == ElfEtype.Executable, "unsupported ELF type")
+  // get entry point
+  let entry = ehdr.getEntry()
+  // TODO: remove this log
+  io <<< "entry: " <<$ entry <<< '\n'
+  // create page table & user stack
+  var ms = elf.makeMemorySet()
+  let ustack_top = {
+    let ustack_bottom = USER_STACK_OFFSET as USize
+    let ustack_top = (USER_STACK_OFFSET + USER_STACK_SIZE) as USize
+    let frame_handler = newFrameHandler()
+    let handler = &frame_handler as MemoryHandler*
+    ms.push(ustack_bottom, ustack_top, newMemoryAttr().setUser(), handler)
+    ustack_top
+  }
+  // create kernel stack & user thread
+  let kstack = newKernelStack()
+  [Thread] {
+    newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
+    kstack,
+    newProcess(ms).incCounter(),
   }
 }
 
 // release current thread structure
 public def del(this: Thread var&) {
   this.kstack.del()
+  if this.proc != null as Process var* {
+    this.proc.decCounter()
+  }
+}
+
+// append initial arguments for current thread
+public def appendInitArgs(this: Thread&, args: USize[3]) {
+  this.context.appendInitArgs(args)
 }
 
 // switch to target thread
