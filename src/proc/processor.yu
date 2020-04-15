@@ -16,8 +16,6 @@ public struct Processor {
   current_tid: Tid,
   // current thread
   current_thread: Thread var*,
-  // is timer interrupt happened
-  is_tick: bool,
 }
 
 // initialize processor
@@ -25,7 +23,6 @@ public def init(this: Processor var*, max_time: USize) {
   (*this).pool.init(max_time)
   (*this).idle = newIdleThread()
   (*this).current_thread = null as Thread var*
-  (*this).is_tick = false
 }
 
 // add thread to processor
@@ -57,10 +54,7 @@ public def run(this: Processor var*) {
       // enable interrupt
       setIntrOn()
       // wait for next tick
-      while !(*this).is_tick {
-        asm { "wfi" }
-      }
-      (*this).is_tick = false
+      asm { "wfi" }
       // disable interrupt and find next thread
       setIntrOff()
     }
@@ -79,9 +73,6 @@ public def tick(this: Processor var*) {
     (*(*this).current_thread).switchTo((*this).idle)
     // restore 'sstatus'
     setSstatus(sstatus)
-  }
-  else {
-    (*this).is_tick = true
   }
 }
 
