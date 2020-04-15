@@ -32,6 +32,7 @@ switchTo:
   LOAD  sp, 0(a1)
   LOAD  s11, 1*XLENB(sp)
   csrw  satp, s11
+  sfence.vma
   LOAD  ra, 0*XLENB(sp)
   LOAD  s0, 2*XLENB(sp)
   LOAD  s1, 3*XLENB(sp)
@@ -45,8 +46,6 @@ switchTo:
   LOAD  s9, 11*XLENB(sp)
   LOAD  s10, 12*XLENB(sp)
   LOAD  s11, 13*XLENB(sp)
-  mv    a0, s0
-  csrw  sstatus, s1
   addi  sp, sp, (XLENB*14)
 
   STORE zero, 0(a1)
