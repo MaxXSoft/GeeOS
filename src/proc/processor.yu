@@ -3,7 +3,6 @@ public import proc.structs
 
 import arch.arch
 import arch.riscv.csr
-import sync.intr
 import lib.io
 
 // model of processor
@@ -72,9 +71,14 @@ public def run(this: Processor var*) {
 // will be called by timer interrupt handler
 public def tick(this: Processor var*) {
   if (*this).current_thread != null as Thread var* {
-    pushOff()
+    // 'switchTo' does not ensure that 'sstatus' will
+    // not be changed after switching
+    let sstatus = getSstatus()
+    setIntrOff()
+    // switch to idle thread
     (*(*this).current_thread).switchTo((*this).idle)
-    popOff()
+    // restore 'sstatus'
+    setSstatus(sstatus)
   }
   else {
     (*this).is_tick = true
@@ -83,9 +87,11 @@ public def tick(this: Processor var*) {
 
 // exit current thread
 public def exit(this: Processor var*, code: USize) {
+  // turn off interrupt because processor will switch to idle thread
+  setIntrOff()
   // tell pool a thread just exited
   (*this).pool.exit((*this).current_tid, code)
-  // switch to idle thread
+  // switch to idle thread and schedule
   (*(*this).current_thread).switchTo((*this).idle)
   while true {}
 }
