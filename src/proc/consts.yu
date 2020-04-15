@@ -3,7 +3,11 @@ public import arch.arch
 // some constants about process managing
 
 // maximum number of thread
-inline let MAX_THREAD_COUNT = 128
+inline let MAX_THREAD_COUNT   = 128
 
 // maximum time slice of round robin scheduler
-inline let TIME_SLICE       = 1 as USize
+inline let TIME_SLICE         = 1 as USize
+
+// stack of user thread
+inline let USER_STACK_SIZE    = 0x10000
+inline let USER_STACK_OFFSET  = 0x7ffff000 - USER_STACK_SIZE
