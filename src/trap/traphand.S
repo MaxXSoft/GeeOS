@@ -130,6 +130,8 @@ _handleTrap:
   mv    a0, sp
   # call trap handler in 'trap.yu'
   call  handleTrap
+  .globl    _retTrap
+_retTrap:
   RESTORE_ALL
   # return from S-mode
   sret
