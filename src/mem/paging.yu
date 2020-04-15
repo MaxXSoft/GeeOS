@@ -268,30 +268,6 @@ public def unmap(this: InactivePageTable var&, addr: USize) {
   }; this.editEnd()
 }
 
-// map kernel address space to current page table
-public def mapKernel(this: InactivePageTable var&) {
-  let table = ROOT_PAGE_TABLE
-  // TODO: make the length enough
-  var entrys: PageTableEntry[16], i: i32
-  let entry_start = _geeos_start as USize >> 22 as USize
-  let entry_end = (_geeos_end as USize >> 22 as USize) + 1 as USize
-  let entry_count = entry_end - entry_start
-  // record PTE info in root page table
-  i = 0
-  while i as USize < entry_count {
-    entrys[i] = table.getPte(entry_start + i as USize)
-    i += 1
-  }
-  var pt: ActivePageTable var& = this.editBegin(); {
-    // NOTE: `table` now refers to new page table
-    i = 0
-    while i as USize < entry_count {
-      table.getPte(entry_start + i as USize) = entrys[i]
-      i += 1
-    }
-  }; this.editEnd()
-}
-
 // activate current page table
 public def activate(this: InactivePageTable&) {
   let old_token = getSatp()
