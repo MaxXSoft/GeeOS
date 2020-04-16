@@ -77,7 +77,7 @@ public def pop(this: Scheduler var&, tid: Tid var&): bool {
 
 // tell scheduler a tick passed
 // returns true if there is no current thread
-// or current thread run out of time slice
+// or current thread run out of time slices
 public def tick(this: Scheduler var&): bool {
   let tid = this.current
   if tid != 0 as Tid {

@@ -65,14 +65,17 @@ public def run(this: Processor var*) {
 // will be called by timer interrupt handler
 public def tick(this: Processor var*) {
   if (*this).current_thread != null as Thread var* {
-    // 'switchTo' does not ensure that 'sstatus' will
-    // not be changed after switching
-    let sstatus = getSstatus()
-    setIntrOff()
-    // switch to idle thread
-    (*(*this).current_thread).switchTo((*this).idle)
-    // restore 'sstatus'
-    setSstatus(sstatus)
+    // check if current thread runs out of time slices
+    if (*this).pool.tick() {
+      // 'switchTo' does not ensure that 'sstatus' will
+      // not be changed after switching
+      let sstatus = getSstatus()
+      setIntrOff()
+      // switch to idle thread
+      (*(*this).current_thread).switchTo((*this).idle)
+      // restore 'sstatus'
+      setSstatus(sstatus)
+    }
   }
 }
 
