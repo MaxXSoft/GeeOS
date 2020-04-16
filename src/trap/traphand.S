@@ -125,6 +125,7 @@ _to_kernel:
   # S-mode trap handler
   .section  .text
   .globl    _handleTrap
+  .align    2
 _handleTrap:
   SAVE_ALL
   mv    a0, sp
