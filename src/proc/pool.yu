@@ -78,11 +78,15 @@ public def retrieve(this: ThreadPool var&, tid: Tid, thread: Thread*) {
   let info: ThreadInfo var& = this.getInfo(tid)
   if info.present {
     assert(&info.thread == thread, "retrieve")
-    info.status.status = Status.Ready
-    this.scheduler.push(tid)
+    // just schedule running threads
+    // do not care sleeping threads until they are awakened
+    if info.status.status == Status.Running {
+      info.status.status = Status.Ready
+      this.scheduler.push(tid)
+    }
   }
   else {
-    // release resource of thread
+    // thread exited, release resources
     info.status.status = Status.Unused
     info.thread.del()
   }
@@ -103,4 +107,18 @@ public def exit(this: ThreadPool var&, tid: Tid, code: USize) {
   this.scheduler.exit(tid)
   // TODO: remove this log
   io <<< "thread " <<< tid <<< " exited, code: " <<< code <<< '\n'
+}
+
+// mark specific thread as sleeping
+public def sleep(this: ThreadPool var&, tid: Tid) {
+  let info: ThreadInfo var& = this.getInfo(tid)
+  info.status.status = Status.Sleeping
+}
+
+// wake up specific thread
+public def wakeUp(this: ThreadPool var&, tid: Tid) {
+  let info: ThreadInfo var& = this.getInfo(tid)
+  info.status.status = Status.Ready
+  // push to scheduler, wating for next schedule
+  this.scheduler.push(tid)
 }

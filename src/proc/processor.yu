@@ -30,6 +30,16 @@ public def addThread(this: Processor var*, thread: Thread) {
   (*this).pool.add(thread)
 }
 
+// get current thread id
+public def getCurrentTid(this: Processor var*): Tid {
+  (*this).current_tid
+}
+
+// get current thread
+public def getCurrentThread(this: Processor var*): Thread var& {
+  *(*this).current_thread
+}
+
 // run current processor
 public def run(this: Processor var*) {
   // turn off interrupts to prevent sync problem
@@ -88,4 +98,24 @@ public def exit(this: Processor var*, code: USize) {
   // switch to idle thread and schedule
   (*(*this).current_thread).switchTo((*this).idle)
   while true {}
+}
+
+// give up CPU and sleep
+public def yield(this: Processor var*) {
+  if (*this).current_thread != null as Thread var* {
+    // store 'sstatus' and disable interrupt
+    let sstatus = getSstatus()
+    setIntrOff()
+    // tell pool a thread will sleep
+    (*this).pool.sleep((*this).current_tid)
+    // switch to idle thread
+    (*(*this).current_thread).switchTo((*this).idle)
+    // restore 'sstatus'
+    setSstatus(sstatus)
+  }
+}
+
+// wake up current thread
+public def wakeUp(this: Processor var*, tid: Tid) {
+  (*this).pool.wakeUp(tid)
 }
