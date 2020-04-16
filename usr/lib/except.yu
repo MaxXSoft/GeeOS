@@ -1,0 +1,20 @@
+import lib.sys.syscall
+import lib.io
+
+public def panic(str: u8*) {
+  io <<< "===== USER PANIC! =====\n"
+  io <<< "message: " <<< str <<< '\n'
+  exit(1 as USize)
+}
+
+public def abort() {
+  panic("abort")
+}
+
+public def assert(cond: bool, str: u8*) {
+  if !cond { panic(str) }
+}
+
+public def assert(cond: bool) {
+  if !cond { abort() }
+}
