@@ -1,6 +1,9 @@
 public import arch.arch
 
-// some constants about process managing
+// some definitions about process managing
+
+// type alias of thread id
+public type Tid = USize
 
 // maximum number of thread
 inline let MAX_THREAD_COUNT   = 128

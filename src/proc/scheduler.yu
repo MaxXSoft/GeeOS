@@ -1,9 +1,6 @@
 public import arch.arch
 public import proc.consts
 
-// type of thread id
-public type Tid = USize
-
 // info of each thread
 public struct RoundRobinInfo {
   // is current thread valid
