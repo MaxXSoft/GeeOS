@@ -1,0 +1,57 @@
+public import arch.arch
+
+public type QueueAllocator = (USize): u8 var*
+public type QueueDeallocator = (u8 var*)
+
+public struct QueueElem {
+  val: USize,
+  prev: QueueElem var*,
+  next: QueueElem var*,
+}
+
+public struct Queue {
+  alloc: QueueAllocator,
+  dealloc: QueueDeallocator,
+  head: QueueElem var*,
+}
+
+public def newQueue(alloc: QueueAllocator,
+                    dealloc: QueueDeallocator): Queue {
+  let head = alloc(sizeof QueueElem) as QueueElem var*
+  (*head).prev = head
+  (*head).next = head
+  [Queue] {alloc, dealloc, head}
+}
+
+public def del(this: Queue var&) {
+  (this.dealloc)(this.head as u8*)
+}
+
+// check if current queue is empty
+public def empty(this: Queue&): bool {
+  (*this.head).next == this.head
+}
+
+// push element to back of queue
+public def push(this: Queue var&, val: USize) {
+  let elem = (this.alloc)(sizeof QueueElem) as QueueElem var*
+  (*elem).val = val
+  // push into queue
+  let prev = (*this.head).prev
+  (*prev).next = elem
+  (*elem).prev = prev
+  (*this.head).prev = elem
+  (*elem).next = this.head
+}
+
+// pop element from front of queue
+public def pop(this: Queue var&): USize {
+  // get result
+  let elem = (*this.head).next, val = (*elem).val
+  // pop from queue
+  let prev = (*elem).prev, next = (*elem).next
+  (*next).prev = prev
+  (*prev).next = next
+  (this.dealloc)(elem as u8 var*)
+  val
+}
