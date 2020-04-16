@@ -23,10 +23,6 @@ public def newQueue(alloc: QueueAllocator,
   [Queue] {alloc, dealloc, head}
 }
 
-public def del(this: Queue var&) {
-  (this.dealloc)(this.head as u8*)
-}
-
 // check if current queue is empty
 public def empty(this: Queue&): bool {
   (*this.head).next == this.head
@@ -54,4 +50,12 @@ public def pop(this: Queue var&): USize {
   (*prev).next = next
   (this.dealloc)(elem as u8 var*)
   val
+}
+
+// destructor
+public def del(this: Queue var&) {
+  while !this.empty() {
+    this.pop()
+  }
+  (this.dealloc)(this.head as u8*)
 }
