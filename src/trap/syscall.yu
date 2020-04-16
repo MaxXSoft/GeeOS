@@ -1,5 +1,30 @@
 public import arch.arch
+public import define.context
+
+import lib.io
+import proc.thread
 
 // definitions of system call id
-inline let SYS_WRITE  = 64 as USize
-inline let SYS_EXIT   = 93 as USize
+let SYS_WRITE = 64 as USize
+let SYS_EXIT  = 93 as USize
+
+// perform system call
+public def runSyscall(tf: TrapFrame var&): ISize {
+  when tf.x[17] {
+    SYS_WRITE {
+      io <<< tf.x[10] as u8
+      0 as ISize
+    }
+    SYS_EXIT {
+      // TODO: remove this log
+      io <<< "user thread has exited!\n"
+      exit(tf.x[10])
+      0 as ISize
+    }
+    else {
+      // TODO: remove this log
+      io <<< "unknown user system call!\n"
+      -1 as ISize
+    }
+  }
+}

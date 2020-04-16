@@ -15,6 +15,7 @@ var tick = 0 as USize
 
 // handle timer interrupt
 def handleTimer() {
+  // TODO: remove this log
   tick += 1 as USize
   if tick % 100 as USize == 0 as USize {
     io <<< "100 ticks!\n"
@@ -28,20 +29,7 @@ def handleTimer() {
 // handle system call
 def handleSyscall(tf: TrapFrame var&) {
   tf.sepc += 4 as USize
-  when tf.x[17] {
-    SYS_WRITE {
-      io <<< tf.x[10] as u8
-    }
-    SYS_EXIT {
-      // TODO: remove this log
-      io <<< "exit!\n"
-      exit(tf.x[10])
-    }
-    else {
-      // TODO: remove this log
-      io <<< "unknown user system call!\n"
-    }
-  }
+  tf.x[10] = runSyscall(tf) as USize
 }
 
 // handle page fault
