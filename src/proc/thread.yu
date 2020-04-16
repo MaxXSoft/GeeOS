@@ -1,8 +1,8 @@
 public import arch.arch
 public import proc.consts
+public import proc.structs
 
 import proc.processor
-import proc.structs
 import lib.io
 import mem.heap
 import arch.riscv.csr
