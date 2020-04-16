@@ -1,8 +1,8 @@
 public import arch.arch
+public import proc.consts
 
 import proc.processor
 import proc.structs
-import proc.consts
 import lib.io
 import mem.heap
 import arch.riscv.csr
@@ -69,4 +69,20 @@ public def tick() {
 
 public def exit(code: USize) {
   cpu.exit(code)
+}
+
+public def yield() {
+  cpu.yield()
+}
+
+public def wakeUp(tid: Tid) {
+  cpu.wakeUp(tid)
+}
+
+public def getCurrentTid(): Tid {
+  cpu.getCurrentTid()
+}
+
+public def getCurrentThread(): Thread var& {
+  cpu.getCurrentThread()
 }
