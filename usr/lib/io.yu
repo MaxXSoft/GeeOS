@@ -1,5 +1,10 @@
 import lib.sys.syscall
 
+// standard file descriptor
+let FD_STDIN  = 0 as USize
+let FD_STDOUT = 1 as USize
+let FD_STDERR = 2 as USize
+
 // IO object
 public struct IO {}
 public let io: IO = [IO] {}
@@ -7,6 +12,13 @@ public let io: IO = [IO] {}
 // put character
 public def putChar(this: IO&, c: u8) {
   write(c)
+}
+
+// get character
+public def getChar(this: IO&): u8 {
+  var c: u8
+  read(FD_STDIN, &c, 1 as USize)
+  c
 }
 
 // print string
