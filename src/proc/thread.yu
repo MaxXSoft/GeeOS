@@ -4,14 +4,12 @@ public import proc.structs
 
 import proc.processor
 import lib.io
-import mem.heap
 import arch.riscv.csr
 
 // first user program, defined in 'init.S'
 extern declare _user_img_start: ()
 
 // current processor
-// allocated on heap
 var cpu: Processor var*
 
 def helloThread(arg: USize) {
@@ -34,24 +32,15 @@ def helloThread(arg: USize) {
 
 public def initThread() {
   // initialize cpu
-  cpu = allocHeapMem(sizeof Processor) as Processor var*
-  cpu.init(TIME_SLICE)
+  cpu = newProcessor(TIME_SLICE)
   // create kernel threads
-  let hello0 = newKernelThread(helloThread as USize)
-  hello0.appendInitArgs([USize[3]] {0 as USize})
-  let hello1 = newKernelThread(helloThread as USize)
-  hello1.appendInitArgs([USize[3]] {1 as USize})
-  let hello2 = newKernelThread(helloThread as USize)
-  hello2.appendInitArgs([USize[3]] {2 as USize})
-  let hello3 = newKernelThread(helloThread as USize)
-  hello3.appendInitArgs([USize[3]] {3 as USize})
-  let hello4 = newKernelThread(helloThread as USize)
-  hello4.appendInitArgs([USize[3]] {4 as USize})
-  cpu.addThread(hello0)
-  cpu.addThread(hello1)
-  cpu.addThread(hello2)
-  cpu.addThread(hello3)
-  cpu.addThread(hello4)
+  var i = 0
+  while i < 5 {
+    let hello = newKernelThread(helloThread as USize)
+    hello.appendInitArgs([USize[3]] {i as USize})
+    cpu.addThread(hello)
+    i += 1
+  }
   // create user threads
   let user = newUserThread(_user_img_start as u8*)
   cpu.addThread(user)
@@ -83,6 +72,6 @@ public def getCurrentTid(): Tid {
   cpu.getCurrentTid()
 }
 
-public def getCurrentThread(): Thread var& {
+public def getCurrentThread(): Thread var* {
   cpu.getCurrentThread()
 }
