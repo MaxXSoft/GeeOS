@@ -2,6 +2,7 @@ public import proc.pool
 public import proc.structs
 
 import arch.arch
+import mem.heap
 import arch.riscv.csr
 import lib.io
 
@@ -11,22 +12,23 @@ public struct Processor {
   // thread pool
   pool: ThreadPool,
   // idle thread
-  idle: Thread,
+  idle: Thread var*,
   // current thread id
   current_tid: Tid,
   // current thread
   current_thread: Thread var*,
 }
 
-// initialize processor
-public def init(this: Processor var*, max_time: USize) {
-  (*this).pool.init(max_time)
-  (*this).idle = newIdleThread()
-  (*this).current_thread = null as Thread var*
+public def newProcessor(max_time: USize): Processor var* {
+  let proc = allocHeapMem(sizeof Processor) as Processor var*
+  (*proc).pool.init(max_time)
+  (*proc).idle = newIdleThread()
+  (*proc).current_thread = null as Thread var*
+  proc
 }
 
 // add thread to processor
-public def addThread(this: Processor var*, thread: Thread) {
+public def addThread(this: Processor var*, thread: Thread var*) {
   (*this).pool.add(thread)
 }
 
@@ -36,8 +38,8 @@ public def getCurrentTid(this: Processor var*): Tid {
 }
 
 // get current thread
-public def getCurrentThread(this: Processor var*): Thread var& {
-  *(*this).current_thread
+public def getCurrentThread(this: Processor var*): Thread var* {
+  (*this).current_thread
 }
 
 // run current processor
@@ -52,10 +54,8 @@ public def run(this: Processor var*) {
       // update current thread
       (*this).current_thread = thread
       // switch to target thread
-      (*this).idle.switchTo(*thread)
+      (*this).idle.switchTo(thread)
       // thread exited or run out of time slice, switch back to idle
-      // TODO: remove this log
-      io <<< "thread " <<< (*this).current_tid <<< " ran just now\n"
       // retrieve last thread to pool
       (*this).pool.retrieve((*this).current_tid, thread)
       (*this).current_thread = null as Thread var*
@@ -82,7 +82,7 @@ public def tick(this: Processor var*) {
       let sstatus = getSstatus()
       setIntrOff()
       // switch to idle thread
-      (*(*this).current_thread).switchTo((*this).idle)
+      (*this).current_thread.switchTo((*this).idle)
       // restore 'sstatus'
       setSstatus(sstatus)
     }
@@ -96,7 +96,7 @@ public def exit(this: Processor var*, code: USize) {
   // tell pool a thread just exited
   (*this).pool.exit((*this).current_tid, code)
   // switch to idle thread and schedule
-  (*(*this).current_thread).switchTo((*this).idle)
+  (*this).current_thread.switchTo((*this).idle)
   while true {}
 }
 
@@ -109,7 +109,7 @@ public def yield(this: Processor var*) {
     // tell pool a thread will sleep
     (*this).pool.sleep((*this).current_tid)
     // switch to idle thread
-    (*(*this).current_thread).switchTo((*this).idle)
+    (*this).current_thread.switchTo((*this).idle)
     // restore 'sstatus'
     setSstatus(sstatus)
   }
