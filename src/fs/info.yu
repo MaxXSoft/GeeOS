@@ -1,0 +1,77 @@
+public import sync.semaphore
+public import fs.inode
+public import fs.file
+public import fs.consts
+
+// thread's file related information
+public struct FileInfo {
+  sema: Semaphore,
+  // inode of present working directory
+  pwd: INode var*,
+  // array of opend files
+  files: File[FILE_COUNT],
+}
+
+public def init(this: FileInfo var&) {
+  this.sema = newSemaphore("FileInfo", 1)
+  this.pwd = null as INode var*
+  var i = 0
+  while i < FILE_COUNT {
+    this.files[i] = newFile(i)
+    i += 1
+  }
+}
+
+public def del(this: FileInfo var&) {
+  // release semaphore
+  this.sema.del()
+  // release inode
+  if this.pwd != null as INode var* {
+    this.pwd.decRefCounter()
+  }
+  // close opened files
+  var i = 0
+  while i < FILE_COUNT {
+    if this.files[i].isOpened() {
+      this.files[i].close()
+    }
+    i += 1
+  }
+}
+
+public def lock(this: FileInfo var&) {
+  this.sema.wait()
+}
+
+public def unlock(this: FileInfo var&) {
+  this.sema.signal()
+}
+
+public def closeAll(this: FileInfo var&) {
+  // skip `stdin`, `stdout` and `stderr`
+  var i = 3
+  while i < FILE_COUNT {
+    if this.files[i].isOpened() {
+      this.files[i].close()
+    }
+    i += 1
+  }
+}
+
+// copy the content of current file info to another file info
+public def duplicate(this: FileInfo var&, that: FileInfo var&) {
+  // copy inode
+  that.pwd = this.pwd
+  if that.pwd {
+    that.pwd.incRefCounter()
+  }
+  // copy descriptors
+  var i = 0
+  while i < FILE_COUNT {
+    if this.files[i].isOpened() {
+      that.files[i].setInit()
+      this.files[i].duplicate(that.files[i])
+    }
+    i += 1
+  }
+}
