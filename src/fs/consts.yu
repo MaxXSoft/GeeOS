@@ -1,0 +1,4 @@
+// constant definitions about file system
+
+// open files per thread
+inline let FILE_COUNT = 16
