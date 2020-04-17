@@ -1,0 +1,85 @@
+public import arch.arch
+public import fs.inode
+
+import lib.except
+
+// status of a file
+public enum FileStatus {
+  None, Init, Opened, Closed,
+}
+
+// info of a file descriptor
+public struct File {
+  status: FileStatus,
+  readable: bool,
+  writable: bool,
+  fd: i32,
+  pos: USize,
+  node: INode var*,
+  open_count: i32,
+}
+
+// create new file descriptor
+public def newFile(fd: i32): File {
+  [File] {FileStatus.None, false, false, fd}
+}
+
+// free current descriptor
+public def del(this: File var&) {
+  assert(this.open_count == 0 && (this.status == FileStatus.Init ||
+         this.status == FileStatus.Closed), "File.del")
+  if this.status == FileStatus.Closed {
+    this.node.close()
+  }
+  this.status = FileStatus.None
+}
+
+// decrease open counter, free if counter equals to zero
+public def decCounter(this: File var&) {
+  assert(this.open_count > 0 && (this.status == FileStatus.Opened ||
+         this.status == FileStatus.Closed), "File.decCounter")
+  this.open_count -= 1
+  if this.open_count == 0 {
+    this.del()
+  }
+}
+
+public def isOpened(this: File&): bool {
+  this.status == FileStatus.Opened
+}
+
+public def setInit(this: File var&) {
+  this.status = FileStatus.Init
+}
+
+// set current descriptor as opened, increase open counter
+public def open(this: File var&) {
+  assert(this.status == FileStatus.Init && this.node != null as INode var*,
+         "File.open")
+  this.status = FileStatus.Opened
+  this.open_count += 1
+}
+
+// set current descriptor as closed, decrease open counter
+public def close(this: File var&) {
+  assert(this.status == FileStatus.Opened, "File.close")
+  this.status = FileStatus.Closed
+  this.decCounter()
+}
+
+// duplicate current descriptor to another descriptor
+public def duplicate(this: File var&, that: File var&) {
+  assert(this.status == FileStatus.Opened &&
+         that.status == FileStatus.Init, "File.duplicate")
+  // copy properties
+  that.pos = this.pos
+  that.readable = this.readable
+  that.writable = this.writable
+  // copy inode
+  let node = this.node
+  node.incRefCounter()
+  node.incOpenCounter()
+  that.node = node
+  // open file
+  that.open()
+}
