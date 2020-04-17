@@ -36,6 +36,6 @@ public def notify(this: CondVar var&) {
   this.lock.release()
   // wake up thread
   if valid {
-    wakeUp(tid)
+    wakeUp(tid as Tid)
   }
 }
