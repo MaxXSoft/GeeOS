@@ -77,6 +77,7 @@ public def decCounter(this: Process var*): Process var* {
 }
 
 // definition of thread
+// objects of this structure will always be allocated on the heap
 public struct Thread {
   context: Context,
   kstack: KernelStack,
@@ -122,22 +123,30 @@ def makeMemorySet(this: ElfFile&): MemorySet {
 }
 
 // create new idle thread
-public def newIdleThread(): Thread {
-  [Thread] {newNullContext(), newKernelStack(), null as Process var*}
+public def newIdleThread(): Thread var* {
+  let thread = allocHeapMem(sizeof Thread) as Thread var*
+  (*thread) = [Thread] {
+    newNullContext(),
+    newKernelStack(),
+    null as Process var*,
+  }
+  thread
 }
 
 // create new kernel thread
-public def newKernelThread(entry: USize): Thread {
+public def newKernelThread(entry: USize): Thread var* {
   let kstack = newKernelStack()
-  [Thread] {
+  let thread = allocHeapMem(sizeof Thread) as Thread var*
+  (*thread) = [Thread] {
     newKernelContext(entry, kstack.getTop(), getSatp()),
     kstack,
     null as Process var*,
   }
+  thread
 }
 
 // create new user thread
-public def newUserThread(data: u8*): Thread {
+public def newUserThread(data: u8*): Thread var* {
   let elf = newElfFile(data), ehdr = elf.getEhdr()
   // TODO: do not panic in kernel
   assert(ehdr.isValid(), "failed to read ELF")
@@ -159,51 +168,30 @@ public def newUserThread(data: u8*): Thread {
   }
   // create kernel stack & user thread
   let kstack = newKernelStack()
-  [Thread] {
+  let thread = allocHeapMem(sizeof Thread) as Thread var*
+  (*thread) = [Thread] {
     newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
     kstack,
     newProcess(ms).incCounter(),
   }
-}
-
-// release current thread structure
-public def del(this: Thread var&) {
-  this.kstack.del()
-  if this.proc != null as Process var* {
-    this.proc.decCounter()
-  }
-}
-
-// append initial arguments for current thread
-public def appendInitArgs(this: Thread&, args: USize[3]) {
-  this.context.appendInitArgs(args)
-}
-
-// switch to target thread
-public def switchTo(this: Thread var&, target: Thread var&) {
-  this.context.switchTo(target.context)
-}
-
-// move content of this thread to another thread, and clear current thread
-// like 'std::move' in C++
-public def move(this: Thread var&): Thread {
-  let thread = this
-  this.context = newNullContext()
-  this.kstack.addr = null as u8 var*
   thread
 }
 
-// definition of thread status
-public enum Status {
-  Unused,
-  Ready,
-  Running,
-  Sleeping,
-  Exited,
+// release current thread structure
+public def del(this: Thread var*) {
+  (*this).kstack.del()
+  if (*this).proc != null as Process var* {
+    (*this).proc.decCounter()
+  }
+  freeHeapMem(this as u8 var*)
 }
 
-// definition of thread status with code
-public struct StatusCode {
-  status: Status,
-  code: USize,
+// append initial arguments for current thread
+public def appendInitArgs(this: Thread*, args: USize[3]) {
+  (*this).context.appendInitArgs(args)
+}
+
+// switch to target thread
+public def switchTo(this: Thread var*, target: Thread var*) {
+  (*this).context.switchTo((*target).context)
 }
