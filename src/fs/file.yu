@@ -1,5 +1,5 @@
 public import arch.arch
-public import fs.inode
+public import fs.vfs.inode
 
 import lib.except
 
