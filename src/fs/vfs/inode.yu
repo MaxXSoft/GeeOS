@@ -1,4 +1,4 @@
-public import fs.iobuf
+public import fs.vfs.structs
 public import lib.except
 
 import mem.heap
@@ -6,35 +6,6 @@ import lib.io
 
 // maximum count of inodes
 let MAX_INODE_COUNT = 0x10000
-
-// type of inode
-public enum INodeType {
-  Device, FileSystem,
-}
-
-// abstraction of low level files (interface struct)
-// objects of this structure must be allocated on the heap
-public struct INode {
-  itype: INodeType,
-  ref_count: i32,
-  // count of files that opened this inode
-  open_count: i32,
-  // pointer to VFS object
-  vfs: u8*,
-  // pointer to INodeOps
-  ops: u8*,
-}
-
-// operations on inode
-public struct INodeOps {
-  op_open: (INode var*, u32): i32,
-  op_close: (INode var*): i32,
-  op_reclaim: (INode var*): i32,
-  op_read: (INode var*, IoBuf var*): i32,
-  op_write: (INode var*, IoBuf*): i32,
-}
-
-public import fs.vfs.vfs
 
 inline def getType(this: INode*): INodeType {
   (*this).itype
