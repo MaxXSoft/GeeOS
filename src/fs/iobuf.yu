@@ -1,0 +1,104 @@
+public import arch.arch
+
+import lib.except
+import lib.c.string
+
+// iobuf is a buffer Rd/Wr status record
+public struct IoBuf {
+  // base address of buffer (used for Rd/Wr)
+  buffer: u8 var*,
+  // current Rd/Wr position in buffer
+  // will have been incremented by the amount transferred
+  offset: USize,
+  // the length of buffer  (used for Rd/Wr)
+  len: USize,
+  // current resident length need to Rd/Wr
+  // will have been decremented by the amount transferred
+  res_len: USize,
+}
+
+/* 
+ * newIoBuf - create a new io buffer struct.
+ * set up `buffer` to point to the buffer you want to transfer to,
+ * and set `len` to the length of buffer;
+ * initialize `offset` as desired;
+ * initialize `res_len` to the total amount of data
+ * that can be transferred through this io.
+ */
+public def newIoBuf(buffer: u8 var*, len: USize, offset: USize): IoBuf {
+  [IoBuf] {buffer, offset, len, len}
+}
+
+inline def getUsedLen(this: IoBuf&): USize {
+  this.len - this.res_len
+}
+
+/*
+ * skip - change the current position of io buffer
+ */
+public def skip(this: IoBuf var&, n: USize) {
+  assert(this.res_len >= n)
+  this.buffer += n
+  this.offset += n
+  this.res_len -= n
+}
+
+/*
+ * move - move data (this.buffer --> data / data --> this.buffer) in memory
+ * @copied: size of data memcopied
+ * returns false if error
+ *
+ * this method may be called repeatedly on the same io to transfer
+ * additional data until the available buffer space the io refers to
+ * is exhausted.
+ */
+public def move(this: IoBuf var&, data: u8 var*, len: USize,
+                mem2buf: bool, copied: USize var&): bool {
+  var len = len, alen = this.res_len
+  if alen > len {
+    alen = len
+  }
+  if alen > 0 as USize {
+    var src = this.buffer, dst = data
+    if mem2buf {
+      let temp = src
+      src = dst
+      dst = temp
+    }
+    memmove(dst, src, alen)
+    this.skip(alen)
+    len -= alen
+  }
+  copied = alen
+  len == 0 as USize
+}
+
+public def move(this: IoBuf var&, data: u8 var*, len: USize,
+                mem2buf: bool): bool {
+  var temp: USize
+  this.move(data, len, mem2buf, temp)
+}
+
+/*
+ * zero - set io buffer zero
+ * @copied: the size of data memcopied
+ * returns false if error
+ */
+public def zero(this: IoBuf var&, len: USize, copied: USize var&): bool {
+  var len = len, alen = this.res_len
+  if alen > len {
+    alen = len
+  }
+  if alen > 0 as USize {
+    memset(this.buffer, 0, alen)
+    this.skip(alen)
+    len -= alen
+  }
+  copied = alen
+  len == 0 as USize
+}
+
+public def zero(this: IoBuf var&, len: USize): bool {
+  var temp: USize
+  this.zero(len, temp)
+}
