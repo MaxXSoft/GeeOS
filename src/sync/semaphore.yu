@@ -1,5 +1,6 @@
-import sync.spinlock
-import lib.queue
+public import sync.spinlock
+public import lib.queue
+
 import mem.heap
 import proc.thread
 import lib.except
