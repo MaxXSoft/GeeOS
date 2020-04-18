@@ -62,7 +62,7 @@ public def closeAll(this: FileInfo var&) {
 public def duplicate(this: FileInfo var&, that: FileInfo var&) {
   // copy inode
   that.pwd = this.pwd
-  if that.pwd {
+  if that.pwd != null as INode var* {
     that.pwd.incRefCounter()
   }
   // copy descriptors
