@@ -1,0 +1,46 @@
+public import fs.iobuf
+
+// type of inode
+public enum INodeType {
+  Device, FileSystem,
+}
+
+// abstraction of low level files (interface struct)
+// objects of this structure must be allocated on the heap
+public struct INode {
+  itype: INodeType,
+  ref_count: i32,
+  // count of files that opened this inode
+  open_count: i32,
+  // pointer to VFS object
+  vfs: u8*,
+  // pointer to INodeOps
+  ops: u8*,
+}
+
+// operations on inode
+public struct INodeOps {
+  op_open: (INode var*, u32): i32,
+  op_close: (INode var*): i32,
+  op_reclaim: (INode var*): i32,
+  op_read: (INode var*, IoBuf var*): i32,
+  op_write: (INode var*, IoBuf*): i32,
+}
+
+// type of abstract file system
+public enum VfsType {
+  FileSystem,
+}
+
+// abstract file system
+public struct Vfs {
+  vfs_type: VfsType,
+  // flush all dirty buffers to disk
+  sync: (Vfs var*): i32,
+  // return root inode of file system
+  get_root: (Vfs var*): INode var*,
+  // attempt unmount file system
+  unmount: (Vfs var*): i32,
+  // cleanup file system
+  cleanup: (Vfs var*),
+}
