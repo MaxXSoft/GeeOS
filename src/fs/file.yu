@@ -57,6 +57,10 @@ inline def setInit(this: File var&) {
   this.node = null as INode var*
 }
 
+inline def setPos(this: File var&, pos: USize) {
+  this.pos = pos
+}
+
 inline def getOpenCount(this: File&): i32 {
   this.open_count
 }
