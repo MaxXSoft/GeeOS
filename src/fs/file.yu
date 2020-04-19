@@ -52,17 +52,33 @@ inline def isOpened(this: File&): bool {
   this.status == FileStatus.Opened
 }
 
+inline def getFd(this: File&): i32 {
+  this.fd
+}
+
+inline def getOpenCount(this: File&): i32 {
+  this.open_count
+}
+
 inline def setInit(this: File var&) {
   this.status = FileStatus.Init
   this.node = null as INode var*
+}
+
+inline def setReadable(this: File var&, value: bool) {
+  this.readable = value
+}
+
+inline def setWritable(this: File var&, value: bool) {
+  this.writable = value
 }
 
 inline def setPos(this: File var&, pos: USize) {
   this.pos = pos
 }
 
-inline def getOpenCount(this: File&): i32 {
-  this.open_count
+inline def setNode(this: File var&, node: INode var*) {
+  this.node = node
 }
 
 // set current descriptor as opened, increase open counter
