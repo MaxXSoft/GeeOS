@@ -1,4 +1,13 @@
+public import arch.arch
 public import fs.iobuf
+
+// file property
+public struct FileState {
+  mode: u32,                // protection mode and file type
+  links: USize,             // number of hard links
+  blocks: USize,            // number of blocks file is using
+  size: USize,              // file size (bytes)
+}
 
 // type of inode
 public enum INodeType {
@@ -25,6 +34,7 @@ public struct INodeOps {
   op_reclaim: (INode var*): i32,
   op_read: (INode var*, IoBuf var*): i32,
   op_write: (INode var*, IoBuf*): i32,
+  op_fstat: (INode var*, FileState var&): i32,
 }
 
 // type of abstract file system
