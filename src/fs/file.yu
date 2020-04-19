@@ -44,12 +44,21 @@ public def decCounter(this: File var&) {
   }
 }
 
-public def isOpened(this: File&): bool {
+inline def isNone(this: File&): bool {
+  this.status == FileStatus.None
+}
+
+inline def isOpened(this: File&): bool {
   this.status == FileStatus.Opened
 }
 
-public def setInit(this: File var&) {
+inline def setInit(this: File var&) {
   this.status = FileStatus.Init
+  this.node = null as INode var*
+}
+
+inline def getOpenCount(this: File&): i32 {
+  this.open_count
 }
 
 // set current descriptor as opened, increase open counter
