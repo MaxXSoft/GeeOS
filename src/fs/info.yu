@@ -3,6 +3,8 @@ public import fs.vfs.inode
 public import fs.file
 public import fs.consts
 
+import lib.except
+
 // thread's file related information
 public struct FileInfo {
   sema: Semaphore,
@@ -74,4 +76,36 @@ public def duplicate(this: FileInfo var&, that: FileInfo var&) {
     }
     i += 1
   }
+}
+
+// allocate a free file item (with `None` status) in open files table
+public def allocFile(this: FileInfo var&, file: File var* var&): bool {
+  var i = 0
+  while i < FILE_COUNT {
+    if this.files[i].isNone() {
+      assert(this.files[i].getOpenCount() == 0, "FileInfo.allocFile")
+      this.files[i].setInit()
+      file = &this.files[i]
+      return true
+    }
+    i += 1
+  }
+  // not found
+  false
+}
+
+// find specific free file item (with `None` status) in open files table
+// and try to allocate
+public def allocFile(this: FileInfo var&, fd: i32,
+                     file: File var* var&): bool {
+  if fd >= 0 && fd < FILE_COUNT {
+    file = &this.files[fd]
+    if (*file).isNone() {
+      assert((*file).getOpenCount() == 0, "FileInfo.allocFile")
+      (*file).setInit()
+      return true
+    }
+  }
+  // not found
+  false
 }
