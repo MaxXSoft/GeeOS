@@ -109,3 +109,16 @@ public def allocFile(this: FileInfo var&, fd: i32,
   // not found
   false
 }
+
+// use fd as index of fd_array, return the array item (file)
+public def findFile(this: FileInfo var&, fd: i32,
+                    file: File var* var&): bool {
+  if fd >= 0 && fd < FILE_COUNT {
+    file = &this.files[fd]
+    if (*file).isOpened() && (*file).getFd() == fd {
+      return true
+    }
+  }
+  // invalid file descriptor
+  false
+}
