@@ -32,7 +32,8 @@ public enum VfsType {
   FileSystem,
 }
 
-// abstract file system
+// abstract file system (interface struct)
+// objects of this structure must be allocated on the heap
 public struct Vfs {
   vfs_type: VfsType,
   // flush all dirty buffers to disk
@@ -41,6 +42,6 @@ public struct Vfs {
   get_root: (Vfs var*): INode var*,
   // attempt unmount file system
   unmount: (Vfs var*): i32,
-  // cleanup file system
-  cleanup: (Vfs var*),
+  // clean up file system
+  clean_up: (Vfs var*),
 }
