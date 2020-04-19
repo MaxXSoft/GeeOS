@@ -34,6 +34,12 @@ public def del(this: File var&) {
   this.status = FileStatus.None
 }
 
+// increase open counter
+public def incCounter(this: File var&) {
+  assert(this.status == FileStatus.Opened, "File.incCounter")
+  this.open_count += 1
+}
+
 // decrease open counter, free if counter equals to zero
 public def decCounter(this: File var&) {
   assert(this.open_count > 0 && (this.status == FileStatus.Opened ||
@@ -52,8 +58,20 @@ inline def isOpened(this: File&): bool {
   this.status == FileStatus.Opened
 }
 
+inline def isReadable(this: File&): bool {
+  this.readable
+}
+
 inline def getFd(this: File&): i32 {
   this.fd
+}
+
+inline def getPos(this: File&): USize {
+  this.pos
+}
+
+inline def getNode(this: File&): INode var* {
+  this.node
 }
 
 inline def getOpenCount(this: File&): i32 {
