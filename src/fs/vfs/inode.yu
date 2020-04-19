@@ -57,14 +57,14 @@ inline def reclaim(this: INode var*): i32 {
   ((*ops).op_reclaim)(this)
 }
 
-inline def read(this: INode var*, iob: IoBuf var*): i32 {
+inline def read(this: INode var*, iob: IoBuf var&): i32 {
   this.check()
   let ops = (*this).ops as INodeOps*
   assert((*ops).op_read as i32 != 0, "INode.read")
   ((*ops).op_read)(this, iob)
 }
 
-inline def write(this: INode var*, iob: IoBuf*): i32 {
+inline def write(this: INode var*, iob: IoBuf&): i32 {
   this.check()
   let ops = (*this).ops as INodeOps*
   assert((*ops).op_write as i32 != 0, "INode.write")

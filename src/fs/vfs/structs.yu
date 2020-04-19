@@ -24,8 +24,8 @@ public struct INodeOps {
   op_open: (INode var*, u32): i32,
   op_close: (INode var*): i32,
   op_reclaim: (INode var*): i32,
-  op_read: (INode var*, IoBuf var*): i32,
-  op_write: (INode var*, IoBuf*): i32,
+  op_read: (INode var*, IoBuf var&): i32,
+  op_write: (INode var*, IoBuf&): i32,
   op_fstat: (INode var*, FileState var&): i32,
 }
 
