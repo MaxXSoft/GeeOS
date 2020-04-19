@@ -1,0 +1,13 @@
+public import arch.arch
+
+// file property
+public struct FileState {
+  mode: u32,                // protection mode and file type
+  links: USize,             // number of hard links
+  blocks: USize,            // number of blocks file is using
+  size: USize,              // file size (bytes)
+}
+
+inline def getSize(this: FileState&): USize {
+  this.size
+}
