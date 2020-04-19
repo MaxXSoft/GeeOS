@@ -2,6 +2,7 @@ public import arch.arch
 public import fs.vfs.inode
 
 import lib.except
+import fs.vfs.vfs
 
 // status of a file
 public enum FileStatus {
@@ -29,7 +30,7 @@ public def del(this: File var&) {
   assert(this.open_count == 0 && (this.status == FileStatus.Init ||
          this.status == FileStatus.Closed), "File.del")
   if this.status == FileStatus.Closed {
-    this.node.close()
+    vfsClose(this.node)
   }
   this.status = FileStatus.None
 }
