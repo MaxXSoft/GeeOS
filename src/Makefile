@@ -23,6 +23,7 @@ KERNEL_SRC += $(call rwildcard, $(SRC_DIR), *.c)
 KERNEL_SRC += $(call rwildcard, $(SRC_DIR), *.S)
 KERNEL_SRC := $(filter-out $(LIB_SRC) $(BOOT_SRC), $(KERNEL_SRC))
 KERNEL_SRC := $(filter-out $(call rwildcard, $(ARCH_DIR), *.*), $(KERNEL_SRC))
+KERNEL_SRC := $(filter-out $(call rwildcard, $(SRC_DIR)/fs/ucore, *.*), $(KERNEL_SRC))
 $(call make_obj, KERNEL, $(KERNEL_SRC))
 KERNEL_LDS := $(SRC_DIR)/linker.ld
 KERNEL_TARGET := $(BUILD_DIR)/geeos.elf
