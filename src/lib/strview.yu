@@ -1,0 +1,59 @@
+public import arch.arch
+public import lib.c.string
+
+public struct StrView {
+  str: u8*,
+  len: USize,
+}
+
+// create a new string view by a null terminated string
+inline def newStrView(str: u8*) {
+  [StrView] {str, strlen(str)}
+}
+
+// create a new string view by a slice of bytes
+inline def newStrView(buf: u8*, len: USize) {
+  [StrView] {buf, len}
+}
+
+// get string data of string view (not guarantee to be null terminated)
+inline def getStr(this: StrView&): u8* {
+  this.str
+}
+
+// get length of string view
+inline def getLen(this: StrView&): USize {
+  this.len
+}
+
+// check if equals to a null terminated string
+public def ==(this: StrView&, str: u8*): bool {
+  var i = 0
+  while i as USize < this.len {
+    if this.str[i] != str[i] || str[i] == '\0' {
+      return false
+    }
+    i += 1
+  }
+  str[i] == '\0'
+}
+inline def ==(str: u8*, this: StrView&): bool {
+  this == str
+}
+
+// check if equals to another string view
+public def ==(this: StrView&, that: StrView&): bool {
+  if this.len == that.len {
+    var i = 0
+    while i as USize < this.len {
+      if this.str[i] != that.str[i] {
+        return false
+      }
+      i += 1
+    }
+    true
+  }
+  else {
+    false
+  }
+}
