@@ -36,3 +36,11 @@ extern def memmove(dst: u8 var*, src: u8*, n: USize): u8 var* {
 extern def memcpy(dst: u8 var*, src: u8*, n: USize): u8 var* {
   memmove(dst, src, n)
 }
+
+extern def strlen(str: u8*): USize {
+  var len = 0
+  while str[len] != '\0' {
+    len += 1
+  }
+  len as USize
+}
