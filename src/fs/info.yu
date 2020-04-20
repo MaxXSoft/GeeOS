@@ -1,0 +1,69 @@
+public import sync.semaphore
+public import fs.file
+public import fs.consts
+
+import lib.except
+
+public struct FileInfo {
+  sema: Semaphore,
+  files: File[FILE_COUNT],
+}
+
+public def init(this: FileInfo var&) {
+  this.sema = newSemaphore("FileInfo")
+  var i = 0
+  while i < FILE_COUNT {
+    this.files[i] = newFile()
+    i += 1
+  }
+}
+
+public def del(this: FileInfo var&) {
+  // release semaphore
+  this.sema.del()
+  // close opened files
+  var i = 0
+  while i < FILE_COUNT {
+    if this.files[i].isOpened() {
+      this.files[i].close()
+    }
+    i += 1
+  }
+}
+
+public def lock(this: FileInfo var&) {
+  this.sema.wait()
+}
+
+public def unlock(this: FileInfo var&) {
+  this.sema.signal()
+}
+
+// allocate a new file descriptor
+public def allocFd(this: FileInfo var&, fd: i32 var&): bool {
+  var i = 0
+  while i < FILE_COUNT {
+    if this.files[i].isNone() {
+      this.files[i].setAllocated()
+      fd = i
+      return true
+    }
+    i += 1
+  }
+  // no avaliable slot for new file descriptor
+  false
+}
+
+// deallocate a file descriptor
+public def deallocFd(this: FileInfo var&, fd: i32) {
+  assert(fd >= 0 && fd < FILE_COUNT && this.files[fd].isAllocated(),
+         "FileInfo.deallocFd")
+  this.files[fd].setNone()
+}
+
+// get file item by `fd`
+public def getFile(this: FileInfo var&, fd: i32): File var& {
+  assert(fd >= 0 && fd < FILE_COUNT && !this.files[fd].isNone(),
+         "FileInfo.getFile")
+  this.files[fd]
+}
