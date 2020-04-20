@@ -1,0 +1,115 @@
+public import arch.arch
+public import lib.strview
+
+import lib.except
+import mem.heap
+
+// type of inode
+public enum INodeType {
+  File, Dir,
+}
+
+// object of this structure must be allocated on heap
+public struct INode {
+  itype: INodeType,
+  ref_count: i32,
+  ops: u8*,
+}
+
+// operations on inode
+public struct INodeOps {
+  op_find: (INode var*, StrView&): INode var*,
+  op_get_root: (INode var*): INode var*,
+  op_read: (INode var*, u8 var*, USize, USize): i32,
+  op_write: (INode var*, u8*, USize, USize): i32,
+}
+
+// initialize status of inode
+public def init(this: INode var*, itype: INodeType, ops: INodeOps*) {
+  (*this).itype = itype
+  (*this).ref_count = 1
+  (*this).ops = ops as u8*
+}
+
+// delete current inode
+public def del(this: INode var*) {
+  assert((*this).ref_count == 0, "INode.del")
+  freeHeapMem(this as u8 var*)
+}
+
+// find inode in current inode
+// `name` will not contains '/'
+inline def find(this: INode var*, name: StrView&): INode var* {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_find)(this, name)
+}
+
+// get root inode of file system
+inline def getRoot(this: INode var*): INode var* {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_get_root)(this)
+}
+
+// read the content of current inode to buffer
+inline def read(this: INode var*, buf: u8 var*, len: USize,
+                offset: USize): i32 {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_read)(this, buf, len, offset)
+}
+
+// write the content of buffer to current inode
+inline def write(this: INode var*, buf: u8*, len: USize,
+                 offset: USize): i32 {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_write)(this, buf, len, offset)
+}
+
+// open file
+public def open(this: INode var*): i32 {
+  (*this).ref_count += 1
+  0
+}
+
+// close file
+public def close(this: INode var*): i32 {
+  assert((*this).ref_count > 0, "INode.close")
+  (*this).ref_count -= 1
+  if (*this).ref_count == 0 {
+    this.del()
+  }
+  0
+}
+
+// lookup file and return opened inode
+public def lookup(this: INode var*, path: StrView&): INode var* {
+  // check if is valid
+  if (*this).itype != INodeType.Dir || path.empty() {
+    return null as INode var*
+  }
+  // get trimmed path
+  var path = path
+  if path.getLen() > 1 as USize && path.back() == '/' {
+    path.removeSuffix(1)
+  }
+  // get current inode
+  var cur = if path.front() == '/' {
+    path.removePrefix(1)
+    this.getRoot()
+  }
+  else {
+    this
+  }
+  // get target inode
+  for name in path.split('/') {
+    let next = cur.find(name)
+    if next != null as INode var* {
+      cur = next
+    }
+    else {
+      return null as INode var*
+    }
+  }
+  // open inode
+  cur.open()
+  cur
+}
