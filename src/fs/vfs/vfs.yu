@@ -1,0 +1,137 @@
+public import fs.vfs.structs
+
+import fs.consts
+
+// methods of VFS interface
+// == begin ==
+
+inline def getType(this: Vfs*): VfsType {
+  (*this).vfs_type
+}
+
+inline def sync(this: Vfs var*): i32 {
+  ((*this).sync)(this)
+}
+
+inline def getRoot(this: Vfs var*): INode var* {
+  ((*this).get_root)(this)
+}
+
+inline def unmount(this: Vfs var*): i32 {
+  ((*this).unmount)(this)
+}
+
+inline def cleanUp(this: Vfs var*) {
+  ((*this).clean_up)(this)
+}
+
+// methods of VFS interface
+// == end ==
+
+
+/*
+ * Virtual File System layer functions.
+ *
+ * The VFS layer translates operations on abstract on-disk files or
+ * pathnames to operations on specific files on specific filesystems.
+ */
+
+// initialize VFS layer
+public def initVfs() {
+  //
+}
+
+// clean up VFS layer
+public def cleanUpVfs() {
+  //
+}
+
+// initialize device list
+public def initDevList() {
+  //
+}
+
+
+/*
+ * VFS layer low-level operations. 
+ * See 'inode.yu' for direct operations on inodes.
+ * See 'fs.yu' for direct operations on filesystems/devices.
+ */
+
+// change current directory of current thread by inode
+public def vfsSetCurDir(dir: INode var*): bool {
+  //
+}
+
+// retrieve inode of current directory of current thread
+public def vfsGetCurDir(dir: INode var* var&): bool {
+  //
+}
+
+// get root inode for the filesystem named `dev_name`
+public def vfsGetRoot(dev_name: u8*, root: INode var* var&): bool {
+  //
+}
+
+// get mounted device name for the filesystem passed in
+public def vfsGetDevName(vfs: Vfs*): u8* {
+  //
+}
+
+
+/*
+ * VFS layer mid-level operations.
+ * Both of these may destroy the path passed in.
+ */
+
+// Like VOP_LOOKUP, but takes a full device:path name,
+// or a name relative to the current directory, and
+// goes to the correct filesystem.
+public def vfsLookup(path: u8*, inode: INode var* var&): i32 {
+  //
+}
+
+// Likewise, for VOP_LOOKPARENT.
+public def vfsLookupParent(path: u8*, inode: INode var* var&,
+                           endp: u8* var&): i32 {
+  //
+}
+
+
+/*
+ * VFS layer high-level operations on pathnames
+ * Because namei may destroy pathnames, these all may too.
+ */
+
+// Open or create a file. FLAGS/MODE per the syscall.
+public def vfsOpen(path: u8*, flags: u32, inode: INode var* var&): i32 {
+  // determine open mode
+  let excl = (flags & O_EXCL) != 0 as u32
+  let create = (flags & O_CREAT) != 0 as u32
+  var can_write = false
+  when flags as i32 & O_ACCMODE {
+    O_RDONLY {}
+    O_WRONLY, O_RDWR {
+      can_write = true
+    }
+    else {
+      return -1
+    }
+  }
+  // lookup inode by path
+  let ret = vfsLookup(path, inode)
+  // check if need to create file
+  if ret != 0 {
+    // TODO
+  }
+  else if excl && create {
+    return -1
+  }
+}
+
+// Close a inode opened with vfs_open. Does not fail.
+public def vfsClose(inode: INode var*): i32 {
+  inode.decOpenCounter()
+  inode.decRefCounter()
+  0
+}
