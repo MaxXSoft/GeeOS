@@ -1,4 +1,5 @@
 public import arch.arch
+public import fs.vfs.inode
 
 import lib.except
 import fs.consts
@@ -52,6 +53,7 @@ public def open(this: File var&, path: u8*, flags: i32): i32 {
   this.writable = (flags & O_ACCMODE) == O_WRONLY ||
                   (flags & O_ACCMODE) == O_RDWR
   // get inode from file system
+  let path = newStrView(path)
   this.inode = root_inode.lookup(path)
   if this.inode == null as INode var* {
     return -1
@@ -77,7 +79,7 @@ public def close(this: File var&): i32 {
 public def read(this: File var&, buf: u8 var*, len: USize): i32 {
   if this.isOpened() && this.readable {
     let s = this.inode.read(buf, len, this.offset)
-    this.offset += s
+    this.offset += s as USize
     s
   }
   else {
@@ -88,7 +90,7 @@ public def read(this: File var&, buf: u8 var*, len: USize): i32 {
 public def write(this: File var&, buf: u8*, len: USize): i32 {
   if this.isOpened() && this.writable {
     let s = this.inode.write(buf, len, this.offset)
-    this.offset += s
+    this.offset += s as USize
     s
   }
   else {
