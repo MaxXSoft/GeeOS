@@ -27,6 +27,8 @@ public struct INodeOps {
   op_read: (INode var*, IoBuf var&): i32,
   op_write: (INode var*, IoBuf&): i32,
   op_fstat: (INode var*, FileState var&): i32,
+  op_create: (INode var*, u8*, bool, INode var* var&): i32,
+  op_truncate: (INode var*, i32): i32,
 }
 
 // type of abstract file system

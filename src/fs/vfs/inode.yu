@@ -78,6 +78,21 @@ inline def fstat(this: INode var*, state: FileState var&): i32 {
   ((*ops).op_fstat)(this, state)
 }
 
+inline def create(this: INode var*, name: u8*, excl: bool,
+                  inode: INode var* var&): i32 {
+  this.check()
+  let ops = (*this).ops as INodeOps*
+  assert((*ops).op_write as i32 != 0, "INode.create")
+  ((*ops).op_create)(this, name, excl, inode)
+}
+
+inline def truncate(this: INode var*, len: i32): i32 {
+  this.check()
+  let ops = (*this).ops as INodeOps*
+  assert((*ops).op_write as i32 != 0, "INode.truncate")
+  ((*ops).op_truncate)(this, len)
+}
+
 /*
  * init - initialize an inode structure
  */
