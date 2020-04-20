@@ -1,0 +1,97 @@
+public import arch.arch
+
+import lib.except
+import fs.consts
+import fs.fs
+
+public enum FileStatus {
+  None, Allocated, Opened,
+}
+
+public struct File {
+  status: FileStatus,
+  readable: bool,
+  writable: bool,
+  inode: INode var*,
+  offset: USize,
+}
+
+public def newFile(): File {
+  [File] {FileStatus.None}
+}
+
+inline def isNone(this: File&): bool {
+  this.status == FileStatus.None
+}
+
+inline def isAllocated(this: File&): bool {
+  this.status == FileStatus.Allocated
+}
+
+inline def isOpened(this: File&): bool {
+  this.status == FileStatus.Opened
+}
+
+public def setNone(this: File var&) {
+  assert(this.isAllocated(), "File.setNone")
+  this.status = FileStatus.None
+}
+
+public def setAllocated(this: File var&) {
+  assert(this.isNone(), "File.setAllocated")
+  this.status = FileStatus.Allocated
+}
+
+public def open(this: File var&, path: u8*, flags: i32): i32 {
+  if !this.isAllocated() {
+    return -1
+  }
+  // parse flags
+  this.readable = (flags & O_ACCMODE) == O_RDONLY ||
+                  (flags & O_ACCMODE) == O_RDWR
+  this.writable = (flags & O_ACCMODE) == O_WRONLY ||
+                  (flags & O_ACCMODE) == O_RDWR
+  // get inode from file system
+  this.inode = root_inode.lookup(path)
+  if this.inode == null as INode var* {
+    return -1
+  }
+  // update current object
+  this.status = FileStatus.Opened
+  this.offset = 0 as USize
+  0
+}
+
+public def close(this: File var&): i32 {
+  if this.isOpened() {
+    this.status = FileStatus.Allocated
+    let ret = this.inode.close()
+    this.inode = null as INode var*
+    ret
+  }
+  else {
+    -1
+  }
+}
+
+public def read(this: File var&, buf: u8 var*, len: USize): i32 {
+  if this.isOpened() && this.readable {
+    let s = this.inode.read(buf, len, this.offset)
+    this.offset += s
+    s
+  }
+  else {
+    -1
+  }
+}
+
+public def write(this: File var&, buf: u8*, len: USize): i32 {
+  if this.isOpened() && this.writable {
+    let s = this.inode.write(buf, len, this.offset)
+    this.offset += s
+    s
+  }
+  else {
+    -1
+  }
+}
