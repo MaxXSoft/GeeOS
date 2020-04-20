@@ -1,0 +1,7 @@
+//
+
+public var root_inode: INode var* = null as INode var*
+
+public def initFileSystem() {
+  //
+}
