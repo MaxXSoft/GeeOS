@@ -15,7 +15,7 @@ public struct FileInfo {
 }
 
 public def init(this: FileInfo var&) {
-  this.sema = newSemaphore("FileInfo", 1)
+  this.sema = newSemaphore("FileInfo")
   this.pwd = null as INode var*
   var i = 0
   while i < FILE_COUNT {
