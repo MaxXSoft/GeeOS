@@ -18,7 +18,7 @@ public def newSemaphore(name: u8*, value: i32): Semaphore {
 }
 
 public def newSemaphore(name: u8*): Semaphore {
-  newSemaphore(name, 0)
+  newSemaphore(name, 1)
 }
 
 public def del(this: Semaphore var&) {
