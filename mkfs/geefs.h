@@ -26,7 +26,7 @@ class GeeFS {
   // list all files/dirs in cwd
   void List(std::ostream &os);
   // create new file in cwd
-  bool Create(std::string_view file_name);
+  bool CreateFile(std::string_view file_name);
   // create new directory in cwd
   bool MakeDir(std::string_view dir_name);
   // change cwd
