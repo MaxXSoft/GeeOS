@@ -52,6 +52,9 @@ class GeeFS {
   void UpdateINode(const INode &inode, std::uint32_t id);
   // read inode by id
   bool ReadINode(INode &inode, std::uint32_t id);
+  // get nth data block offset of inode
+  std::optional<std::uint32_t> GetBlockOffset(const INode &inode,
+                                              std::size_t n);
 
   // low-level device
   Device &dev_;

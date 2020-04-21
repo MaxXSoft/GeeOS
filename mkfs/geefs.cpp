@@ -1,12 +1,13 @@
 #include "geefs.h"
 
 #include <vector>
+#include <algorithm>
 #include <cstring>
 #include <cassert>
 
 namespace {
 
-const std::uint32_t kMagicNum = 0x9eef5000;
+//
 
 }  // namespace
 
@@ -124,6 +125,32 @@ bool GeeFS::ReadINode(INode &inode, std::uint32_t id) {
   return dev_.ReadAssert(sizeof(INode), inode, offset);
 }
 
+std::optional<std::uint32_t> GeeFS::GetBlockOffset(const INode &inode,
+                                                   std::size_t n) {
+  const auto kOfsPerBlock = super_block_.block_size / kBlockOfsSize;
+  if (n >= inode.block_num) return {};
+  if (n < kDirectBlockNum) {
+    return inode.direct[n];
+  }
+  else if (n - kDirectBlockNum < kOfsPerBlock) {
+    auto offset = inode.indirect * super_block_.block_size;
+    offset += (n - kDirectBlockNum) * kBlockOfsSize;
+    if (!dev_.ReadAssert(kBlockOfsSize, offset, offset)) return {};
+    return offset;
+  }
+  else {
+    n -= kDirectBlockNum + kOfsPerBlock;
+    assert(n < kOfsPerBlock * kOfsPerBlock);
+    auto offset = inode.indirect2 * super_block_.block_size;
+    offset += (n / kOfsPerBlock) * kBlockOfsSize;
+    if (!dev_.ReadAssert(kBlockOfsSize, offset, offset)) return {};
+    offset *= super_block_.block_size;
+    offset += (n % kOfsPerBlock) * kBlockOfsSize;
+    if (!dev_.ReadAssert(kBlockOfsSize, offset, offset)) return {};
+    return offset;
+  }
+}
+
 bool GeeFS::Create(std::uint32_t block_size, std::uint32_t free_map_num,
                    std::uint32_t inode_blk_num) {
   if (block_size < sizeof(SuperBlockHeader) ||
@@ -195,7 +222,27 @@ bool GeeFS::Sync() {
 }
 
 void GeeFS::List(std::ostream &os) {
-  // TODO
+  assert(cwd_.type == INodeType::Dir);
+  const auto kEntNum = cwd_.size / sizeof(Entry);
+  const auto kEntPerBlock = super_block_.block_size / sizeof(Entry);
+  // traverse data blocks
+  for (int i = 0; i < cwd_.block_num; ++i) {
+    // get offset
+    auto blk_ofs = GetBlockOffset(cwd_, i);
+    assert(blk_ofs);
+    auto offset = *blk_ofs * super_block_.block_size;
+    // traverse entries in current block
+    auto entry_num = std::min(kEntNum - i * kEntPerBlock, kEntPerBlock);
+    for (int j = 0; j < entry_num; ++j) {
+      // read entry
+      auto ent_ofs = offset + j * sizeof(Entry);
+      Entry entry;
+      auto ret = dev_.ReadAssert(sizeof(Entry), entry, ent_ofs);
+      assert(ret);
+      // print to stream
+      os << entry.filename << std::endl;
+    }
+  }
 }
 
 bool GeeFS::CreateFile(std::string_view file_name) {
