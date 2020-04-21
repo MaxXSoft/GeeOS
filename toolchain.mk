@@ -17,25 +17,34 @@ endif
 LLVM_BIN := /usr/local/opt/llvm/bin
 YU_BIN := /Users/maxxing/Programming/MyRepo/YuLang/build
 
-# Yu compiler
+# cross Yu compiler
 YUFLAGS := -Werror $(YU_OPT_ARG)
 YUFLAGS += -tt riscv32-unknown-elf -tc generic-rv32 -tf +m,+a
 export YUC := $(YU_BIN)/yuc $(YUFLAGS)
 
-# C compiler
+# cross C compiler
 CFLAGS := -Wall -Werror -c -static $(C_DEBUG_ARG) $(C_OPT_ARG)
 CFLAGS += -fno-builtin -fno-pic
 CFLAGS += -target riscv32-unknown-elf -march=rv32ima -mabi=ilp32
 export CC := $(LLVM_BIN)/clang $(CFLAGS)
 
-# LLVM compiler
+# native C++ compiler
+CXXFLAGS := -Wall -Werror -c $(C_DEBUG_ARG) $(C_OPT_ARG)
+CXXFLAGS += -std=c++17
+export CXX := clang++ $(CXXFLAGS)
+
+# cross LLVM compiler
 LLCFLAGS := $(C_OPT_ARG) -filetype=obj
 LLCFLAGS += -march=riscv32 -mcpu=generic-rv32 -mattr=+m,+a
 export LLC := $(LLVM_BIN)/llc $(LLCFLAGS)
 
-# linker
+# cross linker
 LDFLAGS := -nostdlib -melf32lriscv
 export LD := $(LLVM_BIN)/ld.lld $(LDFLAGS)
+
+# native linker
+NLDFLAGS :=
+export NLD := clang++ $(NLDFLAGS)
 
 # objcopy
 OBJCFLAGS := -O binary
