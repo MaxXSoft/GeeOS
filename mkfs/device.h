@@ -10,38 +10,33 @@ class DeviceBase {
  public:
   virtual ~DeviceBase() = default;
 
-  virtual std::int32_t Read(std::uint8_t *begin, std::uint8_t *end,
+  virtual std::int32_t Read(std::uint8_t *buf, std::size_t len,
                             std::size_t offset) = 0;
-  virtual std::int32_t Write(const std::uint8_t *begin,
-                            const std::uint8_t *end,
-                            std::size_t offset) = 0;
+  virtual std::int32_t Write(const std::uint8_t *buf, std::size_t len,
+                             std::size_t offset) = 0;
   virtual bool Sync() = 0;
   virtual bool Resize(std::size_t size) = 0;
 
   template <typename T>
   std::int32_t Read(T &object, std::size_t offset) {
-    auto begin = reinterpret_cast<std::uint8_t *>(&object);
-    auto end = reinterpret_cast<std::uint8_t *>(&object + 1);
-    return Read(begin, end, offset);
+    auto buf = reinterpret_cast<std::uint8_t *>(&object);
+    return Read(buf, sizeof(T), offset);
   }
 
   std::int32_t Read(std::vector<std::uint8_t> &buffer,
                     std::size_t offset) {
-    auto begin = buffer.data(), end = buffer.data() + buffer.size();
-    return Read(begin, end, offset);
+    return Read(buffer.data(), buffer.size(), offset);
   }
 
   template <typename T>
   std::int32_t Write(const T &object, std::size_t offset) {
-    auto begin = reinterpret_cast<const std::uint8_t *>(&object);
-    auto end = reinterpret_cast<const std::uint8_t *>(&object + 1);
-    return Write(begin, end, offset);
+    auto buf = reinterpret_cast<const std::uint8_t *>(&object);
+    return Write(buf, sizeof(T), offset);
   }
 
   std::int32_t Write(const std::vector<std::uint8_t> &buffer,
                      std::size_t offset) {
-    auto begin = buffer.data(), end = buffer.data() + buffer.size();
-    return Write(begin, end, offset);
+    return Write(buffer.data(), buffer.size(), offset);
   }
 
   template <typename... Args>
