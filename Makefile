@@ -6,6 +6,7 @@ export rwildcard = $$(foreach d, $$(wildcard $$(1:=/*)), $$(call rwildcard, $$d,
 define make_obj
 	$$(eval TEMP := $$(patsubst $(TOP_DIR)/%.yu, $(OBJ_DIR)/%.yu.o, $$(2)));
 	$$(eval TEMP := $$(patsubst $(TOP_DIR)/%.c, $(OBJ_DIR)/%.c.o, $$(TEMP)));
+	$$(eval TEMP := $$(patsubst $(TOP_DIR)/%.cpp, $(OBJ_DIR)/%.cpp.o, $$(TEMP)));
 	$$(eval TEMP := $$(patsubst $(TOP_DIR)/%.S, $(OBJ_DIR)/%.S.o, $$(TEMP)));
 	$$(eval $$(1)_OBJ := $$(TEMP));
 endef
@@ -16,14 +17,15 @@ export TOP_DIR := $(shell if [ "$$PWD" != "" ]; then echo $$PWD; else pwd; fi)
 export BUILD_DIR := $(TOP_DIR)/build
 export SRC_DIR := $(TOP_DIR)/src
 export USR_DIR := $(TOP_DIR)/usr
+export MKFS_DIR := $(TOP_DIR)/mkfs
 export OBJ_DIR := $(BUILD_DIR)/obj
 
 # all sub-makes
-SUB_MAKE := $(SRC_DIR) $(USR_DIR)
+SUB_MAKE := $(SRC_DIR) $(USR_DIR) $(MKFS_DIR)
 
 
 .SILENT:
-.PHONY: all clean libgee boot kernel libgrt user $(SUB_MAKE)
+.PHONY: all clean libgee boot kernel libgrt user mkfs $(SUB_MAKE)
 
 all: libgee boot kernel libgrt user
 
@@ -43,10 +45,12 @@ libgrt: $(BUILD_DIR) $(USR_DIR)
 
 user: $(BUILD_DIR) $(USR_DIR)
 
+mkfs: $(BUILD_DIR) $(MKFS_DIR)
+
 $(SUB_MAKE):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-$(SRC_DIR): $(USR_DIR)
+$(SRC_DIR): $(USR_DIR) $(MKFS_DIR)
 
 $(BUILD_DIR):
 	mkdir $@
