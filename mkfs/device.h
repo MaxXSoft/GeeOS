@@ -41,12 +41,12 @@ class DeviceBase {
 
   template <typename... Args>
   bool ReadAssert(std::int32_t read_count, Args &&... args) {
-    return Read(std::forward(args)...) == read_count;
+    return Read(args...) == read_count;
   }
 
   template <typename... Args>
   bool WriteAssert(std::int32_t write_count, Args &&... args) {
-    return Write(std::forward(args)...) == write_count;
+    return Write(args...) == write_count;
   }
 };
 

@@ -8,9 +8,9 @@
 class IOStreamDevice : public DeviceBase {
  public:
   IOStreamDevice(std::iostream &ios) : ios_(ios) {
-    size_ = ios_.tellg();
+    auto pos = ios_.tellg();
     ios_.seekg(0, std::ios::end);
-    size_ = ios_.tellg() - size_;
+    size_ = ios_.tellg() - pos;
   }
 
   std::int32_t Read(std::uint8_t *buf, std::size_t len,

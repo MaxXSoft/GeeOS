@@ -22,12 +22,12 @@ std::optional<std::uint32_t> GeeFS::AllocDataBlock() {
     if (hdr.unused_num) {
       // update header
       --hdr.unused_num;
-      auto ret = dev_.WriteAssert(sizeof(hdr), hdr, offset);
+      ret = dev_.WriteAssert(sizeof(hdr), hdr, offset);
       assert(ret);
       // read free map to buffer
       std::vector<std::uint8_t> buf;
       buf.resize(super_block_.block_size - sizeof(hdr));
-      auto ret = dev_.ReadAssert(buf.size(), buf, offset + sizeof(hdr));
+      ret = dev_.ReadAssert(buf.size(), buf, offset + sizeof(hdr));
       assert(ret);
       // find next free bit
       for (int j = 0; j < buf.size(); ++j) {
@@ -71,7 +71,7 @@ std::optional<std::uint32_t> GeeFS::AllocINode() {
       // read inodes to buffer
       std::vector<std::uint8_t> buf;
       buf.resize(super_block_.block_size - sizeof(hdr));
-      auto ret = dev_.ReadAssert(buf.size(), buf, offset + sizeof(hdr));
+      ret = dev_.ReadAssert(buf.size(), buf, offset + sizeof(hdr));
       assert(ret);
       // find next free inode
       for (int j = 0; j < buf.size(); j += sizeof(INode)) {
@@ -100,7 +100,7 @@ void GeeFS::InitDirBlock(std::uint32_t blk_ofs, std::uint32_t cur_id,
   // write entry '..'
   ent.inode_id = parent_id;
   std::strcpy(reinterpret_cast<char *>(ent.filename), "..");
-  auto ret = dev_.WriteAssert(sizeof(ent), ent, offset + sizeof(ent));
+  ret = dev_.WriteAssert(sizeof(ent), ent, offset + sizeof(ent));
   assert(ret);
 }
 
@@ -147,14 +147,18 @@ bool GeeFS::Create(std::uint32_t block_size, std::uint32_t free_map_num,
   for (int i = 0; i < free_map_num; ++i) {
     auto offset = block_size * (1 + i);
     if (!dev_.WriteAssert(block_size, empty_blk, offset)) return false;
-    FreeMapBlockHeader hdr = {(block_size - sizeof(hdr)) * 8};
+    FreeMapBlockHeader hdr = {
+      static_cast<std::uint32_t>((block_size - sizeof(hdr)) * 8)
+    };
     if (!dev_.WriteAssert(sizeof(hdr), hdr, offset)) return false;
   }
   // initialize inode block
   for (int i = 0; i < inode_blk_num; ++i) {
     auto offset = block_size * (1 + free_map_num + i);
     if (!dev_.WriteAssert(block_size, empty_blk, offset)) return false;
-    INodeBlockHeader hdr = {(block_size - sizeof(hdr)) / sizeof(INode)};
+    INodeBlockHeader hdr = {
+      static_cast<std::uint32_t>((block_size - sizeof(hdr)) / sizeof(INode))
+    };
     if (!dev_.WriteAssert(sizeof(hdr), hdr, offset)) return false;
   }
   // initialize data blocks
@@ -172,7 +176,7 @@ bool GeeFS::Create(std::uint32_t block_size, std::uint32_t free_map_num,
   UpdateINode(cwd_, *inode_id);
   InitDirBlock(*blk_ofs, *inode_id, *inode_id);
   // sync
-  dev_.Sync();
+  return dev_.Sync();
 }
 
 bool GeeFS::Open() {
