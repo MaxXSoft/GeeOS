@@ -16,6 +16,7 @@ class DeviceBase {
                             const std::uint8_t *end,
                             std::size_t offset) = 0;
   virtual bool Sync() = 0;
+  virtual bool Resize(std::size_t size) = 0;
 
   template <typename T>
   std::int32_t Read(T &object, std::size_t offset) {
