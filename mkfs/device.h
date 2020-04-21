@@ -2,6 +2,7 @@
 #define GEEOS_MKFS_DEVICE_H_
 
 #include <vector>
+#include <utility>
 #include <cstddef>
 #include <cstdint>
 
@@ -40,6 +41,16 @@ class DeviceBase {
                      std::size_t offset) {
     auto begin = buffer.data(), end = buffer.data() + buffer.size();
     return Write(begin, end, offset);
+  }
+
+  template <typename... Args>
+  bool ReadAssert(std::int32_t read_count, Args &&... args) {
+    return Read(std::forward(args)...) == read_count;
+  }
+
+  template <typename... Args>
+  bool WriteAssert(std::int32_t write_count, Args &&... args) {
+    return Write(std::forward(args)...) == write_count;
   }
 };
 
