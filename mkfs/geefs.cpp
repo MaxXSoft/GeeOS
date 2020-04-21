@@ -36,10 +36,11 @@ std::optional<std::uint32_t> GeeFS::AllocDataBlock() {
             // set free bit as allocated
             buf[j] |= (1 << k);
             // update free map
-            auto ret = dev_.WriteAssert(1, buf[j], offset + j);
+            auto byte_ofs = offset + sizeof(hdr) + j;
+            auto ret = dev_.WriteAssert(1, buf[j], byte_ofs);
             assert(ret);
             // return block offset
-            auto blk_ofs = super_block_.free_map_num;
+            auto blk_ofs = 1 + super_block_.free_map_num;
             blk_ofs += super_block_.inode_blk_num;
             blk_ofs += i * (super_block_.block_size - sizeof(hdr)) * 8;
             blk_ofs += j * 8 + (7 - k);
