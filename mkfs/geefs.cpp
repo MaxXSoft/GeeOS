@@ -379,13 +379,42 @@ bool GeeFS::CreateFile(std::string_view file_name) {
 }
 
 bool GeeFS::MakeDir(std::string_view dir_name) {
-  // TODO
-  return false;
+  // allocate new inode for directory
+  auto inode_id = AllocINode();
+  if (!inode_id) return false;
+  // create new entry
+  if (!AddEntry(*inode_id, dir_name)) return false;
+  // allocate data block for directory
+  auto blk_ofs = AllocDataBlock();
+  if (!blk_ofs) return false;
+  // update allocated inode
+  INode inode = {INodeType::Dir, 2 * sizeof(Entry), 1, {*blk_ofs}};
+  UpdateINode(inode, *inode_id);
+  // initialize data block
+  InitDirBlock(*blk_ofs, *inode_id, cwd_id_);
+  return true;
 }
 
 bool GeeFS::ChangeDir(std::string_view dir_name) {
-  // TODO
-  return false;
+  if (dir_name.size() > kFileNameMaxLen - 1) return false;
+  bool found = false;
+  // find dir entry
+  WalkEntry([this, &dir_name, &found](const Entry &entry) {
+    if (dir_name == reinterpret_cast<const char *>(entry.filename)) {
+      // read inode
+      INode inode;
+      if (!ReadINode(inode, entry.inode_id)) return false;
+      // check if is directory
+      if (inode.type != INodeType::Dir) return false;
+      // change cwd
+      cwd_ = inode;
+      cwd_id_ = entry.inode_id;
+      found = true;
+      return false;
+    }
+    return true;
+  });
+  return found;
 }
 
 bool GeeFS::Remove(std::string_view file_name) {
