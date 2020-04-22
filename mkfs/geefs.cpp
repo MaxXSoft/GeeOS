@@ -2,12 +2,32 @@
 
 #include <vector>
 #include <algorithm>
+#include <string>
+#include <iomanip>
 #include <cstring>
 #include <cassert>
 
 namespace {
 
-//
+const char *kTypeStr[] = {"unused", "file", "dir"};
+
+void PrintFileSize(std::ostream &os, std::size_t size) {
+  if (size < 1024) {
+    os << size << 'B';
+  }
+  else {
+    os << std::fixed << std::setprecision(1);
+    if (size < 1024 * 1024) {
+      os << size / 1024.0 << 'K';
+    }
+    else if (size < 1024 * 1024 * 1024) {
+      os << size / 1024.0 / 1024.0 << 'M';
+    }
+    else {
+      os << size / 1024.0 / 1024.0 / 1024.0 << 'G';
+    }
+  }
+}
 
 }  // namespace
 
@@ -81,7 +101,7 @@ std::optional<std::uint32_t> GeeFS::AllocINode() {
         if (inode->type == INodeType::Unused) {
           // return inode id
           return i * ((super_block_.block_size - sizeof(hdr)) /
-                      sizeof(INode)) + j;
+                      sizeof(INode)) + (j / sizeof(INode));
         }
       }
       assert(false);
@@ -151,6 +171,114 @@ std::optional<std::uint32_t> GeeFS::GetBlockOffset(const INode &inode,
   }
 }
 
+bool GeeFS::AppendBlock(INode &inode, std::uint32_t blk_ofs) {
+  const auto kOfsPerBlock = super_block_.block_size / kBlockOfsSize;
+  auto n = inode.block_num++;
+  if (n < kDirectBlockNum) {
+    inode.direct[n] = blk_ofs;
+    return true;
+  }
+  else if (n - kDirectBlockNum < kOfsPerBlock) {
+    if (n == kDirectBlockNum) {
+      // allocate indirect block
+      auto blk_ofs = AllocDataBlock();
+      if (!blk_ofs) return false;
+      inode.indirect = *blk_ofs;
+    }
+    auto offset = inode.indirect * super_block_.block_size;
+    offset += (n - kDirectBlockNum) * kBlockOfsSize;
+    return dev_.WriteAssert(kBlockOfsSize, blk_ofs, offset);
+  }
+  else if (n - kDirectBlockNum - kOfsPerBlock <
+           kOfsPerBlock * kOfsPerBlock) {
+    n -= kDirectBlockNum + kOfsPerBlock;
+    if (!n) {
+      // allocate 2nd indirect block
+      auto blk_ofs = AllocDataBlock();
+      if (!blk_ofs) return false;
+      inode.indirect2 = *blk_ofs;
+    }
+    auto offset = inode.indirect2 * super_block_.block_size;
+    offset += (n / kOfsPerBlock) * kBlockOfsSize;
+    if (n % kOfsPerBlock) {
+      // initialize 2nd indirect block
+      auto blk_ofs = AllocDataBlock();
+      if (!blk_ofs) return false;
+      if (!dev_.WriteAssert(kBlockOfsSize, *blk_ofs, offset)) return false;
+      offset = *blk_ofs;
+    }
+    else {
+      if (!dev_.ReadAssert(kBlockOfsSize, offset, offset)) return false;
+    }
+    offset *= super_block_.block_size;
+    offset += (n % kOfsPerBlock) * kBlockOfsSize;
+    return dev_.WriteAssert(kBlockOfsSize, blk_ofs, offset);
+  }
+  else {
+    return false;
+  }
+}
+
+bool GeeFS::WalkEntry(std::function<bool(const Entry &)> callback) {
+  assert(cwd_.type == INodeType::Dir);
+  const auto kEntNum = cwd_.size / sizeof(Entry);
+  const auto kEntPerBlock = super_block_.block_size / sizeof(Entry);
+  // traverse data blocks
+  for (int i = 0; i < cwd_.block_num; ++i) {
+    // get offset
+    auto blk_ofs = GetBlockOffset(cwd_, i);
+    if (!blk_ofs) return false;
+    auto offset = *blk_ofs * super_block_.block_size;
+    // traverse entries in current block
+    auto entry_num = std::min(kEntNum - i * kEntPerBlock, kEntPerBlock);
+    for (int j = 0; j < entry_num; ++j) {
+      // read entry
+      auto ent_ofs = offset + j * sizeof(Entry);
+      Entry entry;
+      if (!dev_.ReadAssert(sizeof(Entry), entry, ent_ofs)) return false;
+      // print to stream
+      if (!callback(entry)) return false;
+    }
+  }
+  return true;
+}
+
+bool GeeFS::AddEntry(std::uint32_t inode_id, std::string_view file_name) {
+  if (file_name.size() > kFileNameMaxLen - 1) return false;
+  // check if conflicted
+  auto ret = WalkEntry([&file_name](const Entry &entry) {
+    return file_name != reinterpret_cast<const char *>(entry.filename);
+  });
+  if (!ret) return false;
+  // get offset of entry that will be inserted
+  auto blk_ofs = GetBlockOffset(cwd_, cwd_.block_num - 1);
+  if (!blk_ofs) return false;
+  auto offset = *blk_ofs * super_block_.block_size;
+  auto ent_count = cwd_.size / sizeof(Entry);
+  assert(ent_count != 0);
+  auto ent_per_blk = super_block_.block_size / sizeof(Entry);
+  auto inblk_ofs = (ent_count % ent_per_blk) * sizeof(Entry);
+  if (inblk_ofs) {
+    offset += inblk_ofs;
+  }
+  else {
+    // allocate new block
+    auto blk_ofs = AllocDataBlock();
+    if (!blk_ofs || !AppendBlock(cwd_, *blk_ofs)) return false;
+    offset = *blk_ofs * super_block_.block_size;
+  }
+  // insert entry
+  Entry entry;
+  entry.inode_id = inode_id;
+  std::strcpy(reinterpret_cast<char *>(entry.filename),
+              std::string(file_name).c_str());
+  if (!dev_.WriteAssert(sizeof(Entry), entry, offset)) return false;
+  // update inode of cwd
+  cwd_.size += sizeof(Entry);
+  UpdateINode(cwd_, cwd_id_);
+  return true;
+}
+
 bool GeeFS::Create(std::uint32_t block_size, std::uint32_t free_map_num,
                    std::uint32_t inode_blk_num) {
   if (block_size < sizeof(SuperBlockHeader) ||
@@ -201,8 +329,9 @@ bool GeeFS::Create(std::uint32_t block_size, std::uint32_t free_map_num,
   assert(blk_ofs && inode_id);
   cwd_ = {INodeType::Dir, 2 * sizeof(Entry), 1};
   cwd_.direct[0] = *blk_ofs;
-  UpdateINode(cwd_, *inode_id);
-  InitDirBlock(*blk_ofs, *inode_id, *inode_id);
+  cwd_id_ = *inode_id;
+  UpdateINode(cwd_, cwd_id_);
+  InitDirBlock(*blk_ofs, cwd_id_, cwd_id_);
   // sync
   return dev_.Sync();
 }
@@ -222,32 +351,31 @@ bool GeeFS::Sync() {
 }
 
 void GeeFS::List(std::ostream &os) {
-  assert(cwd_.type == INodeType::Dir);
-  const auto kEntNum = cwd_.size / sizeof(Entry);
-  const auto kEntPerBlock = super_block_.block_size / sizeof(Entry);
-  // traverse data blocks
-  for (int i = 0; i < cwd_.block_num; ++i) {
-    // get offset
-    auto blk_ofs = GetBlockOffset(cwd_, i);
-    assert(blk_ofs);
-    auto offset = *blk_ofs * super_block_.block_size;
-    // traverse entries in current block
-    auto entry_num = std::min(kEntNum - i * kEntPerBlock, kEntPerBlock);
-    for (int j = 0; j < entry_num; ++j) {
-      // read entry
-      auto ent_ofs = offset + j * sizeof(Entry);
-      Entry entry;
-      auto ret = dev_.ReadAssert(sizeof(Entry), entry, ent_ofs);
-      assert(ret);
-      // print to stream
-      os << entry.filename << std::endl;
-    }
-  }
+  auto ret = WalkEntry([this, &os](const Entry &entry) {
+    // get inode info
+    INode inode;
+    if (!ReadINode(inode, entry.inode_id)) return false;
+    // print to stream
+    os << std::left;
+    os << std::setw(7) << kTypeStr[static_cast<int>(inode.type)] << ' ';
+    os << std::setw(kFileNameMaxLen + 1) << entry.filename << ' ';
+    PrintFileSize(os, inode.size);
+    os << std::endl;
+    return true;
+  });
+  assert(ret);
 }
 
 bool GeeFS::CreateFile(std::string_view file_name) {
-  // TODO
-  return false;
+  // allocate new inode for file
+  auto inode_id = AllocINode();
+  if (!inode_id) return false;
+  // create new entry
+  if (!AddEntry(*inode_id, file_name)) return false;
+  // update allocated inode
+  INode inode = {INodeType::File};
+  UpdateINode(inode, *inode_id);
+  return true;
 }
 
 bool GeeFS::MakeDir(std::string_view dir_name) {

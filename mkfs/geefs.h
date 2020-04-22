@@ -5,6 +5,7 @@
 #include <ostream>
 #include <string_view>
 #include <optional>
+#include <functional>
 #include <cstddef>
 
 #include "device.h"
@@ -55,6 +56,12 @@ class GeeFS {
   // get nth data block offset of inode
   std::optional<std::uint32_t> GetBlockOffset(const INode &inode,
                                               std::size_t n);
+  // append block to inode
+  bool AppendBlock(INode &inode, std::uint32_t blk_ofs);
+  // traverse all entries of cwd
+  bool WalkEntry(std::function<bool(const Entry &)> callback);
+  // add new entry in cwd
+  bool AddEntry(std::uint32_t inode_id, std::string_view file_name);
 
   // low-level device
   Device &dev_;
@@ -62,6 +69,8 @@ class GeeFS {
   SuperBlockHeader super_block_;
   // current working directory
   INode cwd_;
+  // inode id of cwd
+  std::uint32_t cwd_id_;
 };
 
 #endif  // GEEOS_MKFS_GEEFS_H_
