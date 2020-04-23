@@ -6,6 +6,8 @@
 #include <string_view>
 #include <optional>
 #include <functional>
+#include <string>
+#include <vector>
 #include <cstddef>
 
 #include "device.h"
@@ -41,6 +43,13 @@ class GeeFS {
   std::int32_t Write(std::string_view file_name, std::istream &is,
                      std::size_t offset, std::size_t len);
 
+  // get current path
+  std::string cur_path() const {
+    std::string cur_path;
+    for (const auto &i : cur_path_) cur_path += "/" + i;
+    return cur_path;
+  }
+
  private:
   // allocate a data block, returns block offset
   std::optional<std::uint32_t> AllocDataBlock();
@@ -74,6 +83,8 @@ class GeeFS {
   INode cwd_;
   // inode id of cwd
   std::uint32_t cwd_id_;
+  // current path
+  std::vector<std::string> cur_path_;
 };
 
 #endif  // GEEOS_MKFS_GEEFS_H_

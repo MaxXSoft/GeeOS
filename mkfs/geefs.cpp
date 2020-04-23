@@ -346,6 +346,8 @@ bool GeeFS::Create(std::uint32_t block_size, std::uint32_t free_map_num,
   cwd_id_ = *inode_id;
   UpdateINode(cwd_, cwd_id_);
   InitDirBlock(*blk_ofs, cwd_id_, cwd_id_);
+  // reset current path
+  cur_path_.clear();
   // sync
   return dev_.Sync();
 }
@@ -357,6 +359,8 @@ bool GeeFS::Open() {
   }
   // set root directory as cwd
   if (!ReadINode(cwd_, 0)) return false;
+  // reset current path
+  cur_path_.clear();
   return cwd_.type == INodeType::Dir;
 }
 
@@ -417,6 +421,15 @@ bool GeeFS::ChangeDir(std::string_view dir_name) {
   // change cwd
   cwd_ = inode;
   cwd_id_ = *id;
+  // update current path
+  if (dir_name != ".") {
+    if (dir_name == ".." && !cur_path_.empty()) {
+      cur_path_.pop_back();
+    }
+    else {
+      cur_path_.push_back(std::string(dir_name));
+    }
+  }
   return true;
 }
 
