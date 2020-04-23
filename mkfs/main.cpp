@@ -53,6 +53,12 @@ bool GetInteger(const char *str, uint32_t &num) {
   return !!iss;
 }
 
+string_view GetFileName(string_view path) {
+  auto pos = path.find_last_of('/');
+  if (pos == string_view::npos) return path;
+  return path.substr(pos + 1);
+}
+
 int EnterIMode(GeeFS &geefs) {
   string line;
   // print prompt
@@ -147,14 +153,15 @@ int main(int argc, const char *argv[]) {
           // add files
           ++i;
           while (i < argc && argv[i][0] != '-') {
+            auto file = GetFileName(argv[i]);
             // create file
-            if (!geefs.CreateFile(argv[i])) {
+            if (!geefs.CreateFile(file)) {
               return LogError("can not create file in image");
             }
             // create file stream
             ifstream ifs(argv[i]);
             auto size = GetStreamSize(ifs);
-            if (!ifs || !geefs.Write(argv[i], ifs, 0, size)) {
+            if (!ifs || !geefs.Write(file, ifs, 0, size)) {
               return LogError("can not write file in image");
             }
             ++i;
