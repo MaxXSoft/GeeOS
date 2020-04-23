@@ -46,7 +46,12 @@ class GeeFS {
   // get current path
   std::string cur_path() const {
     std::string cur_path;
-    for (const auto &i : cur_path_) cur_path += "/" + i;
+    if (cur_path_.empty()) {
+      cur_path += '/';
+    }
+    else {
+      for (const auto &i : cur_path_) cur_path += "/" + i;
+    }
     return cur_path;
   }
 
