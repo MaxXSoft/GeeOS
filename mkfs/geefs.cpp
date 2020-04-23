@@ -359,6 +359,7 @@ bool GeeFS::Open() {
   }
   // set root directory as cwd
   if (!ReadINode(cwd_, 0)) return false;
+  cwd_id_ = 0;
   // reset current path
   cur_path_.clear();
   return cwd_.type == INodeType::Dir;
