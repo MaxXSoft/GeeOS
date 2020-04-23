@@ -145,6 +145,20 @@ bool GeeFS::ReadINode(INode &inode, std::uint32_t id) {
   return dev_.ReadAssert(sizeof(INode), inode, offset);
 }
 
+std::optional<std::uint32_t> GeeFS::ReadINode(INode &inode,
+                                              std::string_view name) {
+  if (name.size() > kFileNameMaxLen - 1) return {};
+  std::optional<std::uint32_t> id = {};
+  WalkEntry([this, &inode, &name, &id](const Entry &entry) {
+    if (name == reinterpret_cast<const char *>(entry.filename)) {
+      if (ReadINode(inode, entry.inode_id)) id = entry.inode_id;
+      return false;
+    }
+    return true;
+  });
+  return id;
+}
+
 std::optional<std::uint32_t> GeeFS::GetBlockOffset(const INode &inode,
                                                    std::size_t n) {
   const auto kOfsPerBlock = super_block_.block_size / kBlockOfsSize;
@@ -160,7 +174,7 @@ std::optional<std::uint32_t> GeeFS::GetBlockOffset(const INode &inode,
   }
   else {
     n -= kDirectBlockNum + kOfsPerBlock;
-    assert(n < kOfsPerBlock * kOfsPerBlock);
+    if (n >= kOfsPerBlock * kOfsPerBlock) return {};
     auto offset = inode.indirect2 * super_block_.block_size;
     offset += (n / kOfsPerBlock) * kBlockOfsSize;
     if (!dev_.ReadAssert(kBlockOfsSize, offset, offset)) return {};
@@ -396,25 +410,14 @@ bool GeeFS::MakeDir(std::string_view dir_name) {
 }
 
 bool GeeFS::ChangeDir(std::string_view dir_name) {
-  if (dir_name.size() > kFileNameMaxLen - 1) return false;
-  bool found = false;
-  // find dir entry
-  WalkEntry([this, &dir_name, &found](const Entry &entry) {
-    if (dir_name == reinterpret_cast<const char *>(entry.filename)) {
-      // read inode
-      INode inode;
-      if (!ReadINode(inode, entry.inode_id)) return false;
-      // check if is directory
-      if (inode.type != INodeType::Dir) return false;
-      // change cwd
-      cwd_ = inode;
-      cwd_id_ = entry.inode_id;
-      found = true;
-      return false;
-    }
-    return true;
-  });
-  return found;
+  // get inode by directory name
+  INode inode;
+  auto id = ReadINode(inode, dir_name);
+  if (!id || inode.type != INodeType::Dir) return false;
+  // change cwd
+  cwd_ = inode;
+  cwd_id_ = *id;
+  return true;
 }
 
 bool GeeFS::Remove(std::string_view file_name) {
@@ -424,12 +427,77 @@ bool GeeFS::Remove(std::string_view file_name) {
 
 std::int32_t GeeFS::Read(std::string_view file_name, std::ostream &os,
                          std::size_t offset, std::size_t len) {
-  // TODO
-  return false;
+  // get inode
+  INode inode;
+  if (!ReadINode(inode, file_name)) return -1;
+  // read file
+  std::int32_t data_len = 0;
+  auto end_len = std::min<std::size_t>(offset + len, inode.size);
+  for (int i = offset; i < end_len; ++i, ++data_len) {
+    // get block offset
+    auto n = i / super_block_.block_size;
+    if (n >= inode.block_num) break;
+    auto blk_ofs = GetBlockOffset(inode, n);
+    // get offset
+    auto ofs = *blk_ofs * super_block_.block_size;
+    ofs += i % super_block_.block_size;
+    // read to stream
+    std::uint8_t byte;
+    if (!dev_.ReadAssert(1, byte, ofs)) break;
+    os.write(reinterpret_cast<const char *>(&byte), 1);
+  }
+  return data_len;
 }
 
 std::int32_t GeeFS::Write(std::string_view file_name, std::istream &is,
                           std::size_t offset, std::size_t len) {
-  // TODO
-  return false;
+  // get inode
+  INode inode;
+  auto id = ReadINode(inode, file_name);
+  if (!id) return -1;
+  // expand file size if necessary
+  if (offset > inode.size) {
+    std::vector<std::uint8_t> buffer;
+    buffer.resize(super_block_.block_size, 0);
+    // allocate empty data blocks
+    auto blk_num = (offset + (super_block_.block_size - 1)) /
+                   super_block_.block_size;
+    for (int i = inode.block_num + 1; i < blk_num; ++i) {
+      auto blk_ofs = AllocDataBlock();
+      if (!blk_ofs || !AppendBlock(inode, *blk_ofs) ||
+          !dev_.WriteAssert(buffer.size(), buffer,
+                            *blk_ofs * super_block_.block_size)) {
+        return -1;
+      }
+    }
+    // update file size
+    inode.size = offset;
+  }
+  // write to file
+  std::int32_t data_len = 0;
+  for (int i = offset; i < offset + len; ++i, ++data_len) {
+    // get block offset
+    auto n = i / super_block_.block_size;
+    std::optional<std::uint32_t> blk_ofs;
+    if (n < inode.block_num) {
+      blk_ofs = GetBlockOffset(inode, n);
+      if (!blk_ofs) return -1;
+    }
+    else {
+      // allocate a new data block
+      blk_ofs = AllocDataBlock();
+      if (!blk_ofs) break;
+      if (!AppendBlock(inode, *blk_ofs)) return -1;
+    }
+    // write to block
+    auto ofs = *blk_ofs * super_block_.block_size;
+    ofs += i % super_block_.block_size;
+    std::uint8_t byte;
+    is.read(reinterpret_cast<char *>(&byte), 1);
+    if (!dev_.WriteAssert(1, byte, ofs)) break;
+  }
+  // update inode
+  if (offset + data_len > inode.size) inode.size = offset + data_len;
+  UpdateINode(inode, *id);
+  return data_len;
 }

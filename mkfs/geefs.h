@@ -53,6 +53,9 @@ class GeeFS {
   void UpdateINode(const INode &inode, std::uint32_t id);
   // read inode by id
   bool ReadINode(INode &inode, std::uint32_t id);
+  // read inode by file name, returns inode id
+  std::optional<std::uint32_t> ReadINode(INode &inode,
+                                         std::string_view name);
   // get nth data block offset of inode
   std::optional<std::uint32_t> GetBlockOffset(const INode &inode,
                                               std::size_t n);
