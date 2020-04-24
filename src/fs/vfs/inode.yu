@@ -22,6 +22,7 @@ public struct INodeOps {
   op_get_root: (INode var*): INode var*,
   op_read: (INode var*, u8 var*, USize, USize): i32,
   op_write: (INode var*, u8*, USize, USize): i32,
+  op_cleanup: (INode var*),
 }
 
 // initialize status of inode
@@ -64,6 +65,12 @@ inline def write(this: INode var*, buf: u8*, len: USize,
   ((*ops).op_write)(this, buf, len, offset)
 }
 
+// clean up before deleting inode
+inline def cleanUp(this: INode var*) {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_cleanup)(this)
+}
+
 // open file
 public def open(this: INode var*): i32 {
   (*this).ref_count += 1
@@ -75,6 +82,7 @@ public def close(this: INode var*): i32 {
   assert((*this).ref_count > 0, "INode.close")
   (*this).ref_count -= 1
   if (*this).ref_count == 0 {
+    this.cleanUp()
     this.del()
   }
   0
