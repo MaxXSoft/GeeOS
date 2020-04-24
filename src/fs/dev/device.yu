@@ -9,14 +9,24 @@ public struct DeviceInterface {
 
 inline def read(this: DeviceInterface var*, buf: u8 var*, len: USize,
                 offset: USize): i32 {
-  (this.read)(this, buf, len, offset)
+  ((*this).read)(this, buf, len, offset)
 }
 
 inline def write(this: DeviceInterface var*, buf: u8*, len: USize,
                  offset: USize): i32 {
-  (this.write)(this, buf, len, offset)
+  ((*this).write)(this, buf, len, offset)
 }
 
 inline def sync(this: DeviceInterface var*): bool {
-  (this.sync)(this)
+  ((*this).sync)(this)
+}
+
+inline def readAssert(this: DeviceInterface var*, size: i32,
+                      buf: u8 var*, len: USize, offset: USize): bool {
+  this.read(buf, len, offset) == size
+}
+
+inline def writeAssert(this: DeviceInterface var*, size: i32,
+                       buf: u8*, len: USize, offset: USize): bool {
+  this.write(buf, len, offset) == size
 }
