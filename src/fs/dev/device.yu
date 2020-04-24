@@ -21,12 +21,12 @@ inline def sync(this: DeviceInterface var*): bool {
   ((*this).sync)(this)
 }
 
-inline def readAssert(this: DeviceInterface var*, size: i32,
-                      buf: u8 var*, len: USize, offset: USize): bool {
-  this.read(buf, len, offset) == size
+inline def readAssert(this: DeviceInterface var*, size: USize,
+                      buf: u8 var*, offset: USize): bool {
+  this.read(buf, size, offset) == size as i32
 }
 
-inline def writeAssert(this: DeviceInterface var*, size: i32,
-                       buf: u8*, len: USize, offset: USize): bool {
-  this.write(buf, len, offset) == size
+inline def writeAssert(this: DeviceInterface var*, size: USize,
+                       buf: u8*, offset: USize): bool {
+  this.write(buf, size, offset) == size as i32
 }
