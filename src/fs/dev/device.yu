@@ -1,0 +1,22 @@
+public import arch.arch
+
+// interface of devices
+public struct DeviceInterface {
+  read: (DeviceInterface var*, u8 var*, USize, USize): i32,
+  write: (DeviceInterface var*, u8*, USize, USize): i32,
+  sync: (DeviceInterface var*): bool,
+}
+
+inline def read(this: DeviceInterface var*, buf: u8 var*, len: USize,
+                offset: USize): i32 {
+  (this.read)(this, buf, len, offset)
+}
+
+inline def write(this: DeviceInterface var*, buf: u8*, len: USize,
+                 offset: USize): i32 {
+  (this.write)(this, buf, len, offset)
+}
+
+inline def sync(this: DeviceInterface var*): bool {
+  (this.sync)(this)
+}
