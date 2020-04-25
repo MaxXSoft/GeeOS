@@ -1,7 +1,6 @@
 public import sync.spinlock
 public import lib.queue
 
-import mem.heap
 import proc.thread
 import lib.except
 
@@ -14,7 +13,7 @@ public struct Semaphore {
 public def newSemaphore(name: u8*, value: i32): Semaphore {
   var lock: Spinlock
   lock.init(name)
-  [Semaphore] {lock, value, newQueue(allocHeapMem, freeHeapMem)}
+  [Semaphore] {lock, value, newQueue()}
 }
 
 public def newSemaphore(name: u8*): Semaphore {

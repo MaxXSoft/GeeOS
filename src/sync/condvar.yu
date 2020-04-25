@@ -1,7 +1,6 @@
 public import sync.spinlock
 public import lib.queue
 
-import mem.heap
 import proc.thread
 
 public struct CondVar {
@@ -12,7 +11,7 @@ public struct CondVar {
 public def newCondVar(name: u8*) {
   var lock: Spinlock
   lock.init(name)
-  [CondVar] {lock, newQueue(allocHeapMem, freeHeapMem)}
+  [CondVar] {lock, newQueue()}
 }
 
 public def del(this: CondVar var&) {
