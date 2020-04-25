@@ -175,19 +175,17 @@ let TABLE_SIZE = 32 as USize
 
 // default hash function
 def defaultHasher(this: HashMap var&, key: u32): u32 {
-  var x = ((key >> 16 as u32) ^ key) * 0x119de1f3 as u32
-  x = ((x >> 16 as u32) ^ x) * 0x119de1f3 as u32
-  (x >> 16 as u32) ^ x
+  key * 0x9e3779b9 as u32
 }
 
 // call hash function and returns table index
 def hash(this: HashMap var&, key: u32): u32 {
-  let val = (this.hash_func)(this, key)
-  key % this.table.size
+  (this.hash_func)(this, key) % this.table.size
 }
 
 // rehash when table is full, otherwise do nothing
-def rehash(this: HashMap var&) {
+// returns true if rehash is performed
+def rehash(this: HashMap var&): bool {
   if this.table.occupied == this.table.size {
     // allocate new table
     let size = this.table.size * 2 as USize
@@ -202,6 +200,10 @@ def rehash(this: HashMap var&) {
     //       because it will release all existing pairs
     heap.dealloc(this.table.table as u8 var*)
     this.table = table
+    true
+  }
+  else {
+    false
   }
 }
 
@@ -230,9 +232,11 @@ inline def empty(this: HashMap&): bool {
 
 // insert key value pair to hash map
 public def insert(this: HashMap var&, key: u32, value: u8 var*): bool {
-  let hash_val = this.hash(key)
+  var hash_val = this.hash(key)
   if this.table.get(hash_val, key) == null as u8 var* {
-    this.rehash()
+    if this.rehash() {
+      hash_val = this.hash(key)
+    }
     this.table.insert(hash_val, key, value)
     this.size += 1 as USize
     true
