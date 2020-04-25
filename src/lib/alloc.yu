@@ -8,7 +8,7 @@ public struct HeapManager {
   dealloc: HeapDeallocator,
 }
 
-public let heap: HeapManager = [HeapManager] {}
+public var heap: HeapManager = [HeapManager] {}
 
 
 inline def init(this: HeapManager var&, alloc: HeapAllocator,
