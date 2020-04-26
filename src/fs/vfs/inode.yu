@@ -28,7 +28,7 @@ public struct INodeOps {
 // initialize status of inode
 public def init(this: INode var*, itype: INodeType, ops: INodeOps*) {
   (*this).itype = itype
-  (*this).ref_count = 1
+  (*this).ref_count = 0
   (*this).ops = ops as u8*
 }
 
