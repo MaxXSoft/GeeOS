@@ -14,6 +14,7 @@ LIB_TARGET := $(BUILD_DIR)/libgrt.a
 BIN_SRC := $(call rwildcard, $(BIN_DIR), *.yu)
 $(call make_obj, BIN, $(BIN_SRC))
 BIN_TARGET := $(patsubst $(BIN_OBJ_DIR)/%.yu.o, $(BIN_TARGET_DIR)/%, $(BIN_OBJ))
+USER_IMG := $(BUILD_DIR)/user.img
 
 # compiler flags
 YUCFLAGS := -I $(USR_DIR)
@@ -30,7 +31,10 @@ clean:
 
 libgrt: $(LIB_TARGET)
 
-user: $(BIN_TARGET_DIR) $(BIN_TARGET)
+user: $(USER_IMG)
+
+$(USER_IMG): $(BIN_TARGET_DIR) $(BIN_TARGET)
+	$(BUILD_DIR)/mkfs $@ -c 512 1 4 -a $(BIN_TARGET)
 
 $(BIN_TARGET_DIR):
 	mkdir $@

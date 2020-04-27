@@ -27,7 +27,7 @@ SUB_MAKE := $(SRC_DIR) $(USR_DIR) $(MKFS_DIR)
 .SILENT:
 .PHONY: all clean libgee boot kernel libgrt user mkfs $(SUB_MAKE)
 
-all: libgee boot kernel libgrt user
+all: libgee boot kernel libgrt user mkfs
 
 clean:
 	$(info cleaning...)
@@ -50,7 +50,9 @@ mkfs: $(BUILD_DIR) $(MKFS_DIR)
 $(SUB_MAKE):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-$(SRC_DIR): $(USR_DIR) $(MKFS_DIR)
+$(SRC_DIR): $(USR_DIR)
+
+$(USR_DIR): $(MKFS_DIR)
 
 $(BUILD_DIR):
 	mkdir $@
