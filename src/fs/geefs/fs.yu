@@ -1,6 +1,7 @@
 public import fs.dev.device
 public import fs.geefs.structs
 public import lib.hashmap
+public import sync.semaphore
 public import fs.vfs.inode
 
 import lib.except
@@ -15,6 +16,8 @@ public struct GeeFs {
   super_block: GfsSbHeader,
   // inode map
   inodes: HashMap,
+  // semaphore for inode map
+  sema: Semaphore,
 }
 
 // memory inode
@@ -71,9 +74,11 @@ def getFs(this: INode var*): GeeFs var& {
 // get inode from map
 // if not found, read inode from device and add inode to map
 def getINode(this: GeeFs var&, id: u32): INode var* {
+  this.sema.wait()
   // try to find in map
   let inode_ret = this.inodes.get(id)
   if inode_ret as i32 != 0 {
+    this.sema.signal()
     return inode_ret as INode var*
   }
   // get offset
@@ -86,19 +91,24 @@ def getINode(this: GeeFs var&, id: u32): INode var* {
   var inode: GfsINode
   if !this.dev.readAssert(sizeof GfsINode, &inode as u8 var*,
                           offset as USize) {
+    this.sema.signal()
     return null as INode var*
   }
   // add to map
   let mem_inode = newGeeFsINode(id, inode, &this)
   let ret = this.inodes.insert(id, mem_inode as u8 var*)
   assert(ret, "GeeFs.getINode")
+  this.sema.signal()
   mem_inode
 }
 
 // remove inode from map by id
 // called by 'gfsCleanUp', so DO NOT delete removed inode
 def removeINode(this: GeeFs var&, id: u32): bool {
-  this.inodes.remove(id)
+  this.sema.wait()
+  let ret = this.inodes.remove(id)
+  this.sema.signal()
+  ret
 }
 
 // get nth data block offset of inode
@@ -131,8 +141,7 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
 }
 
 public def newGeeFs(dev: DeviceInterface var*): GeeFs {
-  let map = newHashMap()
-  [GeeFs] {dev, [GfsSbHeader] {}, map}
+  [GeeFs] {dev, [GfsSbHeader] {}, newHashMap(), newSemaphore("GeeFs")}
 }
 
 public def del(this: GeeFs var&) {
@@ -141,9 +150,11 @@ public def del(this: GeeFs var&) {
     inode.del()
   }
   this.inodes.del()
+  this.sema.del()
 }
 
 // open filesystem image on device, returns false if failed
+// NOTE: thread unsafe!
 public def open(this: GeeFs var&): bool {
   // read super block header
   if !this.dev.readAssert(sizeof GfsSbHeader, &this.super_block as u8 var*,
@@ -164,8 +175,10 @@ public def open(this: GeeFs var&): bool {
 
 // get inode of root directory
 public def getRoot(this: GeeFs var&): INode var* {
+  this.sema.wait()
   let root = this.inodes.get(0 as u32) as INode var*
   assert(root != null as INode var*, "GeeFs.getRoot")
+  this.sema.signal()
   root
 }
 
