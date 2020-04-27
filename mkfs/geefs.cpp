@@ -250,7 +250,7 @@ bool GeeFS::WalkEntry(std::function<bool(const Entry &)> callback) {
       auto ent_ofs = offset + j * sizeof(Entry);
       Entry entry;
       if (!dev_.ReadAssert(sizeof(Entry), entry, ent_ofs)) return false;
-      // print to stream
+      // invoke callback function
       if (!callback(entry)) return false;
     }
   }
