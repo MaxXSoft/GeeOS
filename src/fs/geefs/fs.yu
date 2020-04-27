@@ -1,10 +1,11 @@
 public import fs.dev.device
 public import fs.geefs.structs
 public import lib.hashmap
+public import fs.vfs.inode
 
-import fs.vfs.inode
 import lib.except
 import mem.heap
+import lib.algo
 
 // filesystem object
 public struct GeeFs {
@@ -172,11 +173,6 @@ public def getRoot(this: GeeFs var&): INode var* {
 /*
  * virtual operations
  */
-// helper function
-inline def min(x: u32, y: u32): u32 {
-  if x < y { x } else { y }
-}
-
 // find inode by name
 def gfsFind(this: INode var*, name: StrView&): INode var* {
   let inode: GfsINode& = this.getINode().gfs_inode
