@@ -1,0 +1,57 @@
+public import fs.dev.device
+public import sync.semaphore
+
+import lib.c.string
+import lib.algo
+
+public struct MemDevice {
+  dev: DeviceInterface,
+  sema: Semaphore,
+  buf: u8 var*,
+  len: USize,
+}
+
+def getMemDev(this: DeviceInterface var*): MemDevice var& {
+  *(this as MemDevice var*)
+}
+
+public def readMem(this: DeviceInterface var*, buf: u8 var*, len: USize,
+                   offset: USize): i32 {
+  let dev: MemDevice var& = this.getMemDev()
+  if offset > dev.len { return -1 }
+  // read memory
+  dev.sema.wait()
+  let len = min(len as u32, (dev.len - offset) as u32)
+  memcpy(buf, dev.buf + offset, len)
+  dev.sema.signal()
+  len as i32
+}
+
+public def writeMem(this: DeviceInterface var*, buf: u8*, len: USize,
+                    offset: USize): i32 {
+  let dev: MemDevice var& = this.getMemDev()
+  if offset > dev.len { return -1 }
+  // write memory
+  dev.sema.wait()
+  let len = min(len as u32, (dev.len - offset) as u32)
+  memcpy(dev.buf + offset, buf, len)
+  dev.sema.signal()
+  len as i32
+}
+
+public def syncMem(this: DeviceInterface var*): bool {
+  true
+}
+
+public def newMemDevice(buf: u8 var*, len: USize): MemDevice {
+  [MemDevice] {
+    [DeviceInterface] {readMem, writeMem, syncMem},
+    newSemaphore("MemDevice"),
+    buf,
+    len,
+  }
+}
+
+public def del(this: MemDevice var&) {
+  this.sema.del()
+}
