@@ -225,14 +225,32 @@ def gfsGetRoot(this: INode var*): INode var* {
 
 // read inode content to buffer
 def gfsRead(this: INode var*, buf: u8 var*, len: USize,
-         offset: USize): i32 {
-  // TODO
-  -1
+            offset: USize): i32 {
+  let inode: GfsINode& = this.getINode().gfs_inode
+  var fs: GeeFs var& = this.getFs()
+  // read file
+  var data_len = 0, i = offset as u32
+  let end_len = min((offset + len) as u32, inode.size)
+  while i < end_len {
+    // get block offset
+    let n = i / fs.super_block.block_size
+    if n >= inode.block_num { break }
+    var blk_ofs: u32
+    if !fs.getBlockOffset(inode, n, blk_ofs) { break }
+    // get offset
+    let ofs = blk_ofs * fs.super_block.block_size +
+              i % fs.super_block.block_size
+    // read to buffer
+    if !fs.dev.readAssert(1 as u32, buf + data_len, ofs) { break }
+    i += 1 as u32
+    data_len += 1
+  }
+  data_len
 }
 
 // write buffer content to inode
 def gfsWrite(this: INode var*, buf: u8*, len: USize,
-          offset: USize): i32 {
+             offset: USize): i32 {
   // TODO
   -1
 }
