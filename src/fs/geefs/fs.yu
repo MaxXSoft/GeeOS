@@ -46,7 +46,7 @@ def convToINodeType(this: GfsINodeType): INodeType {
 def newGeeFsINode(id: u32, gfs_inode: GfsINode&,
                   fs: GeeFs var*): INode var* {
   var inode = allocHeapMem(sizeof GeeFsINode) as GeeFsINode var*
-  (*inode).inode.init(gfs_inode.itype.convToINodeType(), &geefs_ops)
+  (inode as INode var*).init(gfs_inode.itype.convToINodeType(), &geefs_ops)
   (*inode).id = id
   (*inode).gfs_inode = gfs_inode
   (*inode).fs = fs
@@ -67,26 +67,35 @@ def getFs(this: INode var*): GeeFs var& {
 /*
  * filesystem related stuffs
  */
-// read inode from device and add inode to map
-def addINode(this: GeeFs var&, id: u32): bool {
-  if this.inode.get(id) as i32 != 0 { return true }
+// get inode from map
+// if not found, read inode from device and add inode to map
+def getINode(this: GeeFs var&, id: u32): INode var* {
+  // try to find in map
+  let inode_ret = this.inodes.get(id)
+  if inode_ret as i32 != 0 {
+    return inode_ret as INode var*
+  }
   // get offset
   let in_per_blk = (this.super_block.block_size - sizeof GfsInbHeader) /
                    sizeof GfsINode
-  let offset = 1 as u32 + this.super_block.free_map_num + id / in_per_blk
+  var offset = 1 as u32 + this.super_block.free_map_num + id / in_per_blk
   offset *= this.super_block.block_size
   offset += sizeof GfsInbHeader + (id % in_per_blk) * sizeof GfsINode
   // read inode
   var inode: GfsINode
   if !this.dev.readAssert(sizeof GfsINode, &inode as u8 var*,
                           offset as USize) {
-    return false
+    return null as INode var*
   }
   // add to map
-  this.inodes.insert(id, newGeeFsINode(id, inode, &this) as u8 var*)
+  let mem_inode = newGeeFsINode(id, inode, &this)
+  let ret = this.inodes.insert(id, mem_inode as u8 var*)
+  assert(ret, "GeeFs.getINode")
+  mem_inode
 }
 
 // remove inode from map by id
+// called by 'gfsCleanUp', so DO NOT delete removed inode
 def removeINode(this: GeeFs var&, id: u32): bool {
   this.inodes.remove(id)
 }
@@ -149,7 +158,7 @@ public def open(this: GeeFs var&): bool {
     this.inodes.clear()
   }
   // initialize root inode
-  this.addINode(0 as u32)
+  this.getINode(0 as u32) != null as INode var*
 }
 
 // get inode of root directory
@@ -163,34 +172,73 @@ public def getRoot(this: GeeFs var&): INode var* {
 /*
  * virtual operations
  */
+// helper function
+inline def min(x: u32, y: u32): u32 {
+  if x < y { x } else { y }
+}
+
 // find inode by name
-def find(this: INode var*, name: StrView&): INode var* {
-  let inode: GeeFsINode var& = this.getINode()
-  if inode.gfs_node.itype != GfsINodeType.Dir {
+def gfsFind(this: INode var*, name: StrView&): INode var* {
+  let inode: GfsINode& = this.getINode().gfs_inode
+  var fs: GeeFs var& = this.getFs()
+  // make sure current inode represents a directory
+  if inode.itype != GfsINodeType.Dir {
     return null as INode var*
   }
-  // TODO
+  // traverse all entries in current inode
+  let ent_num = inode.size / sizeof GfsEntry
+  let ent_per_blk = fs.super_block.block_size / sizeof GfsEntry
+  // traverse data blocks
+  var i = 0 as u32
+  while i < inode.block_num {
+    // get offset
+    var blk_ofs: u32
+    if !fs.getBlockOffset(inode, i, blk_ofs) {
+      return null as INode var*
+    }
+    let offset = blk_ofs * fs.super_block.block_size
+    // traverse entries in current block
+    let entry_num = min(ent_num - i * ent_per_blk, ent_per_blk)
+    var j = 0 as u32
+    while j < entry_num {
+      // read entry
+      let ent_ofs = offset + j * sizeof GfsEntry
+      var entry: GfsEntry
+      if !fs.dev.readAssert(sizeof GfsEntry, &entry as u8 var*, ent_ofs) {
+        return null as INode var*
+      }
+      // get inode
+      if name == entry.filename as u8* {
+        return fs.getINode(entry.inode_id)
+      }
+      j += 1 as u32
+    }
+    i += 1 as u32
+  }
+  null as INode var*
 }
 
 // get root inode of file system
-def getRootINode(this: INode var*): INode var* {
+def gfsGetRoot(this: INode var*): INode var* {
   this.getFs().getRoot()
 }
 
 // read inode content to buffer
-def read(this: INode var*, buf: u8 var*, len: USize,
+def gfsRead(this: INode var*, buf: u8 var*, len: USize,
          offset: USize): i32 {
   // TODO
+  -1
 }
 
 // write buffer content to inode
-def write(this: INode var*, buf: u8*, len: USize,
+def gfsWrite(this: INode var*, buf: u8*, len: USize,
           offset: USize): i32 {
   // TODO
+  -1
 }
 
 // clean up before being released
-def cleanUp(this: INode var*) {
+def gfsCleanUp(this: INode var*) {
   this.getFs().removeINode(this.getINode().id)
 }
 
@@ -200,9 +248,9 @@ def cleanUp(this: INode var*) {
  */
 // initialize virtual operations
 public def initGeeFsOps() {
-  geefs_ops.op_find = find
-  geefs_ops.op_get_root = getRootINode
-  geefs_ops.op_read = read
-  geefs_ops.op_write = write
-  geefs_ops.op_cleanup = cleanUp
+  geefs_ops.op_find = gfsFind
+  geefs_ops.op_get_root = gfsGetRoot
+  geefs_ops.op_read = gfsRead
+  geefs_ops.op_write = gfsWrite
+  geefs_ops.op_cleanup = gfsCleanUp
 }
