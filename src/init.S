@@ -7,8 +7,10 @@ _start:
   call  entry
 
 
-  # first user program
+  # filesystem image
   .section  .data
   .globl    _user_img_start
 _user_img_start:
-  .incbin   "usr/hello"
+  .incbin   "user.img"
+  .globl    _user_img_end
+_user_img_end:
