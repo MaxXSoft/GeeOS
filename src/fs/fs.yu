@@ -1,4 +1,5 @@
 public import fs.vfs.inode
+public import fs.dev.stdin
 
 import fs.dev.mem
 import fs.geefs.fs
@@ -11,6 +12,9 @@ extern declare _user_img_end: ()
 // root inode of filesystem
 public var root_inode: INode var* = null as INode var*
 
+// character buffer for standard input
+public var stdin: StdIn = [StdIn] {}
+
 var dev: MemDevice, geefs: GeeFs
 
 
@@ -19,6 +23,7 @@ public def initFileSystem() {
   // initialize device
   dev = newMemDevice(_user_img_start as u8 var*,
                      _user_img_end as USize - _user_img_start as USize)
+  stdin = newStdIn()
   // initialize GeeFS
   initGeeFsOps()
   geefs = newGeeFs(&dev as DeviceInterface var*)
