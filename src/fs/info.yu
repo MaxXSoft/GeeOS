@@ -72,8 +72,11 @@ public def deallocFd(this: FileInfo var&, fd: i32) {
 }
 
 // get file item by `fd`
-public def getFile(this: FileInfo var&, fd: i32): File var& {
-  assert(fd >= 0 && fd < FILE_COUNT && !this.files[fd].isNone(),
-         "FileInfo.getFile")
-  this.files[fd]
+public def getFile(this: FileInfo var&, fd: i32): File var* {
+  if fd >= 0 && fd < FILE_COUNT && !this.files[fd].isNone() {
+    &this.files[fd]
+  }
+  else {
+    null as File var*
+  }
 }
