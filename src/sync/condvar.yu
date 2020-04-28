@@ -1,7 +1,7 @@
 public import sync.spinlock
 public import lib.queue
 
-import proc.thread
+import proc.proc
 
 public struct CondVar {
   lock: Spinlock,

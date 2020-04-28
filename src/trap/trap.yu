@@ -5,7 +5,7 @@ import arch.riscv.csr
 import lib.io
 import trap.syscall
 import lib.except
-import proc.thread
+import proc.proc
 
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()
