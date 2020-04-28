@@ -28,6 +28,7 @@ inline let MIE_MSIE         = (1 << 3) as USize
 inline let SATP_SV32        = (1 << 31) as USize
 // trap cause
 inline let TRAP_S_SOFT_INT  = ((1 << 31) | 1) as USize
+inline let TRAP_S_EXT_INT   = ((1 << 31) | 9) as USize
 inline let TRAP_ILLEGAL     = 2 as USize
 inline let TRAP_U_SYSCALL   = 8 as USize
 inline let TRAP_INST_FAULT  = 12 as USize
