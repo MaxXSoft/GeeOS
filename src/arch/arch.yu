@@ -7,12 +7,15 @@ all targets must define the following constants:
 - MEM_SIZE_MIB: i32:  physical memory size (MiB)
 - UART_ADDR: i32:     address of UART device
 - UART_END: i32:      end address of UART device
+- PLIC_ADDR: i32:     address of PLIC device
+- PLIC_END: i32:      end address of PLIC device
 - CLINT_MTIME: i32:   address of CLINT's 'mtime' register
 - CLINT_MCMP: i32:    address of CLINT's 'mtimecmp' register
 
 all targets must define the following functions:
 
 - initIO: ():         initialize IO driver (like UART)
+- initIoIntr: ():     initialize IO interrupt
 - putChar: (u8):      put a character to IO
 - getChar: (): i32:   get a character from IO
 - halt: (i32):        halt the CPU, and return exit code (if possible)
