@@ -20,6 +20,7 @@ public struct INode {
 public struct INodeOps {
   op_find: (INode var*, StrView&): INode var*,
   op_get_root: (INode var*): INode var*,
+  op_get_size: (INode var*): USize,
   op_read: (INode var*, u8 var*, USize, USize): i32,
   op_write: (INode var*, u8*, USize, USize): i32,
   op_cleanup: (INode var*),
@@ -49,6 +50,12 @@ inline def find(this: INode var*, name: StrView&): INode var* {
 inline def getRoot(this: INode var*): INode var* {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_get_root)(this)
+}
+
+// get size of current inode
+inline def getSize(this: INode var*): USize {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_get_size)(this)
 }
 
 // read the content of current inode to buffer
