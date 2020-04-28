@@ -8,10 +8,8 @@ public struct CondVar {
   wait_queue: Queue,
 }
 
-public def newCondVar(name: u8*) {
-  var lock: Spinlock
-  lock.init(name)
-  [CondVar] {lock, newQueue()}
+public def newCondVar(name: u8*): CondVar {
+  [CondVar] {newSpinlock(name), newQueue()}
 }
 
 public def del(this: CondVar var&) {
@@ -30,7 +28,7 @@ public def notify(this: CondVar var&) {
   // pop thread id from queue
   this.lock.acquire()
   let valid = !this.wait_queue.empty()
-  if (valid) {
+  if valid {
     tid = this.wait_queue.pop()
   }
   this.lock.release()

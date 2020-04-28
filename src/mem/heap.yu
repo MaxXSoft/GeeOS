@@ -138,7 +138,7 @@ def allocMem(size: USize): u8 var* {
 
 // initialize heap memory
 public def initHeapMem() {
-  heap.lock.init("heap")
+  heap.lock = newSpinlock("heap")
   heap.heap_mem = HEAP_BASE as u8 var*
   heap.heap_base = heap.heap_mem
 }

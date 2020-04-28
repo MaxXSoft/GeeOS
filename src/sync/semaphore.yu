@@ -11,9 +11,7 @@ import lib.except
 import proc.proc
 
 public def newSemaphore(name: u8*, value: i32): Semaphore {
-  var lock: Spinlock
-  lock.init(name)
-  [Semaphore] {lock, value, newQueue()}
+  [Semaphore] {newSpinlock(name), value, newQueue()}
 }
 
 public def newSemaphore(name: u8*): Semaphore {

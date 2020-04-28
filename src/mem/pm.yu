@@ -38,7 +38,7 @@ public def freePhyMem(addr: u8 var*) {
 
 // initialize physical page allocator
 public def initPhyMem() {
-  phy_mem.lock.init("phy_mem")
+  phy_mem.lock = newSpinlock("phy_mem")
   // free all avaliable physical pages
   let pa = newPhysAddr(_geeos_end as USize)
   let pa_4k = pa.roundUp()
