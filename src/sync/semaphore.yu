@@ -1,14 +1,14 @@
 public import sync.spinlock
 public import lib.queue
 
-import proc.proc
-import lib.except
-
 public struct Semaphore {
   lock: Spinlock,
   value: i32,
   wait_queue: Queue,
 }
+
+import lib.except
+import proc.proc
 
 public def newSemaphore(name: u8*, value: i32): Semaphore {
   var lock: Spinlock
@@ -46,6 +46,6 @@ public def signal(this: Semaphore var&) {
   else {
     let tid = this.wait_queue.pop()
     this.lock.release()
-    wakeUp(tid as USize)
+    wakeUp(tid as Tid)
   }
 }
