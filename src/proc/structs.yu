@@ -1,5 +1,6 @@
 public import define.context
 public import mem.mset
+public import fs.info
 
 import arch.arch
 import arch.riscv.consts
@@ -43,29 +44,34 @@ public def getTop(this: KernelStack&): USize {
   this.addr as USize + STACK_SIZE
 }
 
+
 // definition of process
 public struct Process {
   vm: MemorySet,
+  fds: FileInfo,
   thread_count: i32,
 }
 
-public def newProcess(vm: MemorySet): Process var* {
+def newProcess(vm: MemorySet): Process var* {
   let proc = allocHeapMem(sizeof Process) as Process var*
-  *proc = [Process] {vm, 0}
+  (*proc).vm = vm
+  (*proc).fds.init()
+  (*proc).thread_count = 0
   proc
 }
 
-public def del(this: Process var*) {
+def del(this: Process var*) {
   // TODO: release all allocated pages
+  (*this).fds.del()
   freeHeapMem(this as u8 var*)
 }
 
-public def incCounter(this: Process var*): Process var* {
+def incCounter(this: Process var*): Process var* {
   (*this).thread_count += 1
   this
 }
 
-public def decCounter(this: Process var*): Process var* {
+def decCounter(this: Process var*): Process var* {
   (*this).thread_count -= 1
   if (*this).thread_count < 0 {
     panic("decCounter")
@@ -75,6 +81,11 @@ public def decCounter(this: Process var*): Process var* {
   }
   this
 }
+
+def getFds(this: Process var*): FileInfo var& {
+  (*this).fds
+}
+
 
 // definition of thread
 // objects of this structure will always be allocated on the heap
@@ -169,11 +180,14 @@ public def newUserThread(data: u8*): Thread var* {
   // create kernel stack & user thread
   let kstack = newKernelStack()
   let thread = allocHeapMem(sizeof Thread) as Thread var*
+  let proc = newProcess(ms).incCounter()
   (*thread) = [Thread] {
     newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
     kstack,
-    newProcess(ms).incCounter(),
+    proc,
   }
+  // initialize stdio
+  proc.getFds().initStdFds()
   thread
 }
 
@@ -194,4 +208,10 @@ public def appendInitArgs(this: Thread*, args: USize[3]) {
 // switch to target thread
 public def switchTo(this: Thread var*, target: Thread var*) {
   (*this).context.switchTo((*target).context)
+}
+
+// get file info
+public def getFds(this: Thread var*): FileInfo var& {
+  assert((*this).proc != null as Process var*, "Thread.getFds")
+  (*this).proc.getFds()
 }
