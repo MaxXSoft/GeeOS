@@ -11,16 +11,16 @@ import proc.proc
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()
 
-// tick of timer
-var tick = 0 as USize
+// // tick of timer
+// var tick = 0 as USize
 
 // handle timer interrupt
 def handleTimer() {
-  // TODO: remove this log
-  tick += 1 as USize
-  if tick % 100 as USize == 0 as USize {
-    io <<< "100 ticks!\n"
-  }
+  // // TODO: remove this log
+  // tick += 1 as USize
+  // if tick % 100 as USize == 0 as USize {
+  //   io <<< "100 ticks!\n"
+  // }
   // tell processor a tick passed
   tick()
   // acknowledge soft interrupt
@@ -57,9 +57,9 @@ def handlePageFault(tf: TrapFrame var&) {
 
 // initialize trap handling
 public def initTrap() {
+  initIntr()
   setSscratch(0 as USize)
   setStvec(_handleTrap as USize)
-  initIoIntr()
 }
 
 // trap handler
