@@ -95,6 +95,11 @@ public def exit(this: Processor var*, code: USize) {
   setIntrOff()
   // tell pool a thread just exited
   (*this).pool.exit((*this).current_tid, code)
+  // wake up the thread that waiting for this thread
+  let wait = (*this).current_thread.getWait()
+  if wait != 0 as Tid {
+    (*this).pool.wakeUp(wait)
+  }
   // switch to idle thread and schedule
   (*this).current_thread.switchTo((*this).idle)
   while true {}
