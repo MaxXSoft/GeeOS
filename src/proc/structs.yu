@@ -163,10 +163,9 @@ public def newKernelThread(entry: USize): Thread var* {
 // create new user thread
 public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   let elf = newElfFile(data), ehdr = elf.getEhdr()
-  // TODO: do not panic in kernel
-  assert(ehdr.isValid(), "failed to read ELF")
-  // check ELF type
-  assert(ehdr.getType() == ElfEtype.Executable, "unsupported ELF type")
+  if !ehdr.isValid() || ehdr.getType() != ElfEtype.Executable {
+    return null as Thread var*
+  }
   // get entry point
   let entry = ehdr.getEntry()
   // TODO: remove this log
