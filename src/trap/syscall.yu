@@ -2,6 +2,7 @@ public import arch.arch
 public import define.context
 
 import proc.proc
+import fs.fs
 import lib.io
 
 // definitions of system call id
@@ -42,7 +43,7 @@ def sysClose(fd: i32): ISize {
 def sysRead(fd: i32, buf: u8 var*, len: USize): ISize {
   // check if is standard input
   if fd == 0 {
-    // TODO
+    *buf = stdin.pop()
     1 as ISize
   }
   else {
