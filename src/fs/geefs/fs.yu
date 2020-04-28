@@ -232,6 +232,11 @@ def gfsGetRoot(this: INode var*): INode var* {
   this.getFs().getRoot()
 }
 
+// get size of current inode
+def gfsGetSize(this: INode var*): USize {
+  this.getINode().gfs_inode.size as USize
+}
+
 // read inode content to buffer
 def gfsRead(this: INode var*, buf: u8 var*, len: USize,
             offset: USize): i32 {
@@ -277,6 +282,7 @@ def gfsCleanUp(this: INode var*) {
 public def initGeeFsOps() {
   geefs_ops.op_find = gfsFind
   geefs_ops.op_get_root = gfsGetRoot
+  geefs_ops.op_get_size = gfsGetSize
   geefs_ops.op_read = gfsRead
   geefs_ops.op_write = gfsWrite
   geefs_ops.op_cleanup = gfsCleanUp
