@@ -6,8 +6,8 @@ inline let MEM_ADDR     = 0x80000000
 inline let MEM_SIZE_MIB = 128
 inline let UART_ADDR    = 0x10000000
 inline let UART_END     = 0x10000100
-inline let PLIC_ADDR    = 0x0c002000
-inline let PLIC_END     = 0x0c003000
+inline let PLIC_ADDR    = 0x0c000000
+inline let PLIC_END     = 0x0c400000
 inline let CLINT_MTIME  = 0x0200bff8
 inline let CLINT_MCMP   = 0x02004000
 
@@ -20,6 +20,7 @@ inline let UART_THR         = 0x00
 inline let UART_DLL         = 0x00
 inline let UART_DLM         = 0x01
 inline let UART_IER         = 0x01
+inline let UART_FCR         = 0x02
 inline let UART_LCR         = 0x03
 inline let UART_LSR         = 0x05
 inline let UART_LCR_DLAB    = 0x80 as u8
@@ -35,16 +36,19 @@ inline def initIO() {
   UART_DEV[UART_DLL] = divisor as u8
   UART_DEV[UART_DLM] = (divisor >> 8 as u32) as u8
   UART_DEV[UART_LCR] = UART_LCR_PODD | UART_LCR_8BIT
+  UART_DEV[UART_FCR] = 0x07 as u8
+  UART_DEV[UART_IER] = 0x01 as u8
 }
 
-// initialize IO interrupt
-inline def initIoIntr() {
-  // initialize PLIC
-  let S_MODE_INT_EN = 0x0c002080 as u32 volatile var*
-  let SERIAL_BIT = (1 << 0xa) as u32
-  (*S_MODE_INT_EN) = SERIAL_BIT
-  // enable UART interrupt
-  UART_DEV[UART_IER] = 1 as u8
+// initialize PLIC
+inline def initIntr() {
+  let UART_IRQ = 10
+  let PLIC_UART_IRQ = (PLIC_ADDR + UART_IRQ * 4) as u32 volatile var*
+  let S_MODE_INT_EN = (PLIC_ADDR + 0x2080) as u32 volatile var*
+  let S_MODE_PRIORITY = (PLIC_ADDR + 0x201000) as u32 volatile var*
+  (*PLIC_UART_IRQ) = 1 as u32
+  (*S_MODE_INT_EN) = (1 << UART_IRQ) as u32
+  (*S_MODE_PRIORITY) = 0 as u32
 }
 
 // put character

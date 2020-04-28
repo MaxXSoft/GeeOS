@@ -11,7 +11,7 @@ inline let CLINT_MTIME  = 0x90010000
 inline let CLINT_MCMP   = 0x90010100
 
 inline def initIO() {}
-inline def initIoIntr() {}
+inline def initIntr() {}
 
 inline def putChar(c: u8) {
   *(0x90000104 as u8 volatile var*) = c
