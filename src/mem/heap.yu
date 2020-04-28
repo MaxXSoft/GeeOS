@@ -2,6 +2,7 @@ public import arch.arch
 
 import mem.consts
 import sync.spinlock
+import lib.alloc
 
 // Memory allocator by Kernighan and Ritchie,
 // The C programming Language, 2nd ed.  Section 8.7.
@@ -27,18 +28,18 @@ struct Heap {
   // definition of heap base pointer,
   heap_base: u8 var*,
 }
-var heap: Heap
+var heap_mem: Heap
 
 // allocate more heap space
 def increaseHeap(size: USize): u8 var* {
-  if heap.heap_base + size > heap.heap_mem + HEAP_SIZE {
+  if heap_mem.heap_base + size > heap_mem.heap_mem + HEAP_SIZE {
     // heap is full
     null as u8 var*
   }
   else {
     // just increase
-    let p = heap.heap_base
-    heap.heap_base += size
+    let p = heap_mem.heap_base
+    heap_mem.heap_base += size
     p
   }
 }
@@ -46,7 +47,7 @@ def increaseHeap(size: USize): u8 var* {
 def freeMem(ptr: u8 var*) {
   // point to the header
   let p = ptr as Header var* - 1
-  var q = heap.free_unit
+  var q = heap_mem.free_unit
   while !(p > q && p < (*q).next) {
     if q >= (*q).next && (p > q || p < (*q).next) {
       break
@@ -70,7 +71,7 @@ def freeMem(ptr: u8 var*) {
     (*q).next = p
   }
   // set the free unit pointer
-  heap.free_unit = q
+  heap_mem.free_unit = q
 }
 
 def moreCore(len: USize): Header var* {
@@ -87,7 +88,7 @@ def moreCore(len: USize): Header var* {
     let unit_ptr = core_ptr as Header var*
     (*unit_ptr).size = unit_size
     freeMem((unit_ptr + 1) as u8*)
-    heap.free_unit
+    heap_mem.free_unit
   }
 }
 
@@ -96,12 +97,12 @@ def allocMem(size: USize): u8 var* {
                    sizeof Header) + 1 as USize
   var ret = null as u8 var*
   // check if no free blocks
-  var prev = heap.free_unit
+  var prev = heap_mem.free_unit
   if prev == null as Header var* {
-    prev = &heap.base
-    heap.free_unit = prev
-    heap.base.next = heap.free_unit
-    heap.base.size = 0 as USize
+    prev = &heap_mem.base
+    heap_mem.free_unit = prev
+    heap_mem.base.next = heap_mem.free_unit
+    heap_mem.base.size = 0 as USize
   }
   // allocate free block
   var p = (*prev).next
@@ -118,11 +119,11 @@ def allocMem(size: USize): u8 var* {
         p += (*p).size
         (*p).size = unit_size
       }
-      heap.free_unit = prev
+      heap_mem.free_unit = prev
       ret = (p + 1) as u8 var*
       break
     }
-    if p == heap.free_unit {
+    if p == heap_mem.free_unit {
       p = moreCore(unit_size)
       if p == null as Header var* {
         // no spare space
@@ -136,24 +137,25 @@ def allocMem(size: USize): u8 var* {
   ret
 }
 
-// initialize heap memory
-public def initHeapMem() {
-  heap.lock = newSpinlock("heap")
-  heap.heap_mem = HEAP_BASE as u8 var*
-  heap.heap_base = heap.heap_mem
-}
-
 // allocate new heap memory
-public def allocHeapMem(size: USize): u8 var* {
-  heap.lock.acquire()
+def allocHeapMem(size: USize): u8 var* {
+  heap_mem.lock.acquire()
   let ret = allocMem(size)
-  heap.lock.release()
+  heap_mem.lock.release()
   ret
 }
 
 // free allocated heap memory
-public def freeHeapMem(ptr: u8 var*) {
-  heap.lock.acquire()
+def freeHeapMem(ptr: u8 var*) {
+  heap_mem.lock.acquire()
   freeMem(ptr)
-  heap.lock.release()
+  heap_mem.lock.release()
+}
+
+// initialize heap memory
+public def initHeapMem() {
+  heap_mem.lock = newSpinlock("heap")
+  heap_mem.heap_mem = HEAP_BASE as u8 var*
+  heap_mem.heap_base = heap_mem.heap_mem
+  heap.init(allocHeapMem, freeHeapMem)
 }
