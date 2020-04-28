@@ -1,0 +1,46 @@
+public import sync.spinlock
+public import lib.queue
+public import sync.condvar
+
+public struct StdIn {
+  lock: Spinlock,
+  buf: Queue,
+  pushed: CondVar,
+}
+
+public def newStdIn(): StdIn {
+  [StdIn] {newSpinlock("StdIn"), newQueue(), newCondVar("StdIn")}
+}
+
+public def del(this: StdIn var&) {
+  this.buf.del()
+  this.pushed.del()
+}
+
+public def push(this: StdIn var&, c: u8) {
+  this.lock.acquire()
+  this.buf.push(c as USize)
+  this.lock.release()
+  this.pushed.notify()
+}
+
+public def pop(this: StdIn var&): u8 {
+  var ret: u8
+  while true {
+    // try to pop character from queue
+    this.lock.acquire()
+    let valid = !this.buf.empty()
+    if valid {
+      ret = this.buf.pop() as u8
+    }
+    this.lock.release()
+    // wait if is invalid
+    if !valid {
+      this.pushed.wait()
+    }
+    else {
+      break
+    }
+  }
+  ret
+}
