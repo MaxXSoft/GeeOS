@@ -54,6 +54,16 @@ public def allocFd(this: FileInfo var&, fd: i32 var&): bool {
   false
 }
 
+// initialize standard input/output file descriptor
+public def initStdFds(this: FileInfo var&) {
+  var fd: i32, i = 0
+  while i < 3 {
+    let ret = this.allocFd(fd)
+    assert(ret && fd == i, "FileInfo.initStdFd")
+    i += 1
+  }
+}
+
 // deallocate a file descriptor
 public def deallocFd(this: FileInfo var&, fd: i32) {
   assert(fd >= 0 && fd < FILE_COUNT && this.files[fd].isAllocated(),
