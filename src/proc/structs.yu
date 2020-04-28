@@ -168,8 +168,6 @@ public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   }
   // get entry point
   let entry = ehdr.getEntry()
-  // TODO: remove this log
-  io <<< "entry: " <<$ entry <<< '\n'
   // create page table & user stack
   var ms = elf.makeMemorySet()
   let ustack_top = {
