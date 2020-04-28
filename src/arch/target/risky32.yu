@@ -5,10 +5,13 @@ inline let MEM_ADDR     = 0x80000000
 inline let MEM_SIZE_MIB = 4
 inline let UART_ADDR    = 0x90000104
 inline let UART_END     = 0x90000200
+inline let PLIC_ADDR    = 0x00000000
+inline let PLIC_END     = 0x00000000
 inline let CLINT_MTIME  = 0x90010000
 inline let CLINT_MCMP   = 0x90010100
 
 inline def initIO() {}
+inline def initIoIntr() {}
 
 inline def putChar(c: u8) {
   *(0x90000104 as u8 volatile var*) = c
