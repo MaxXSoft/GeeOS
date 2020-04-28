@@ -3,6 +3,7 @@ public import define.context
 import arch.arch
 import arch.riscv.csr
 import lib.io
+import fs.fs
 import trap.syscall
 import lib.except
 import proc.proc
@@ -26,6 +27,20 @@ def handleTimer() {
   setSip(getSip() & ~SIE_SSIE)
 }
 
+// handle external interrupt
+def handleExternal() {
+  // read character from UART
+  let c = getChar()
+  if c >= 0 {
+    if c as u8 == '\r' {
+      stdin.push('\n')
+    }
+    else {
+      stdin.push(c as u8)
+    }
+  }
+}
+
 // handle system call
 def handleSyscall(tf: TrapFrame var&) {
   tf.sepc += 4 as USize
@@ -44,6 +59,7 @@ def handlePageFault(tf: TrapFrame var&) {
 public def initTrap() {
   setSscratch(0 as USize)
   setStvec(_handleTrap as USize)
+  initIoIntr()
 }
 
 // trap handler
@@ -51,6 +67,9 @@ extern def handleTrap(tf: TrapFrame var&) {
   when tf.scause {
     TRAP_S_SOFT_INT {
       handleTimer()
+    }
+    TRAP_S_EXT_INT {
+      handleExternal()
     }
     TRAP_U_SYSCALL {
       handleSyscall(tf)
