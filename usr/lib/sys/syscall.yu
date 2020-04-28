@@ -4,26 +4,44 @@ public type USize = u32
 
 // id of system call
 public enum SyscallId {
+  Open = 56,
+  Close = 57,
   Read = 63,
   Write = 64,
   Exit = 93,
+  Exec = 221,
 }
 
 // defined in 'syscall.S'
 extern declare syscall: (i32, i32, i32, i32, i32, i32, i32, SyscallId): i32
 
-// read bytes from file to array
-inline def read(fd: USize, buf: u8 var*, len: USize): i32 {
-  syscall(fd as i32, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Read)
+// open file
+inline def open(path: u8*, flags: i32): i32 {
+  syscall(path as i32, flags, 0, 0, 0, 0, 0, SyscallId.Open)
 }
 
-// put a character to console
-inline def write(c: u8): i32 {
-  syscall(c as i32, 0, 0, 0, 0, 0, 0, SyscallId.Write)
+// close file
+inline def close(fd: i32): i32 {
+  syscall(fd, 0, 0, 0, 0, 0, 0, SyscallId.Close)
+}
+
+// read bytes from file to buffer
+inline def read(fd: i32, buf: u8 var*, len: USize): i32 {
+  syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Read)
+}
+
+// write bytes from buffer to file
+inline def write(fd: i32, buf: u8*, len: USize): i32 {
+  syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Write)
 }
 
 // exit current thread
 inline def exit(code: USize) {
   syscall(code as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exit)
   while true {}
+}
+
+// execute program
+inline def exec(path: u8*) {
+  syscall(path as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exec)
 }
