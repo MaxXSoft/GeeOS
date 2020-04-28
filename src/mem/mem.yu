@@ -7,7 +7,6 @@ import mem.mset
 import mem.consts
 import mem.pm
 import mem.heap
-import lib.alloc
 
 // set linear mapping of address range
 def mapRange(pt: PageTable var*, begin: USize, end: USize, flags: USize) {
@@ -55,7 +54,6 @@ public def initMem() {
   initPhyMem()
   // initialize heap memory
   initHeapMem()
-  heap.init(allocHeapMem, freeHeapMem)
   // initialize temporary page table
   let temp_table = initTempTable()
   // remap kernel
