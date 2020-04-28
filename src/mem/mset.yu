@@ -31,6 +31,8 @@ def mapKernel(this: MemorySet var&) {
             newMemoryAttr(), handler)
   this.push(UART_ADDR as USize, UART_END as USize,
             newMemoryAttr(), handler)
+  this.push(PLIC_ADDR as USize, PLIC_END as USize,
+            newMemoryAttr(), handler)
 }
 
 public def newMemorySet(): MemorySet {
