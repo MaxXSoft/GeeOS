@@ -1,0 +1,77 @@
+public import arch.arch
+public import proc.consts
+public import proc.structs
+
+import fs.fs
+import mem.heap
+import proc.processor
+import lib.except
+import arch.riscv.csr
+
+// current processor
+var cpu: Processor var*
+
+
+// execute new process
+public def execute(path: u8*, host_tid: Tid): bool {
+  let path = newStrView(path)
+  // find file in root inode
+  let inode = root_inode.lookup(path)
+  if inode != null as INode var* {
+    var ret = false
+    // read content of inode
+    let size = inode.getSize(), buf = allocHeapMem(size)
+    if inode.read(buf, size, 0 as USize) as USize == size {
+      // create user thread
+      let thread = newUserThread(buf, host_tid)
+      if thread != null as Thread var* {
+        cpu.addThread(thread)
+        ret = true
+      }
+    }
+    // free buffer & inode
+    freeHeapMem(buf)
+    inode.close()
+    ret
+  }
+  else {
+    false
+  }
+}
+
+// initialize process
+public def initProcess() {
+  cpu = newProcessor(TIME_SLICE)
+  let ret = execute("hello", 0 as Tid)
+  assert(ret, "initProcess")
+}
+
+// turn interrupt on and run scheduler on current CPU
+public def runCpu() {
+  setIntrOn()
+  cpu.run()
+}
+
+public def tick() {
+  cpu.tick()
+}
+
+public def exit(code: USize) {
+  cpu.exit(code)
+}
+
+public def yield() {
+  cpu.yield()
+}
+
+public def wakeUp(tid: Tid) {
+  cpu.wakeUp(tid)
+}
+
+public def getCurrentTid(): Tid {
+  cpu.getCurrentTid()
+}
+
+public def getCurrentThread(): Thread var* {
+  cpu.getCurrentThread()
+}
