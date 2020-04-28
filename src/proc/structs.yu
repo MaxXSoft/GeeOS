@@ -1,6 +1,7 @@
 public import define.context
 public import mem.mset
 public import fs.info
+public import proc.consts
 
 import arch.arch
 import arch.riscv.consts
@@ -93,6 +94,7 @@ public struct Thread {
   context: Context,
   kstack: KernelStack,
   proc: Process var*,
+  wait: Tid,
 }
 
 // create memory attribute by ELF program header
@@ -140,6 +142,7 @@ public def newIdleThread(): Thread var* {
     newNullContext(),
     newKernelStack(),
     null as Process var*,
+    0 as Tid,
   }
   thread
 }
@@ -152,12 +155,13 @@ public def newKernelThread(entry: USize): Thread var* {
     newKernelContext(entry, kstack.getTop(), getSatp()),
     kstack,
     null as Process var*,
+    0 as Tid,
   }
   thread
 }
 
 // create new user thread
-public def newUserThread(data: u8*): Thread var* {
+public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   let elf = newElfFile(data), ehdr = elf.getEhdr()
   // TODO: do not panic in kernel
   assert(ehdr.isValid(), "failed to read ELF")
@@ -185,6 +189,7 @@ public def newUserThread(data: u8*): Thread var* {
     newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
     kstack,
     proc,
+    wait_thread,
   }
   // initialize stdio
   proc.getFds().initStdFds()
@@ -214,4 +219,9 @@ public def switchTo(this: Thread var*, target: Thread var*) {
 public def getFds(this: Thread var*): FileInfo var& {
   assert((*this).proc != null as Process var*, "Thread.getFds")
   (*this).proc.getFds()
+}
+
+// get wait thread
+inline def getWait(this: Thread var*): Tid {
+  (*this).wait
 }
