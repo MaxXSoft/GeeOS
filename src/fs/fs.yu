@@ -32,3 +32,11 @@ public def initFileSystem() {
   }
   root_inode = geefs.getRoot()
 }
+
+// clean up filesystem
+public def cleanUpFileSystem() {
+  root_inode = null as INode var*
+  geefs.del()
+  dev.del()
+  stdin.del()
+}
