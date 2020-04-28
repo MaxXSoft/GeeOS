@@ -1,7 +1,8 @@
 import lib.io
 import trap.trap
 import mem.mem
-import proc.thread
+import fs.fs
+import proc.proc
 
 // supervisor mode entry of GeeOS
 public def main() {
@@ -9,8 +10,10 @@ public def main() {
   initTrap()
   io <<< "initializing memory...\n"
   initMem()
-  io <<< "initializing threads...\n"
-  initThread()
+  io <<< "initializing filesystem...\n"
+  initFileSystem()
+  io <<< "initializing process manager...\n"
+  initProcess()
   io <<< "done!\n\n"
   runCpu()
 }
