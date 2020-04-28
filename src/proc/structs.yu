@@ -180,18 +180,18 @@ public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
     ms.push(ustack_bottom, ustack_top, newMemoryAttr().setUser(), handler)
     ustack_top
   }
+  // create process
+  let proc = newProcess(ms).incCounter()
+  proc.getFds().initStdFds()
   // create kernel stack & user thread
   let kstack = newKernelStack()
   let thread = allocHeapMem(sizeof Thread) as Thread var*
-  let proc = newProcess(ms).incCounter()
   (*thread) = [Thread] {
     newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
     kstack,
     proc,
     wait_thread,
   }
-  // initialize stdio
-  proc.getFds().initStdFds()
   thread
 }
 
