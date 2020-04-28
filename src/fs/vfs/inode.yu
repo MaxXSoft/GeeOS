@@ -2,7 +2,7 @@ public import arch.arch
 public import lib.strview
 
 import lib.except
-import mem.heap
+import lib.alloc
 
 // type of inode
 public enum INodeType {
@@ -36,7 +36,7 @@ public def init(this: INode var*, itype: INodeType, ops: INodeOps*) {
 // delete current inode
 public def del(this: INode var*) {
   assert((*this).ref_count == 0, "INode.del")
-  freeHeapMem(this as u8 var*)
+  heap.dealloc(this as u8 var*)
 }
 
 // find inode in current inode

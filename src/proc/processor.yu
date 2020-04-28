@@ -2,7 +2,7 @@ public import proc.pool
 public import proc.structs
 
 import arch.arch
-import mem.heap
+import lib.alloc
 import arch.riscv.csr
 import lib.io
 
@@ -20,7 +20,7 @@ public struct Processor {
 }
 
 public def newProcessor(max_time: USize): Processor var* {
-  let proc = allocHeapMem(sizeof Processor) as Processor var*
+  let proc = heap.alloc(sizeof Processor) as Processor var*
   (*proc).pool.init(max_time)
   (*proc).idle = newIdleThread()
   (*proc).current_thread = null as Thread var*

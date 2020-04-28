@@ -7,10 +7,10 @@ import arch.arch
 import arch.riscv.consts
 import arch.riscv.csr
 import mem.pm
-import mem.heap
 import mem.attr
 import mem.handler
 import lib.except
+import lib.alloc
 import lib.elf
 import lib.c.string
 import lib.io
@@ -54,7 +54,7 @@ public struct Process {
 }
 
 def newProcess(vm: MemorySet): Process var* {
-  let proc = allocHeapMem(sizeof Process) as Process var*
+  let proc = heap.alloc(sizeof Process) as Process var*
   (*proc).vm = vm
   (*proc).fds.init()
   (*proc).thread_count = 0
@@ -64,7 +64,7 @@ def newProcess(vm: MemorySet): Process var* {
 def del(this: Process var*) {
   // TODO: release all allocated pages
   (*this).fds.del()
-  freeHeapMem(this as u8 var*)
+  heap.dealloc(this as u8 var*)
 }
 
 def incCounter(this: Process var*): Process var* {
@@ -137,7 +137,7 @@ def makeMemorySet(this: ElfFile&): MemorySet {
 
 // create new idle thread
 public def newIdleThread(): Thread var* {
-  let thread = allocHeapMem(sizeof Thread) as Thread var*
+  let thread = heap.alloc(sizeof Thread) as Thread var*
   (*thread) = [Thread] {
     newNullContext(),
     newKernelStack(),
@@ -150,7 +150,7 @@ public def newIdleThread(): Thread var* {
 // create new kernel thread
 public def newKernelThread(entry: USize): Thread var* {
   let kstack = newKernelStack()
-  let thread = allocHeapMem(sizeof Thread) as Thread var*
+  let thread = heap.alloc(sizeof Thread) as Thread var*
   (*thread) = [Thread] {
     newKernelContext(entry, kstack.getTop(), getSatp()),
     kstack,
@@ -185,7 +185,7 @@ public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   proc.getFds().initStdFds()
   // create kernel stack & user thread
   let kstack = newKernelStack()
-  let thread = allocHeapMem(sizeof Thread) as Thread var*
+  let thread = heap.alloc(sizeof Thread) as Thread var*
   (*thread) = [Thread] {
     newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
     kstack,
@@ -201,7 +201,7 @@ public def del(this: Thread var*) {
   if (*this).proc != null as Process var* {
     (*this).proc.decCounter()
   }
-  freeHeapMem(this as u8 var*)
+  heap.dealloc(this as u8 var*)
 }
 
 // append initial arguments for current thread

@@ -3,7 +3,7 @@ public import proc.consts
 public import proc.structs
 
 import fs.fs
-import mem.heap
+import lib.alloc
 import proc.processor
 import lib.except
 import arch.riscv.csr
@@ -20,7 +20,7 @@ public def execute(path: u8*, host_tid: Tid): bool {
   if inode != null as INode var* {
     var ret = false
     // read content of inode
-    let size = inode.getSize(), buf = allocHeapMem(size)
+    let size = inode.getSize(), buf = heap.alloc(size)
     if inode.read(buf, size, 0 as USize) as USize == size {
       // create user thread
       let thread = newUserThread(buf, host_tid)
@@ -30,7 +30,7 @@ public def execute(path: u8*, host_tid: Tid): bool {
       }
     }
     // free buffer & inode
-    freeHeapMem(buf)
+    heap.dealloc(buf)
     inode.close()
     ret
   }

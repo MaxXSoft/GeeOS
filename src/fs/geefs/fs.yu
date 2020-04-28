@@ -5,7 +5,7 @@ public import sync.semaphore
 public import fs.vfs.inode
 
 import lib.except
-import mem.heap
+import lib.alloc
 import lib.algo
 
 // filesystem object
@@ -49,7 +49,7 @@ def convToINodeType(this: GfsINodeType): INodeType {
 // create new inode
 def newGeeFsINode(id: u32, gfs_inode: GfsINode&,
                   fs: GeeFs var*): INode var* {
-  var inode = allocHeapMem(sizeof GeeFsINode) as GeeFsINode var*
+  var inode = heap.alloc(sizeof GeeFsINode) as GeeFsINode var*
   (inode as INode var*).init(gfs_inode.itype.convToINodeType(), &geefs_ops)
   (*inode).id = id
   (*inode).gfs_inode = gfs_inode
