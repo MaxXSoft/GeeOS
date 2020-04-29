@@ -3,17 +3,26 @@ public import mem.handler
 public import mem.attr
 public import mem.paging
 
+import lib.alloc
+
+
 // representation of a memory area 
 public struct MemoryArea {
   start: USize,
   end: USize,
-  handler: MemoryHandler*,
+  handler: MemoryHandler var*,
   attr: MemoryAttr,
 }
 
-public def newMemArea(start: USize, end: USize, handler: MemoryHandler*,
+public def newMemArea(start: USize, end: USize,
+                      handler: MemoryHandler var*,
                       attr: MemoryAttr): MemoryArea {
+  handler.incCounter()
   [MemoryArea] {start, end, handler, attr}
+}
+
+public def del(this: MemoryArea var&) {
+  this.handler.decCounter()
 }
 
 // map memory area to page table
@@ -37,4 +46,40 @@ public def isOverlap(this: MemoryArea&, start: USize, end: USize): bool {
   let p3 = start / PAGE_SIZE as USize
   let p4 = (end - 1 as USize) / (PAGE_SIZE + 1) as USize
   !(p1 >= p4 || p2 <= p3)
+}
+
+
+// linked list of memory area
+public struct MemAreaList {
+  area: MemoryArea,
+  next: MemAreaList var*,
+}
+
+public def newMemAreaList(): MemAreaList {
+  [MemAreaList] {}
+}
+
+public def del(this: MemAreaList var&) {
+  var cur = this.next
+  while cur != null as MemAreaList var* {
+    (*cur).area.del()
+    let next = (*cur).next
+    heap.dealloc(cur as u8 var*)
+    cur = next
+  }
+}
+
+public def push(this: MemAreaList var&, area: MemoryArea) {
+  let node = heap.alloc(sizeof MemAreaList) as MemAreaList var*
+  (*node).area = area
+  (*node).next = this.next
+  this.next = node
+}
+
+public def unmap(this: MemAreaList var&, pt: ActivePageTable var&) {
+  var cur = this.next
+  while cur != null as MemAreaList var* {
+    (*cur).area.unmap(pt)
+    cur = (*cur).next
+  }
 }
