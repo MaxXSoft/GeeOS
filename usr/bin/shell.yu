@@ -1,0 +1,51 @@
+import lib.io
+import lib.sys.syscall
+
+let BUF_SIZE = 128
+var buf: u8[BUF_SIZE]
+
+extern def main(argc: i32, argv: u8**): i32 {
+  io <<< "Welcome to GeeOS shell!\n"
+  io <<< "$ "
+  var pos = 0
+  while true {
+    // get character from console
+    let c = io.getChar()
+    when c {
+      // new line
+      '\r', '\n' {
+        io <<< "\r\n"
+        // try to run program if current line is not empty
+        if pos > 0 {
+          buf[pos] = '\0'
+          pos = 0
+          if exec(buf as u8*) < 0 {
+            io <<< "command not found: " <<< buf as u8* <<< '\n'
+          }
+        }
+        // print prompt
+        io <<< "$ "
+      }
+      // backspace
+      '\x7f' {
+        if pos > 0 {
+          io <<< "\b \b"
+          pos -= 1
+        }
+      }
+      // other characters
+      else {
+        if pos < BUF_SIZE - 2 {
+          io <<< c
+          buf[pos] = c
+          pos += 1
+        }
+        else {
+          // buffer is full
+          io <<< '\a'
+        }
+      }
+    }
+  }
+  0
+}
