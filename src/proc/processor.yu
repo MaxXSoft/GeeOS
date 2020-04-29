@@ -4,7 +4,7 @@ public import proc.structs
 import arch.arch
 import lib.alloc
 import arch.riscv.csr
-import lib.io
+import proc.consts
 
 // model of processor
 // objects of this structure will always be allocated on the heap
@@ -97,7 +97,7 @@ public def exit(this: Processor var*, code: USize) {
   (*this).pool.exit((*this).current_tid, code)
   // wake up the thread that waiting for this thread
   let wait = (*this).current_thread.getWait()
-  if wait != 0 as Tid {
+  if wait != TID_NONE {
     (*this).pool.wakeUp(wait)
   }
   // switch to idle thread and schedule
