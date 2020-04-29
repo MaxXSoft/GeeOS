@@ -1,7 +1,7 @@
 import lib.io
 
 extern def main(argc: i32, argv: u8**): i32 {
-  io <<< "hello world! type something\n"
+  io <<< "this is a notepad. try to type something:\n"
   var line_count = 0
   while true {
     let c = io.getChar()
