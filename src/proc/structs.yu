@@ -61,7 +61,8 @@ def newProcess(vm: MemorySet): Process var* {
 }
 
 def del(this: Process var*) {
-  // TODO: release all allocated pages
+  assert((*this).thread_count == 0, "Process.del")
+  (*this).vm.del()
   (*this).fds.del()
   heap.dealloc(this as u8 var*)
 }
@@ -110,6 +111,7 @@ def makeMemorySet(this: ElfFile&): MemorySet {
   // create a new memory set with kernel mapping
   var ms = newMemorySet()
   // traverse program headers in ELF file
+  let handler = newFrameHandler()
   for ph in this.getPhdrIter() {
     if ph.getType() != ElfPtype.Load {
       continue
@@ -120,8 +122,6 @@ def makeMemorySet(this: ElfFile&): MemorySet {
     let data = this.getPhdrData(ph), data_len = ph.getFileSize()
     // get slice of target virtual address
     let target = {
-      let frame_handler = newFrameHandler()
-      let handler = &frame_handler as MemoryHandler*
       ms.push(virt_addr, virt_addr + mem_size, ph.toAttr(), handler)
       virt_addr as u8 var*
     }
@@ -172,8 +172,7 @@ public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   let ustack_top = {
     let ustack_bottom = USER_STACK_OFFSET as USize
     let ustack_top = (USER_STACK_OFFSET + USER_STACK_SIZE) as USize
-    let frame_handler = newFrameHandler()
-    let handler = &frame_handler as MemoryHandler*
+    let handler = newFrameHandler()
     ms.push(ustack_bottom, ustack_top, newMemoryAttr().setUser(), handler)
     ustack_top
   }
