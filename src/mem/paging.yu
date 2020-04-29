@@ -93,7 +93,7 @@ public def setExecute(this: PageEntry var&, value: bool) {
 
 // physical frame allocator
 struct PhysFrameAlloc {
-  base: FrameAllocator
+  base: FrameAllocator,
 }
 
 def allocPhysFrame(this: FrameAllocator var*): Frame {
@@ -106,6 +106,20 @@ def allocPhysFrame(this: FrameAllocator var*): Frame {
 
 def newPhysFrameAlloc(): PhysFrameAlloc {
   [PhysFrameAlloc] {[FrameAllocator] {allocPhysFrame}}
+}
+
+// physical frame deallocator
+struct PhysFrameDealloc {
+  base: FrameDeallocator,
+}
+
+def deallocPhysFrame(this: FrameDeallocator var*, frame: Frame) {
+  let pa = frame.getAddr()
+  freePhyMem(pa.getAddr() as u8 var*)
+}
+
+def newPhysFrameDealloc(): PhysFrameDealloc {
+  [PhysFrameDealloc] {[FrameDeallocator] {deallocPhysFrame}}
 }
 
 // page table for user threads
@@ -201,7 +215,13 @@ public def newInactivePageTable(): InactivePageTable {
 
 public def del(this: InactivePageTable var&) {
   let pa = this.root_frame.getAddr()
-  freePhyMem(pa.getAddr() as u8 var*)
+  let pt = pa.getAddr() as PageTable var*
+  // clear current page table
+  var frame_dealloc = newPhysFrameDealloc()
+  let dealloc = &frame_dealloc as FrameDeallocator var*
+  pt.clear(RECURSIVE_INDEX, dealloc)
+  // deallocate root frame
+  freePhyMem(pt as u8 var*)
 }
 
 public def token(this: InactivePageTable&): USize {
