@@ -59,6 +59,7 @@ std::optional<std::uint32_t> GeeFS::AllocDataBlock() {
             // update free map
             auto byte_ofs = offset + sizeof(hdr) + j;
             auto ret = dev_.WriteAssert(1, buf[j], byte_ofs);
+            static_cast<void>(ret);
             assert(ret);
             // return block offset
             auto blk_ofs = 1 + super_block_.free_map_num;
@@ -83,6 +84,7 @@ std::optional<std::uint32_t> GeeFS::AllocINode() {
                   (1 + super_block_.free_map_num + i);
     INodeBlockHeader hdr;
     auto ret = dev_.ReadAssert(sizeof(hdr), hdr, offset);
+    static_cast<void>(ret);
     assert(ret);
     // check for free inodes
     if (hdr.unused_num) {
@@ -133,6 +135,7 @@ void GeeFS::UpdateINode(const INode &inode, std::uint32_t id) {
   offset *= super_block_.block_size;
   offset += sizeof(INodeBlockHeader) + (id % in_per_blk) * sizeof(INode);
   auto ret = dev_.WriteAssert(sizeof(INode), inode, offset);
+  static_cast<void>(ret);
   assert(ret);
 }
 
@@ -382,6 +385,7 @@ void GeeFS::List(std::ostream &os) {
     os << std::endl;
     return true;
   });
+  static_cast<void>(ret);
   assert(ret);
 }
 
