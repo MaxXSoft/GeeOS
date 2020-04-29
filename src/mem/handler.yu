@@ -2,26 +2,47 @@ public import arch.arch
 public import mem.attr
 public import mem.paging
 
+import lib.alloc
 import mem.pm
 import lib.except
 
+
 // interface of memory handler
+// object of this structure must be allocated on heap
 public struct MemoryHandler {
-  map: (MemoryHandler*, ActivePageTable var&, USize, MemoryAttr&),
-  unmap: (MemoryHandler*, ActivePageTable var&, USize),
+  map: (MemoryHandler var*, ActivePageTable var&, USize, MemoryAttr&),
+  unmap: (MemoryHandler var*, ActivePageTable var&, USize),
+  ref_count: i32,
+}
+
+public def del(this: MemoryHandler var*) {
+  assert((*this).ref_count == 0, "MemoryHandler.del")
+  heap.dealloc(this as u8 var*)
+}
+
+public def incCounter(this: MemoryHandler var*) {
+  (*this).ref_count += 1
+}
+
+public def decCounter(this: MemoryHandler var*) {
+  (*this).ref_count -= 1
+  if (*this).ref_count == 0 {
+    this.del()
+  }
 }
 
 // map address to page table
-public def map(this: MemoryHandler*, page_table: ActivePageTable var&,
+public def map(this: MemoryHandler var*, pt: ActivePageTable var&,
                addr: USize, attr: MemoryAttr&) {
-  ((*this).map)(this, page_table, addr, attr)
+  ((*this).map)(this, pt, addr, attr)
 }
 
 // unmap address in page table
-public def unmap(this: MemoryHandler*, page_table: ActivePageTable var&,
+public def unmap(this: MemoryHandler var*, pt: ActivePageTable var&,
                  addr: USize) {
-  ((*this).unmap)(this, page_table, addr)
+  ((*this).unmap)(this, pt, addr)
 }
+
 
 // linear mapping
 public struct LinearHandler {
@@ -29,45 +50,48 @@ public struct LinearHandler {
   offset: ISize,
 }
 
-def mapLinear(this: MemoryHandler*, page_table: ActivePageTable var&,
+def mapLinear(this: MemoryHandler var*, pt: ActivePageTable var&,
               addr: USize, attr: MemoryAttr&) {
   let this: LinearHandler& = *(this as LinearHandler*)
-  attr.apply(page_table.map(addr, (addr as ISize + this.offset) as USize))
+  attr.apply(pt.map(addr, (addr as ISize + this.offset) as USize))
 }
 
-def unmapLinear(this: MemoryHandler*, page_table: ActivePageTable var&,
+def unmapLinear(this: MemoryHandler var*, pt: ActivePageTable var&,
                 addr: USize) {
-  page_table.unmap(addr)
+  pt.unmap(addr)
 }
 
-public def newLinearHandler(offset: ISize): LinearHandler {
-  [LinearHandler] {
-    [MemoryHandler] {mapLinear, unmapLinear},
-    offset,
-  }
+public def newLinearHandler(offset: ISize): MemoryHandler var* {
+  let handler = heap.alloc(sizeof LinearHandler) as LinearHandler var*
+  (*handler).base = [MemoryHandler] {mapLinear, unmapLinear}
+  (*handler).offset = offset
+  handler as MemoryHandler var*
 }
+
 
 // map by frame
 public struct FrameHandler {
   base: MemoryHandler,
 }
 
-def mapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
+def mapFrame(this: MemoryHandler var*, pt: ActivePageTable var&,
              addr: USize, attr: MemoryAttr&) {
   // allocate new frame
   let target = allocPhyMem() as USize
   assert(target != 0 as USize, "mapFrame - OOM")
-  attr.apply(page_table.map(addr, target))
+  attr.apply(pt.map(addr, target))
 }
 
-def unmapFrame(this: MemoryHandler*, page_table: ActivePageTable var&,
-                addr: USize) {
-  let frame = page_table.unmap(addr)
+def unmapFrame(this: MemoryHandler var*, pt: ActivePageTable var&,
+               addr: USize) {
+  let frame = pt.unmap(addr)
   // release allocated frame
   let pa = frame.getAddr()
   freePhyMem(pa.getAddr() as u8 var*)
 }
 
-public def newFrameHandler(): FrameHandler {
-  [FrameHandler] {[MemoryHandler] {mapFrame, unmapFrame}}
+public def newFrameHandler(): MemoryHandler var* {
+  let handler = heap.alloc(sizeof FrameHandler) as FrameHandler var*
+  (*handler).base = [MemoryHandler] {mapFrame, unmapFrame}
+  handler as MemoryHandler var*
 }
