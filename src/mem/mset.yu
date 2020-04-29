@@ -9,12 +9,14 @@ import lib.except
 
 public struct MemorySet {
   page_table: InactivePageTable,
+  areas: MemAreaList,
 }
 
 public def push(this: MemorySet var&, start: USize, end: USize,
-                attr: MemoryAttr, handler: MemoryHandler*) {
+                attr: MemoryAttr, handler: MemoryHandler var*) {
   assert(start <= end, "invalid memory area")
   let area = newMemArea(start, end, handler, attr)
+  this.areas.push(area)
   var pt: ActivePageTable var& = this.page_table.editBegin(); {
     area.map(pt)
   }; this.page_table.editEnd()
@@ -22,23 +24,32 @@ public def push(this: MemorySet var&, start: USize, end: USize,
 
 def mapKernel(this: MemorySet var&) {
   let linear = newLinearHandler((KERNEL_VM_BASE - KERNEL_BASE) as ISize)
-  let handler = &linear as MemoryHandler*
   this.push(_text_start as USize, _text_end as USize,
-            newMemoryAttr().setExecute().setReadonly(), handler)
+            newMemoryAttr().setExecute().setReadonly(), linear)
   this.push(_rodata_start as USize, _rodata_end as USize,
-            newMemoryAttr().setReadonly(), handler)
+            newMemoryAttr().setReadonly(), linear)
   this.push(_data_start as USize, PHY_STOP as USize,
-            newMemoryAttr(), handler)
+            newMemoryAttr(), linear)
   this.push(UART_ADDR as USize, UART_END as USize,
-            newMemoryAttr(), handler)
+            newMemoryAttr(), linear)
   this.push(PLIC_ADDR as USize, PLIC_END as USize,
-            newMemoryAttr(), handler)
+            newMemoryAttr(), linear)
 }
 
 public def newMemorySet(): MemorySet {
   var ms = [MemorySet] {newInactivePageTable()}
   ms.mapKernel()
   ms
+}
+
+public def del(this: MemorySet var&) {
+  // unmap all mapped entries
+  var pt: ActivePageTable var& = this.page_table.editBegin(); {
+    this.areas.unmap(pt)
+  }; this.page_table.editEnd()
+  // delete page table & area list
+  this.page_table.del()
+  this.areas.del()
 }
 
 public def activate(this: MemorySet&) {

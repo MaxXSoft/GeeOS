@@ -174,7 +174,7 @@ def withTempMapEnd(this: ActivePageTable var&) {
   this.unmap(TEMP_PAGE_ADDR)
 }
 
-// spare spaces for `InactivatePageTable`
+// spare spaces for `InactivePageTable`
 struct IptTempMem {
   act_pt: ActivePageTable,
   root_table: PageTable var*,
@@ -203,6 +203,11 @@ public def newInactivePageTable(): InactivePageTable {
     temp_pt.setRecursive(RECURSIVE_INDEX, frame)
   }; act_pt.withTempMapEnd()
   [InactivePageTable] {frame}
+}
+
+public def del(this: InactivePageTable var&) {
+  let pa = this.root_frame.getAddr()
+  freePhyMem(pa.getAddr() as u8 var*)
 }
 
 public def token(this: InactivePageTable&): USize {
