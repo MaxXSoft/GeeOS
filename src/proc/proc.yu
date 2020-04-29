@@ -42,7 +42,7 @@ public def execute(path: u8*, host_tid: Tid): bool {
 // initialize process
 public def initProcess() {
   cpu = newProcessor(TIME_SLICE)
-  let ret = execute("hello", 0 as Tid)
+  let ret = execute("shell", 0 as Tid)
   assert(ret, "initProcess")
 }
 
