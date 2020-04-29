@@ -43,6 +43,7 @@ def initTempTable(): PageTable var* {
 
 // remapping kernel address space
 def remapKernel() {
+  // NOTE: do not release this page table
   var mset = newMemorySet()
   mset.activate()
 }
