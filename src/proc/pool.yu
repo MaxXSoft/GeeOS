@@ -3,7 +3,6 @@ public import proc.consts
 public import proc.scheduler
 
 import lib.except
-import lib.io
 
 // definition of thread status
 public enum ThreadStatus {

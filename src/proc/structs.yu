@@ -13,7 +13,6 @@ import lib.except
 import lib.alloc
 import lib.elf
 import lib.c.string
-import lib.io
 import proc.consts
 
 // size of kernel stack
