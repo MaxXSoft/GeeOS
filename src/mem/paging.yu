@@ -7,7 +7,6 @@ import arch.riscv.csr
 import arch.riscv.consts
 import mem.pm
 import lib.except
-import lib.io
 import mem.consts
 
 // address for temporary mapping
@@ -189,11 +188,6 @@ public struct InactivePageTable {
   root_frame: Frame,
 }
 
-// TODO: remove this log
-def printSwitch(old_token: USize, new_token: USize) {
-  io <<< "switch table " <<$ old_token <<< " -> " <<$ new_token <<< '\n'
-}
-
 public def newInactivePageTable(): InactivePageTable {
   let frame = allocPhysFrame(null as FrameAllocator var*)
   let target = frame.getAddr()
@@ -238,7 +232,6 @@ public def editEnd(this: InactivePageTable var&) {
 public def withBegin(this: InactivePageTable&) {
   ipt.old_token = getSatp()
   ipt.new_token = this.token()
-  printSwitch(ipt.old_token, ipt.new_token)
   // switch to new context
   if ipt.old_token != ipt.new_token {
     setSatp(ipt.new_token)
@@ -249,35 +242,16 @@ public def withBegin(this: InactivePageTable&) {
 // pair with `withBegin`
 public def withEnd(this: InactivePageTable&) {
   // switch back to old context
-  printSwitch(ipt.new_token, ipt.old_token)
   if ipt.old_token != ipt.new_token {
     setSatp(ipt.old_token)
     runSfence()
   }
 }
 
-public def map(this: InactivePageTable var&, addr: USize,
-               target: USize, flags: USize) {
-  var pt: ActivePageTable var& = this.editBegin(); {
-    if pt.getEntryPtr(addr) == null as PageEntry var* {
-      var entry = pt.map(addr, target)
-      entry.setExecute((flags & PTE_FLAG_X) != 0 as USize)
-      entry.setWritable((flags & PTE_FLAG_W) != 0 as USize)
-    }
-  }; this.editEnd()
-}
-
-public def unmap(this: InactivePageTable var&, addr: USize) {
-  var pt: ActivePageTable var& = this.editBegin(); {
-    pt.unmap(addr)
-  }; this.editEnd()
-}
-
 // activate current page table
 public def activate(this: InactivePageTable&) {
   let old_token = getSatp()
   let new_token = this.token()
-  printSwitch(old_token, new_token)
   if old_token != new_token {
     setSatp(new_token)
     runSfence()
