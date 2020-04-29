@@ -42,6 +42,6 @@ inline def exit(code: USize) {
 }
 
 // execute program
-inline def exec(path: u8*) {
+inline def exec(path: u8*): i32 {
   syscall(path as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exec)
 }
