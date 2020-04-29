@@ -1,6 +1,7 @@
 public import arch.arch
 public import arch.riscv.consts
 public import arch.riscv.addr
+public import arch.riscv.framealloc
 
 // definition of RISC-V PTE
 public struct PageTableEntry {
@@ -76,6 +77,20 @@ inline def zero(this: PageTable var*) {
   var i = 0
   while i < PTE_COUNT {
     (*this).ptes[i].setUnused()
+    i += 1
+  }
+}
+
+// deallocate all avaliable PTE frames before `index` and clear page table
+inline def clear(this: PageTable var*, index: USize,
+                 dealloc: FrameDeallocator var*) {
+  var i = 0
+  while i as USize < index {
+    if !(*this).ptes[i].isUnused() {
+      let frame = (*this).ptes[i].getFrame()
+      dealloc.dealloc(frame)
+      (*this).ptes[i].setUnused()
+    }
     i += 1
   }
 }
