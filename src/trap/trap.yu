@@ -11,16 +11,8 @@ import proc.proc
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()
 
-// // tick of timer
-// var tick = 0 as USize
-
 // handle timer interrupt
 def handleTimer() {
-  // // TODO: remove this log
-  // tick += 1 as USize
-  // if tick % 100 as USize == 0 as USize {
-  //   io <<< "100 ticks!\n"
-  // }
   // tell processor a tick passed
   tick()
   // acknowledge soft interrupt
@@ -49,10 +41,16 @@ def handleSyscall(tf: TrapFrame var&) {
 
 // handle page fault
 def handlePageFault(tf: TrapFrame var&) {
-  io <<< "scause  = " <<< tf.scause <<< '\n'
-  io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
-  io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
-  panic("page fault!")
+  if !(tf.sstatus & SSTATUS_SPP) {
+    io <<< "ERROR: user thread memory access violation\n"
+    exit(-1 as USize)
+  }
+  else {
+    io <<< "scause  = " <<< tf.scause <<< '\n'
+    io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
+    io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
+    panic("page fault!")
+  }
 }
 
 // initialize trap handling
