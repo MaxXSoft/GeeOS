@@ -1,0 +1,8 @@
+extern def strcmp(lhs: u8*, rhs: u8*): i32 {
+  var s1 = lhs, s2 = rhs
+  while *s1 == *s2 && *s1 != '\0' {
+    s1 += 1
+    s2 += 1
+  }
+  *s1 as i32 - *s2 as i32
+}
