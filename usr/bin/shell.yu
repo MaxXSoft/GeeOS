@@ -1,4 +1,5 @@
 import lib.io
+import lib.c.string
 import lib.sys.syscall
 
 let BUF_SIZE = 128
@@ -101,11 +102,19 @@ def getCmd(): bool {
 
 // parse and execute command line in buffer
 def runCmd(): i32 {
-  let ret = exec(buf as u8*)
-  if ret < 0 {
-    io <<< "command not found: " <<< buf as u8* <<< '\n'
+  if !strcmp(buf as u8*, "exit") {
+    // exit current thread
+    exit(0 as USize)
+    0
   }
-  ret
+  else {
+    // just execute
+    let ret = exec(buf as u8*)
+    if ret < 0 {
+      io <<< "command not found: " <<< buf as u8* <<< '\n'
+    }
+    ret
+  }
 }
 
 extern def main(argc: i32, argv: u8**): i32 {
