@@ -1,6 +1,6 @@
 # GeeOS
 
-GeeOS (寂) is a lightweight, UNIX like operating system, written in [YuLang](https://github.com/MaxXSoft/YuLang), development for [Fuxi](https://github.com/MaxXSoft/Fuxi) processor.
+GeeOS (寂) is a lightweight, UNIX like operating system, written in [YuLang](https://github.com/MaxXSoft/YuLang), developed for [Fuxi](https://github.com/MaxXSoft/Fuxi) processor.
 
 ## Getting Started
 
