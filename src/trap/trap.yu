@@ -35,13 +35,13 @@ def handleExternal() {
 
 // handle system call
 def handleSyscall(tf: TrapFrame var&) {
-  tf.sepc += 4 as USize
+  tf.incSepc()
   tf.x[10] = runSyscall(tf) as USize
 }
 
 // handle page fault
 def handlePageFault(tf: TrapFrame var&) {
-  if !(tf.sstatus & SSTATUS_SPP) {
+  if tf.isUser() {
     io <<< "ERROR: user thread memory access violation\n"
     exit(-1 as USize)
   }

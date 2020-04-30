@@ -1,6 +1,5 @@
 public import arch.arch
-
-import arch.riscv.csr
+public import arch.riscv.csr
 
 // trap return in 'traphand.S'
 extern declare _retTrap: ()
@@ -19,8 +18,12 @@ public struct TrapFrame {
   scause: USize,
 }
 
-public def incSepc(this: TrapFrame var&) {
+inline def incSepc(this: TrapFrame var&) {
   this.sepc += 4 as USize
+}
+
+inline def isUser(this: TrapFrame&): bool {
+  !(this.sstatus & SSTATUS_SPP)
 }
 
 // definition of context of thread context
