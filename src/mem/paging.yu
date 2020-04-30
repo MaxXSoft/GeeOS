@@ -187,19 +187,24 @@ def withTempMapEnd(this: ActivePageTable var&) {
   this.unmap(TEMP_PAGE_ADDR)
 }
 
-// spare spaces for `InactivePageTable`
-struct IptTempMem {
-  act_pt: ActivePageTable,
-  root_table: PageTable var*,
-  backup: PageTableEntry,
-  old_token: USize,
-  new_token: USize,
-}
-var ipt: IptTempMem
-
 // page table for kernel threads
 public struct InactivePageTable {
   root_frame: Frame,
+}
+
+// helper iterator for `edit` method
+public struct IptEditIter {
+  last: bool,
+  act_pt: ActivePageTable,
+  root_table: PageTable var*,
+  backup: PageTableEntry,
+}
+
+// helper iterator for `with` method
+public struct IptWithIter {
+  last: bool,
+  old_token: USize,
+  new_token: USize,
 }
 
 public def newInactivePageTable(): InactivePageTable {
@@ -230,41 +235,62 @@ public def token(this: InactivePageTable&): USize {
 
 // activate current inactive page table temporarily
 // and provide the current page table for editing
-public def editBegin(this: InactivePageTable var&): ActivePageTable var& {
+public def edit(this: InactivePageTable var&): IptEditIter {
   let frame = newFrameFromSatp()
-  ipt.act_pt = newActivePageTable()
-  ipt.root_table = ipt.act_pt.withTempMapBegin(frame.getAddr())
-  ipt.backup = ipt.root_table.getPte(RECURSIVE_INDEX)
-  ipt.root_table.getPte(RECURSIVE_INDEX).set(this.root_frame, PTE_FLAG_V)
-  runSfence()
-  ipt.act_pt
+  var act_pt = newActivePageTable()
+  let root_table = act_pt.withTempMapBegin(frame.getAddr())
+  let backup = root_table.getPte(RECURSIVE_INDEX)
+  root_table.getPte(RECURSIVE_INDEX).set(this.root_frame, PTE_FLAG_V)
+  [IptEditIter] {false, act_pt, root_table, backup}
 }
 
-// end edit, pair with `editBegin`
-public def editEnd(this: InactivePageTable var&) {
-  ipt.root_table.getPte(RECURSIVE_INDEX) = ipt.backup
-  runSfence()
-  ipt.act_pt.withTempMapEnd()
+// iterator methods of `IptEditIter`
+public def next(this: IptEditIter var&): ActivePageTable var& {
+  this.act_pt
+}
+public def last(this: IptEditIter var&): bool {
+  if !this.last {
+    this.last = true
+    // edit begin
+    runSfence()
+    false
+  }
+  else {
+    // edit end
+    this.root_table.getPte(RECURSIVE_INDEX) = this.backup
+    runSfence()
+    this.act_pt.withTempMapEnd()
+    true
+  }
 }
 
 // activate current inactive page table temporarily
 // and run specific function in new context
-public def withBegin(this: InactivePageTable&) {
-  ipt.old_token = getSatp()
-  ipt.new_token = this.token()
-  // switch to new context
-  if ipt.old_token != ipt.new_token {
-    setSatp(ipt.new_token)
-    runSfence()
-  }
+public def with(this: InactivePageTable&): IptWithIter {
+  [IptWithIter] {false, getSatp(), this.token()}
 }
 
-// pair with `withBegin`
-public def withEnd(this: InactivePageTable&) {
-  // switch back to old context
-  if ipt.old_token != ipt.new_token {
-    setSatp(ipt.old_token)
-    runSfence()
+// iterator methods of `IptWithIter`
+public def next(this: IptWithIter&): i32 {
+  0
+}
+public def last(this: IptWithIter var&): bool {
+  if !this.last {
+    this.last = true
+    // switch to new context
+    if this.old_token != this.new_token {
+      setSatp(this.new_token)
+      runSfence()
+    }
+    false
+  }
+  else {
+    // switch back to old context
+    if this.old_token != this.new_token {
+      setSatp(this.old_token)
+      runSfence()
+    }
+    true
   }
 }
 
