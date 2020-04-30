@@ -32,6 +32,10 @@ $ qemu-system-riscv32 -nographic -machine virt -m 128m -kernel geeos.elf
 
 See [CHANGELOG.md](CHANGELOG.md)
 
+## References
+
+GeeOS is heavily influenced by [rCore](https://github.com/rcore-os/rCore) and [xv6](https://github.com/mit-pdos/xv6-riscv).
+
 ## License
 
 Copyright (C) 2010-2020 MaxXing. License GPLv3.
