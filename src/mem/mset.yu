@@ -17,9 +17,9 @@ public def push(this: MemorySet var&, start: USize, end: USize,
   assert(start <= end, "invalid memory area")
   let area = newMemArea(start, end, handler, attr)
   this.areas.push(area)
-  var pt: ActivePageTable var& = this.page_table.editBegin(); {
+  for pt in this.page_table.edit() {
     area.map(pt)
-  }; this.page_table.editEnd()
+  }
 }
 
 def mapKernel(this: MemorySet var&) {
@@ -44,9 +44,9 @@ public def newMemorySet(): MemorySet {
 
 public def del(this: MemorySet var&) {
   // unmap all mapped entries
-  var pt: ActivePageTable var& = this.page_table.editBegin(); {
+  for pt in this.page_table.edit() {
     this.areas.unmap(pt)
-  }; this.page_table.editEnd()
+  }
   // delete page table & area list
   this.page_table.del()
   this.areas.del()
@@ -56,12 +56,8 @@ public def activate(this: MemorySet&) {
   this.page_table.activate()
 }
 
-public def withBegin(this: MemorySet&) {
-  this.page_table.withBegin()
-}
-
-public def withEnd(this: MemorySet&) {
-  this.page_table.withEnd()
+public def with(this: MemorySet&): IptWithIter {
+  this.page_table.with()
 }
 
 public def token(this: MemorySet&): USize {

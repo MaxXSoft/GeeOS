@@ -126,10 +126,10 @@ def makeMemorySet(this: ElfFile&): MemorySet {
       virt_addr as u8 var*
     }
     // copy data to page
-    ms.withBegin(); {
+    for _ in ms.with() {
       memcpy(target, data, data_len as USize)
       memset(target + data_len, 0, (mem_size - data_len) as USize)
-    }; ms.withEnd()
+    }
   }
   ms
 }
