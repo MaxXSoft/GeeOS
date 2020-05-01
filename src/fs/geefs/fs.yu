@@ -9,15 +9,18 @@ import lib.alloc
 import lib.algo
 
 // filesystem object
+// NOTE: this object will NOT HAVE any inodes
+//       i.e. stores only references of inodes
 public struct GeeFs {
   // low-level device
   dev: DeviceInterface var*,
   // super block on disk
   super_block: GfsSbHeader,
+  // semaphore for inode map
+  // TODO: use spinlock?
+  sema: Semaphore,
   // inode map
   inodes: HashMap,
-  // semaphore for inode map
-  sema: Semaphore,
 }
 
 // memory inode
@@ -141,7 +144,7 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
 }
 
 public def newGeeFs(dev: DeviceInterface var*): GeeFs {
-  [GeeFs] {dev, [GfsSbHeader] {}, newHashMap(), newSemaphore("GeeFs")}
+  [GeeFs] {dev, [GfsSbHeader] {}, newHashMap(), newSemaphore()}
 }
 
 public def del(this: GeeFs var&) {
