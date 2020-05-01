@@ -71,20 +71,28 @@ public def run(this: Processor var*) {
   }
 }
 
+// yield and reschedule
+public def yield(this: Processor var*) {
+  if (*this).current_thread != null as Thread var* {
+    // 'switchTo' does not ensure that 'sstatus' will
+    // not be changed after switching, so
+    // store 'sstatus' and disable interrupt
+    let sstatus = getSstatus()
+    setIntrOff()
+    // switch to idle thread
+    (*this).current_thread.switchTo((*this).idle)
+    // restore 'sstatus'
+    setSstatus(sstatus)
+  }
+}
+
 // tell processor a tick passed
 // will be called by timer interrupt handler
 public def tick(this: Processor var*) {
   if (*this).current_thread != null as Thread var* {
     // check if current thread runs out of time slices
     if (*this).pool.tick() {
-      // 'switchTo' does not ensure that 'sstatus' will
-      // not be changed after switching
-      let sstatus = getSstatus()
-      setIntrOff()
-      // switch to idle thread
-      (*this).current_thread.switchTo((*this).idle)
-      // restore 'sstatus'
-      setSstatus(sstatus)
+      this.yield()
     }
   }
 }
@@ -106,7 +114,7 @@ public def exit(this: Processor var*, code: USize) {
 }
 
 // give up CPU and sleep
-public def yield(this: Processor var*) {
+public def sleep(this: Processor var*) {
   if (*this).current_thread != null as Thread var* {
     // store 'sstatus' and disable interrupt
     let sstatus = getSstatus()
