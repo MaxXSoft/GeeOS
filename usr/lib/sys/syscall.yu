@@ -9,6 +9,7 @@ public enum SyscallId {
   Read = 63,
   Write = 64,
   Exit = 93,
+  Yield = 124,
   Exec = 221,
 }
 
@@ -39,6 +40,11 @@ inline def write(fd: i32, buf: u8*, len: USize): i32 {
 inline def exit(code: USize) {
   syscall(code as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exit)
   while true {}
+}
+
+// yield and reschedule
+inline def yield(): i32 {
+  syscall(0, 0, 0, 0, 0, 0, 0, SyscallId.Yield)
 }
 
 // execute program

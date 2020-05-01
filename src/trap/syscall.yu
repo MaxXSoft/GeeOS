@@ -11,6 +11,7 @@ let SYS_CLOSE = 57 as USize
 let SYS_READ  = 63 as USize
 let SYS_WRITE = 64 as USize
 let SYS_EXIT  = 93 as USize
+let SYS_YIELD = 124 as USize
 let SYS_EXEC  = 221 as USize
 
 
@@ -91,6 +92,11 @@ def sysExit(code: USize): ISize {
   0 as ISize
 }
 
+def sysYield(): ISize {
+  yield()
+  0
+}
+
 def sysExec(path: u8*): ISize {
   if execute(path, getCurrentTid()) {
     sleep()
@@ -113,6 +119,7 @@ public def runSyscall(tf: TrapFrame var&): ISize {
       sysWrite(tf.x[10] as i32, tf.x[11] as u8*, tf.x[12] as USize)
     }
     SYS_EXIT { sysExit(tf.x[10]) }
+    SYS_YIELD { sysYield() }
     SYS_EXEC { sysExec(tf.x[10] as u8*) }
     else {
       io <<< "unknown user system call! id = " <<< tf.x[17] <<< '\n'
