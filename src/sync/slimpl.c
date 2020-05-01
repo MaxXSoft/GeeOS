@@ -1,7 +1,6 @@
 // structure definition of spinlock
 typedef struct {
   unsigned locked;
-  const char *name;
 } Spinlock;
 
 void __acquire(Spinlock *lock) {

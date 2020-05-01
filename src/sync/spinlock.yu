@@ -5,16 +5,14 @@ import lib.except
 public struct Spinlock {
   // is the lock held
   locked: u32,
-  // name of lock
-  name: u8*,
 }
 
 // implementation of spinlock, in 'slimpl.c'
 extern declare __acquire: (Spinlock var&)
 extern declare __release: (Spinlock var&)
 
-public def newSpinlock(name: u8*): Spinlock {
-  [Spinlock] {0 as u32, name}
+public def newSpinlock(): Spinlock {
+  [Spinlock] {0 as u32}
 }
 
 public def isHold(this: Spinlock&): bool {

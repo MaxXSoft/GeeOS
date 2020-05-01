@@ -9,7 +9,7 @@ public struct StdIn {
 }
 
 public def newStdIn(): StdIn {
-  [StdIn] {newSpinlock("StdIn"), newQueue(), newCondVar("StdIn")}
+  [StdIn] {newSpinlock(), newQueue(), newCondVar()}
 }
 
 public def del(this: StdIn var&) {

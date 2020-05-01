@@ -8,8 +8,8 @@ public struct CondVar {
   wait_queue: Queue,
 }
 
-public def newCondVar(name: u8*): CondVar {
-  [CondVar] {newSpinlock(name), newQueue()}
+public def newCondVar(): CondVar {
+  [CondVar] {newSpinlock(), newQueue()}
 }
 
 public def del(this: CondVar var&) {

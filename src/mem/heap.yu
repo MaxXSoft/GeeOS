@@ -154,7 +154,7 @@ def freeHeapMem(ptr: u8 var*) {
 
 // initialize heap memory
 public def initHeapMem() {
-  heap_mem.lock = newSpinlock("heap")
+  heap_mem.lock = newSpinlock()
   heap_mem.heap_mem = HEAP_BASE as u8 var*
   heap_mem.heap_base = heap_mem.heap_mem
   heap.init(allocHeapMem, freeHeapMem)
