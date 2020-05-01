@@ -1,0 +1,43 @@
+public import fs.vfs.inode
+
+import fs.devfs.stdio
+
+// inodes of stdio
+public var stdin: INode var* = null as INode var*
+public var stdout: INode var* = null as INode var*
+
+// input buffer
+var inbuffer = [StdIn] {}
+
+
+// initialize device filesystem
+public def initDevFs() {
+  // initialize input buffer
+  inbuffer = newStdIn()
+  // initialize stdio
+  initStdIoOps()
+  stdin = newStdInINode(&inbuffer)
+  stdout = newStdOutINode()
+  // TODO: other devices
+}
+
+// clean up device file system
+public def cleanUpDevFs() {
+  // release stdio
+  stdin.close()
+  stdin = null as INode var*
+  stdout.close()
+  stdout = null as INode var*
+  inbuffer.del()
+  // TODO: other devices
+}
+
+// push character to input buffer
+public def pushChar(c: u8) {
+  if c == '\r' {
+    inbuffer.push('\n')
+  }
+  else {
+    inbuffer.push(c)
+  }
+}
