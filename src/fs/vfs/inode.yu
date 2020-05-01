@@ -83,15 +83,14 @@ inline def cleanUp(this: INode var*) {
 }
 
 // open file
-public def open(this: INode var*): i32 {
+public def open(this: INode var*) {
   (*this).lock.acquire()
   (*this).ref_count += 1
   (*this).lock.release()
-  0
 }
 
 // close file
-public def close(this: INode var*): i32 {
+public def close(this: INode var*) {
   assert((*this).ref_count > 0, "INode.close")
   (*this).lock.acquire()
   (*this).ref_count -= 1
@@ -100,7 +99,6 @@ public def close(this: INode var*): i32 {
     this.cleanUp()
     this.del()
   }
-  0
 }
 
 // lookup file and return inode
