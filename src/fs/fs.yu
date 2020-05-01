@@ -31,10 +31,12 @@ public def initFileSystem() {
     panic("failed to open GeeFS")
   }
   root_inode = geefs.getRoot()
+  root_inode.open()
 }
 
 // clean up filesystem
 public def cleanUpFileSystem() {
+  root_inode.close()
   root_inode = null as INode var*
   geefs.del()
   dev.del()
