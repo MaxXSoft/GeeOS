@@ -1,16 +1,22 @@
 public import sync.semaphore
+public import fs.vfs.inode
 public import fs.file
 public import fs.consts
 
+import fs.fs
 import lib.except
 
 public struct FileInfo {
+  // semaphore for file descriptors
   sema: Semaphore,
+  cwd: INode var*,
   files: File[FILE_COUNT],
 }
 
 public def init(this: FileInfo var&) {
-  this.sema = newSemaphore("FileInfo")
+  this.sema = newSemaphore()
+  root_inode.open()
+  this.cwd = root_inode
   var i = 0
   while i < FILE_COUNT {
     this.files[i] = newFile()
@@ -21,6 +27,8 @@ public def init(this: FileInfo var&) {
 public def del(this: FileInfo var&) {
   // release semaphore
   this.sema.del()
+  // close cwd inode
+  this.cwd.close()
   // close opened files
   var i = 0
   while i < FILE_COUNT {
@@ -37,6 +45,17 @@ public def lock(this: FileInfo var&) {
 
 public def unlock(this: FileInfo var&) {
   this.sema.signal()
+}
+
+inline def getCwd(this: FileInfo&): INode var* {
+  this.cwd
+}
+
+public def setCwd(this: FileInfo var&, cwd: INode var*) {
+  assert(cwd != null as INode var*, "FileInfo.setCwd")
+  this.cwd.close()
+  cwd.open()
+  this.cwd = cwd
 }
 
 // allocate a new file descriptor
