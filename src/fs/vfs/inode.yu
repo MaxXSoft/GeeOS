@@ -6,7 +6,7 @@ import lib.alloc
 
 // type of inode
 public enum INodeType {
-  File, Dir,
+  File, Dir, CharDevice, BlockDevice,
 }
 
 // object of this structure must be allocated on heap
