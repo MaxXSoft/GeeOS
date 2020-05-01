@@ -93,7 +93,7 @@ def sysExit(code: USize): ISize {
 
 def sysExec(path: u8*): ISize {
   if execute(path, getCurrentTid()) {
-    yield()
+    sleep()
     0 as ISize
   }
   else {

@@ -31,7 +31,7 @@ public def wait(this: Semaphore var&) {
   else {
     this.wait_queue.push(getCurrentTid() as USize)
     this.lock.release()
-    yield()
+    sleep()
   }
 }
 

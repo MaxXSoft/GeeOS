@@ -20,7 +20,7 @@ public def wait(this: CondVar var&) {
   this.lock.acquire()
   this.wait_queue.push(getCurrentTid() as USize)
   this.lock.release()
-  yield()
+  sleep()
 }
 
 public def notify(this: CondVar var&) {
