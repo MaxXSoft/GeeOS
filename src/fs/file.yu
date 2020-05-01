@@ -3,7 +3,6 @@ public import fs.vfs.inode
 
 import lib.except
 import fs.consts
-import fs.fs
 
 public enum FileStatus {
   None, Allocated, Opened,
@@ -43,7 +42,8 @@ public def setAllocated(this: File var&) {
   this.status = FileStatus.Allocated
 }
 
-public def open(this: File var&, path: u8*, flags: i32): i32 {
+// open an inode and store necessary information to current fd
+public def open(this: File var&, inode: INode var*, flags: i32): i32 {
   if !this.isAllocated() {
     return -1
   }
@@ -52,13 +52,9 @@ public def open(this: File var&, path: u8*, flags: i32): i32 {
                   (flags & O_ACCMODE) == O_RDWR
   this.writable = (flags & O_ACCMODE) == O_WRONLY ||
                   (flags & O_ACCMODE) == O_RDWR
-  // get inode from file system
-  let path = newStrView(path)
-  this.inode = root_inode.lookup(path)
-  if this.inode == null as INode var* {
-    return -1
-  }
   // update current object
+  inode.open()
+  this.inode = inode
   this.status = FileStatus.Opened
   this.offset = 0 as USize
   0
@@ -67,9 +63,9 @@ public def open(this: File var&, path: u8*, flags: i32): i32 {
 public def close(this: File var&): i32 {
   if this.isOpened() {
     this.status = FileStatus.Allocated
-    let ret = this.inode.close()
+    this.inode.close()
     this.inode = null as INode var*
-    ret
+    0
   }
   else {
     -1
