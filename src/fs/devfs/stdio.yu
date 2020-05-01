@@ -1,7 +1,13 @@
 public import sync.spinlock
 public import lib.queue
 public import sync.condvar
+public import fs.vfs.inode
 
+import lib.alloc
+import lib.io
+
+
+// buffer for standard input
 public struct StdIn {
   lock: Spinlock,
   buf: Queue,
@@ -43,4 +49,104 @@ public def pop(this: StdIn var&): u8 {
     }
   }
   ret
+}
+
+
+/*
+ * INode related stuffs
+ */
+// inode of stdin
+public struct StdInINode {
+  inode: INode,
+  stdin: StdIn var*,
+}
+var stdin_ops: INodeOps
+
+// inode of stdout
+public struct StdOutINode {
+  inode: INode,
+}
+var stdout_ops: INodeOps
+
+public def newStdInINode(stdin: StdIn var*): INode var* {
+  var inode = heap.alloc(sizeof StdInINode) as StdInINode var*
+  (inode as INode var*).init(INodeType.CharDevice, &stdin_ops)
+  (*inode).stdin = stdin
+  inode as INode var*
+}
+
+public def newStdOutINode(): INode var* {
+  var inode = heap.alloc(sizeof StdOutINode) as StdOutINode var*
+  (inode as INode var*).init(INodeType.CharDevice, &stdout_ops)
+  inode as INode var*
+}
+
+
+/*
+ * virtual operations of stdio
+ */
+def stdIoFind(this: INode var*, name: StrView&): INode var* {
+  null as INode var*
+}
+
+def stdIoGetRoot(this: INode var*): INode var* {
+  null as INode var*
+}
+
+def stdIoGetSize(this: INode var*): USize {
+  0 as USize
+}
+
+def stdIoRead(this: INode var*, buf: u8 var*, len: USize,
+              offset: USize): i32 {
+  -1
+}
+
+def stdIoWrite(this: INode var*, buf: u8*, len: USize,
+               offset: USize): i32 {
+  -1
+}
+
+def stdIoCleanUp(this: INode var*) {}
+
+def stdInRead(this: INode var*, buf: u8 var*, len: USize,
+              offset: USize): i32 {
+  var i = 0
+  while i as USize < len {
+    buf[i] = (*(*(this as StdInINode var*)).stdin).pop()
+    i += 1
+  }
+  i
+}
+
+def stdOutWrite(this: INode var*, buf: u8*, len: USize,
+                offset: USize): i32 {
+  var i = 0
+  while i as USize < len {
+    io.putChar(buf[i])
+    i += 1
+  }
+  i
+}
+
+
+/*
+ * filesystem initializers
+ */
+// initialize virtual operations
+public def initStdIoOps() {
+  // stdin related ops
+  stdin_ops.op_find = stdIoFind
+  stdin_ops.op_get_root = stdIoGetRoot
+  stdin_ops.op_get_size = stdIoGetSize
+  stdin_ops.op_read = stdInRead
+  stdin_ops.op_write = stdIoWrite
+  stdin_ops.op_cleanup = stdIoCleanUp
+  // stdout related ops
+  stdout_ops.op_find = stdIoFind
+  stdout_ops.op_get_root = stdIoGetRoot
+  stdout_ops.op_get_size = stdIoGetSize
+  stdout_ops.op_read = stdIoRead
+  stdout_ops.op_write = stdOutWrite
+  stdout_ops.op_cleanup = stdIoCleanUp
 }
