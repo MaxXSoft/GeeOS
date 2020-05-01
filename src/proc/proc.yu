@@ -19,6 +19,7 @@ public def execute(path: u8*, host_tid: Tid): bool {
   let inode = root_inode.lookup(path)
   if inode != null as INode var* {
     var ret = false
+    inode.open()
     // read content of inode
     let size = inode.getSize(), buf = heap.alloc(size)
     if inode.read(buf, size, 0 as USize) as USize == size {
