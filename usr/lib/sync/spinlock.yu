@@ -1,0 +1,32 @@
+import lib.except
+import lib.sys.syscall
+
+public struct Spinlock {
+  locked: u32,
+}
+
+// implementation of spinlock, in 'slimpl.c'
+extern declare __try_to_acquire: (Spinlock var&): i32
+extern declare __release: (Spinlock var&)
+
+public def newSpinlock(): Spinlock {
+  [Spinlock] {0 as u32}
+}
+
+public def isHold(this: Spinlock&): bool {
+  this.locked != 0 as u32
+}
+
+public def acquire(this: Spinlock var&) {
+  assert(!this.isHold(), "acquire")
+  // perform acquire
+  while __try_to_acquire(this) != 0 {
+    yield()
+  }
+}
+
+public def release(this: Spinlock var&) {
+  assert(this.isHold(), "release")
+  // perform release
+  __release(this)
+}
