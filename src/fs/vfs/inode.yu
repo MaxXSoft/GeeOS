@@ -1,3 +1,4 @@
+public import sync.spinlock
 public import arch.arch
 public import lib.strview
 
@@ -12,6 +13,8 @@ public enum INodeType {
 // object of this structure must be allocated on heap
 public struct INode {
   itype: INodeType,
+  // lock for reference counter
+  lock: Spinlock,
   ref_count: i32,
   ops: u8*,
 }
@@ -29,6 +32,7 @@ public struct INodeOps {
 // initialize status of inode
 public def init(this: INode var*, itype: INodeType, ops: INodeOps*) {
   (*this).itype = itype
+  (*this).lock = newSpinlock()
   (*this).ref_count = 0
   (*this).ops = ops as u8*
 }
@@ -80,14 +84,18 @@ inline def cleanUp(this: INode var*) {
 
 // open file
 public def open(this: INode var*): i32 {
+  (*this).lock.acquire()
   (*this).ref_count += 1
+  (*this).lock.release()
   0
 }
 
 // close file
 public def close(this: INode var*): i32 {
   assert((*this).ref_count > 0, "INode.close")
+  (*this).lock.acquire()
   (*this).ref_count -= 1
+  (*this).lock.release()
   if (*this).ref_count == 0 {
     this.cleanUp()
     this.del()
@@ -95,7 +103,7 @@ public def close(this: INode var*): i32 {
   0
 }
 
-// lookup file and return opened inode
+// lookup file and return inode
 public def lookup(this: INode var*, path: StrView&): INode var* {
   // check if is valid
   if (*this).itype != INodeType.Dir || path.empty() {
@@ -124,7 +132,5 @@ public def lookup(this: INode var*, path: StrView&): INode var* {
       return null as INode var*
     }
   }
-  // open inode
-  cur.open()
   cur
 }
