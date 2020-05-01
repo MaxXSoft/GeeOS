@@ -81,7 +81,9 @@ public def tick(this: Scheduler var&): bool {
     this.threads[tid].time -= 1 as USize
     !this.threads[tid].time
   }
-  true
+  else {
+    true
+  }
 }
 
 // remove thread from scheduler
