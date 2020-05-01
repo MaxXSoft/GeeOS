@@ -52,6 +52,10 @@ public def runCpu() {
   cpu.run()
 }
 
+public def yield() {
+  cpu.yield()
+}
+
 public def tick() {
   cpu.tick()
 }
@@ -60,8 +64,8 @@ public def exit(code: USize) {
   cpu.exit(code)
 }
 
-public def yield() {
-  cpu.yield()
+public def sleep() {
+  cpu.sleep()
 }
 
 public def wakeUp(tid: Tid) {
