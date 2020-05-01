@@ -6,6 +6,7 @@ BIN_TARGET_DIR := $(BUILD_DIR)/usr
 
 # sources & targets of library
 LIB_SRC := $(call rwildcard, $(LIB_DIR), *.yu)
+LIB_SRC += $(call rwildcard, $(LIB_DIR), *.c)
 LIB_SRC += $(call rwildcard, $(LIB_DIR), *.S)
 $(call make_obj, LIB, $(LIB_SRC))
 LIB_TARGET := $(BUILD_DIR)/libgrt.a
