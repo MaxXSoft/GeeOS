@@ -1,8 +1,4 @@
-public import lib.sys.fs
-
-// definition of sized type
-public type ISize = i32
-public type USize = u32
+public import lib.sys.structs
 
 // id of system call
 public enum SyscallId {
