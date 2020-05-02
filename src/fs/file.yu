@@ -72,6 +72,21 @@ public def close(this: File var&): i32 {
   }
 }
 
+public def seek(this: File var&, offset: USize, whence: i32): USize {
+  if this.isOpened() {
+    when whence {
+      SEEK_SET { this.offset = offset }
+      SEEK_CUR { this.offset += offset }
+      SEEK_END { this.offset = this.inode.getSize() + offset }
+      else { return -1 as USize }
+    }
+    this.offset
+  }
+  else {
+    -1 as USize
+  }
+}
+
 public def read(this: File var&, buf: u8 var*, len: USize): i32 {
   if this.isOpened() && this.readable {
     let s = this.inode.read(buf, len, this.offset)
