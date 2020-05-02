@@ -5,6 +5,7 @@ public import fs.consts
 
 import fs.fs
 import lib.except
+import fs.devfs.fs
 
 public struct FileInfo {
   // semaphore for file descriptors
@@ -79,6 +80,14 @@ public def initStdFds(this: FileInfo var&) {
   while i < 3 {
     let ret = this.allocFd(fd)
     assert(ret && fd == i, "FileInfo.initStdFd")
+    if i == 0 {
+      // open stdin
+      this.files[i].open(stdin, O_RDONLY)
+    }
+    else {
+      // open stdout/stderr
+      this.files[i].open(stdout, O_WRONLY)
+    }
     i += 1
   }
 }
