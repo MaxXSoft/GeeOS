@@ -1,0 +1,51 @@
+public import arch.arch
+public import define.context
+
+import syscall.fs
+import syscall.proc
+import lib.io
+
+// definitions of system call id
+let SYS_DUP3  = 24 as USize
+let SYS_CHDIR = 49 as USize
+let SYS_OPEN  = 56 as USize
+let SYS_CLOSE = 57 as USize
+let SYS_LSEEK = 62 as USize
+let SYS_READ  = 63 as USize
+let SYS_WRITE = 64 as USize
+let SYS_FSTAT = 80 as USize
+let SYS_SYNC  = 81 as USize
+let SYS_EXIT  = 93 as USize
+let SYS_YIELD = 124 as USize
+let SYS_EXEC  = 221 as USize
+
+
+// perform system call
+public def runSyscall(tf: TrapFrame var&): ISize {
+  when tf.x[17] {
+    SYS_DUP3 {
+      sysDup3(tf.x[10] as i32, tf.x[11] as i32, tf.x[12] as i32)
+    }
+    SYS_CHDIR { sysChdir(tf.x[10] as u8*) }
+    SYS_OPEN { sysOpen(tf.x[10] as u8*, tf.x[11] as i32) }
+    SYS_CLOSE { sysClose(tf.x[10] as i32) }
+    SYS_LSEEK {
+      sysLseek(tf.x[10] as i32, tf.x[11], tf.x[12] as i32) as ISize
+    }
+    SYS_READ {
+      sysRead(tf.x[10] as i32, tf.x[11] as u8 var*, tf.x[12] as USize)
+    }
+    SYS_WRITE {
+      sysWrite(tf.x[10] as i32, tf.x[11] as u8*, tf.x[12] as USize)
+    }
+    SYS_FSTAT { sysFstat(tf.x[10] as i32, tf.x[11] as Stat var*) }
+    SYS_SYNC { sysSync() }
+    SYS_EXIT { sysExit(tf.x[10]) }
+    SYS_YIELD { sysYield() }
+    SYS_EXEC { sysExec(tf.x[10] as u8*) }
+    else {
+      io <<< "unknown user system call! id = " <<< tf.x[17] <<< '\n'
+      -1 as ISize
+    }
+  }
+}
