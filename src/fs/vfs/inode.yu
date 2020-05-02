@@ -10,28 +10,53 @@ public enum INodeType {
   File, Dir, CharDevice, BlockDevice,
 }
 
+// metadata of inode
+public struct Metadata {
+  id: u32,
+  itype: INodeType,
+  size: USize,
+  blk_size: u32,
+  blocks: u32,
+}
+
+// inode interface (base struct)
 // object of this structure must be allocated on heap
 public struct INode {
-  itype: INodeType,
   // lock for reference counter
   lock: Spinlock,
   ref_count: i32,
   ops: u8*,
 }
 
+// filesystem interface
+// object of this structure must be allocated on heap
+public struct FileSystem {
+  ops: u8*,
+}
+
 // operations on inode
 public struct INodeOps {
+  op_get_fs: (INode var*): FileSystem var*,
+  op_get_metadata: (INode var*): Metadata,
   op_find: (INode var*, StrView&): INode var*,
-  op_get_root: (INode var*): INode var*,
-  op_get_size: (INode var*): USize,
   op_read: (INode var*, u8 var*, USize, USize): i32,
   op_write: (INode var*, u8*, USize, USize): i32,
   op_cleanup: (INode var*),
 }
 
+// operations on filesystem
+public struct FileSystemOps {
+  op_get_root: (FileSystem var*): INode var*,
+  op_sync: (FileSystem var*): bool,
+  op_cleanup: (FileSystem var*),
+}
+
+
+/*
+ * inode related stuffs
+ */
 // initialize status of inode
-public def init(this: INode var*, itype: INodeType, ops: INodeOps*) {
-  (*this).itype = itype
+public def init(this: INode var*, ops: INodeOps*) {
   (*this).lock = newSpinlock()
   (*this).ref_count = 0
   (*this).ops = ops as u8*
@@ -40,12 +65,21 @@ public def init(this: INode var*, itype: INodeType, ops: INodeOps*) {
 // delete current inode
 public def del(this: INode var*) {
   assert((*this).ref_count == 0, "INode.del")
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_cleanup)(this)
   heap.dealloc(this as u8 var*)
 }
 
-// get inode type
-inline def getType(this: INode var*): INodeType {
-  (*this).itype
+// get virtual filesystem
+inline def getFs(this: INode var*): FileSystem var* {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_get_fs)(this)
+}
+
+// get metadata of current inode
+inline def getMetadata(this: INode var*): Metadata {
+  let ops = (*this).ops as INodeOps*
+  ((*ops).op_get_metadata)(this)
 }
 
 // find inode in current inode
@@ -53,18 +87,6 @@ inline def getType(this: INode var*): INodeType {
 inline def find(this: INode var*, name: StrView&): INode var* {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_find)(this, name)
-}
-
-// get root inode of file system
-inline def getRoot(this: INode var*): INode var* {
-  let ops = (*this).ops as INodeOps*
-  ((*ops).op_get_root)(this)
-}
-
-// get size of current inode
-inline def getSize(this: INode var*): USize {
-  let ops = (*this).ops as INodeOps*
-  ((*ops).op_get_size)(this)
 }
 
 // read the content of current inode to buffer
@@ -81,12 +103,38 @@ inline def write(this: INode var*, buf: u8*, len: USize,
   ((*ops).op_write)(this, buf, len, offset)
 }
 
-// clean up before deleting inode
-inline def cleanUp(this: INode var*) {
-  let ops = (*this).ops as INodeOps*
-  ((*ops).op_cleanup)(this)
+
+/*
+ * virtual filesystem related stuffs
+ */
+// initialize virtual filesystem
+public def init(this: FileSystem var*, ops: FileSystemOps*) {
+  (*this).ops = ops as u8*
 }
 
+// delete virtual filesystem
+public def del(this: FileSystem var*) {
+  let ops = (*this).ops as FileSystemOps*
+  ((*ops).op_cleanup)(this)
+  heap.dealloc(this as u8 var*)
+}
+
+// get root inode of filesystem
+inline def getRoot(this: FileSystem var*): INode var* {
+  let ops = (*this).ops as FileSystemOps*
+  ((*ops).op_get_root)(this)
+}
+
+// commit filesystem caches to disk
+inline def sync(this: FileSystem var*): bool {
+  let ops = (*this).ops as FileSystemOps*
+  ((*ops).op_sync)(this)
+}
+
+
+/*
+ * other extended operations for inode
+ */
 // open file
 public def open(this: INode var*) {
   (*this).lock.acquire()
@@ -101,7 +149,6 @@ public def close(this: INode var*) {
   (*this).ref_count -= 1
   (*this).lock.release()
   if (*this).ref_count == 0 {
-    this.cleanUp()
     this.del()
   }
 }
@@ -109,7 +156,8 @@ public def close(this: INode var*) {
 // lookup file and return inode
 public def lookup(this: INode var*, path: StrView&): INode var* {
   // check if is valid
-  if (*this).itype != INodeType.Dir || path.empty() {
+  let meta = this.getMetadata()
+  if meta.itype != INodeType.Dir || path.empty() {
     return null as INode var*
   }
   // get trimmed path
@@ -120,7 +168,7 @@ public def lookup(this: INode var*, path: StrView&): INode var* {
   // get current inode
   var cur = if path.front() == '/' {
     path.removePrefix(1)
-    this.getRoot()
+    this.getFs().getRoot()
   }
   else {
     this
