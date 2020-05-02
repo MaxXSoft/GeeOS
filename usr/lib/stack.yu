@@ -1,0 +1,101 @@
+import lib.alloc
+
+// length of stack frame
+inline let STACK_FRAME_LEN = 32
+
+public struct StackFrame {
+  data: u8 var*[STACK_FRAME_LEN],
+  next: StackFrame var*,
+}
+
+public struct Stack {
+  frames: StackFrame var*,
+  sp: i32,
+}
+
+
+/*
+ * stack frame related stuffs
+ */
+def newStackFrame(next: StackFrame var*): StackFrame var* {
+  let frame = alloc.alloc(sizeof StackFrame) as  StackFrame var*
+  (*frame).next = next
+  frame
+}
+
+def empty(this: StackFrame var*): bool {
+  this == null as StackFrame var*
+}
+
+def push(this: StackFrame var*): StackFrame var* {
+  let frame = newStackFrame((*this).next)
+  (*this).next = frame
+  frame
+}
+
+def pop(this: StackFrame var*): StackFrame var* {
+  let frame = (*this).next
+  alloc.dealloc(this as u8 var*)
+  frame
+}
+
+def at(this: StackFrame var*, index: i32): u8 var* var& {
+  (*this).data[index]
+}
+
+def del(this: StackFrame var*) {
+  var cur = this
+  while !cur.empty() {
+    cur = cur.pop()
+  }
+}
+
+
+/*
+ * stack related stuffs
+ */
+public def newStack(): Stack {
+  [Stack] {newStackFrame(null as StackFrame var*), 0}
+}
+
+public def del(this: Stack var&) {
+  this.frames.del()
+}
+
+public def empty(this: Stack&): bool {
+  this.sp == 0 && (*this.frames).next.empty()
+}
+
+public def top(this: Stack var&): u8 var* var& {
+  if this.sp == 0 {
+    (*this.frames).next.at(STACK_FRAME_LEN - 1)
+  }
+  else {
+    this.frames.at(this.sp - 1)
+  }
+}
+
+public def push(this: Stack var&, data: u8 var*) {
+  this.frames.at(this.sp) = data
+  this.sp += 1
+  if this.sp == STACK_FRAME_LEN {
+    this.frames = this.frames.push()
+    this.sp == 0
+  }
+}
+
+public def pop(this: Stack var&): u8 var* {
+  if this.sp == 0 {
+    this.frames = this.frames.pop()
+    this.sp = STACK_FRAME_LEN
+  }
+  this.sp -= 1
+  let top = this.frames.at(this.sp)
+  top
+}
+
+public def clear(this: Stack var&) {
+  (*this.frames).next.del()
+  (*this.frames).next = null as StackFrame var*
+  this.sp = 0
+}
