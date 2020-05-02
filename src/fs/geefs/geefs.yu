@@ -205,7 +205,7 @@ def gfsINodeGetMetadata(this: INode var*): Metadata {
   [Metadata] {
     this.getINode().id,
     inode.itype.convToINodeType(),
-    inode.size,
+    inode.size as USize,
     this.getGeeFs().super_block.block_size,
     inode.block_num,
   }
