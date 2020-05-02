@@ -8,7 +8,7 @@ extern declare _user_img_start: ()
 extern declare _user_img_end: ()
 
 // filesystem related objects
-public var geefs: GeeFs = [GeeFs] {}
+public var geefs: FileSystem var* = null as FileSystem var*
 var dev: MemDevice
 
 
@@ -20,7 +20,7 @@ public def initGeeFs() {
   // initialize GeeFS
   initGeeFsOps()
   geefs = newGeeFs(&dev as DeviceInterface var*)
-  if !geefs.open() {
+  if geefs == null as FileSystem var* {
     panic("failed to open GeeFS")
   }
 }
