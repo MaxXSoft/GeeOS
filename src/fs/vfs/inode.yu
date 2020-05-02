@@ -43,6 +43,11 @@ public def del(this: INode var*) {
   heap.dealloc(this as u8 var*)
 }
 
+// get inode type
+inline def getType(this: INode var*): INodeType {
+  (*this).itype
+}
+
 // find inode in current inode
 // `name` will not contains '/'
 inline def find(this: INode var*, name: StrView&): INode var* {
