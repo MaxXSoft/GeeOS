@@ -53,5 +53,5 @@ public def del(this: Queue var&) {
   while !this.empty() {
     this.pop()
   }
-  heap.dealloc(this.head as u8*)
+  heap.dealloc(this.head as u8 var*)
 }

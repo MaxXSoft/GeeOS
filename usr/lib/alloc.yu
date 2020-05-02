@@ -94,7 +94,7 @@ def moreCore(len: u32): Header var* {
     // initialize new header
     let unit_ptr = core_ptr as Header var*
     (*unit_ptr).size = unit_size
-    freeMem((unit_ptr + 1) as u8*)
+    freeMem((unit_ptr + 1) as u8 var*)
     heap.free_unit
   }
 }
