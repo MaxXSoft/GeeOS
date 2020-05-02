@@ -1,44 +1,30 @@
 public import fs.vfs.inode
-public import fs.dev.stdin
 
-import fs.dev.mem
 import fs.geefs.fs
-import lib.except
-
-// filesystem image embedded in kernel, defined in 'init.S'
-extern declare _user_img_start: ()
-extern declare _user_img_end: ()
+import fs.devfs.fs
 
 // root inode of filesystem
 public var root_inode: INode var* = null as INode var*
 
-// character buffer for standard input
-public var stdin: StdIn = [StdIn] {}
-
-var dev: MemDevice, geefs: GeeFs
-
 
 // initialize filesystem
 public def initFileSystem() {
-  // initialize device
-  dev = newMemDevice(_user_img_start as u8 var*,
-                     _user_img_end as USize - _user_img_start as USize)
-  stdin = newStdIn()
   // initialize GeeFS
-  initGeeFsOps()
-  geefs = newGeeFs(&dev as DeviceInterface var*)
-  if !geefs.open() {
-    panic("failed to open GeeFS")
-  }
+  initGeeFs()
+  // initialize DevFS
+  initDevFs()
+  // initialize root inode
   root_inode = geefs.getRoot()
   root_inode.open()
 }
 
 // clean up filesystem
 public def cleanUpFileSystem() {
+  // release root inode
   root_inode.close()
   root_inode = null as INode var*
-  geefs.del()
-  dev.del()
-  stdin.del()
+  // clean up GeeFS
+  cleanUpGeeFs()
+  // clean up DevFS
+  cleanUpDevFs()
 }
