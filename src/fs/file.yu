@@ -93,3 +93,10 @@ public def write(this: File var&, buf: u8*, len: USize): i32 {
     -1
   }
 }
+
+// replace current fd with another fd
+public def replaceWith(this: File var&, that: File var&) {
+  assert(this.isAllocated() && that.isOpened(), "File.replace")
+  this = that
+  this.inode.open()
+}
