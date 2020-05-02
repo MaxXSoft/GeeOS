@@ -105,7 +105,22 @@ inline def setRecursive(this: PageTable var*, index: USize, frame: Frame) {
                                               PTE_FLAG_W)
 }
 
-// setup identity map for the page with `PPN[1]`
-inline def mapIdentity(this: PageTable var*, ppn1: USize, flags: USize) {
-  (*this).ptes[ppn1].set(newFrame(newPhysAddr(ppn1 << 22 as USize)), flags)
+// setup linear mapping for the page with `PPN[1]`
+inline def mapLinear(this: PageTable var*, ppn1: USize,
+                     offset: USize, flags: USize) {
+  let pa = newPhysAddr((ppn1 * MEGAPAGE_SIZE as USize) + offset)
+  (*this).ptes[ppn1].set(newFrame(pa), flags)
+}
+
+// setup linear mapping of address range
+// `begin` & `end` will be treated as virtual address
+inline def mapLinearRange(this: PageTable var*, begin: USize, end: USize,
+                          offset: USize, flags: USize) {
+  let begin_ppn = begin / MEGAPAGE_SIZE as USize
+  let end_ppn = end / MEGAPAGE_SIZE as USize
+  var ppn1 = begin_ppn
+  while ppn1 <= end_ppn {
+    this.mapLinear(ppn1, offset, flags)
+    ppn1 += 1 as USize
+  }
 }
