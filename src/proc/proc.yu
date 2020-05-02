@@ -21,7 +21,8 @@ public def execute(path: u8*, host_tid: Tid): bool {
     var ret = false
     inode.open()
     // read content of inode
-    let size = inode.getSize(), buf = heap.alloc(size)
+    let meta = inode.getMetadata()
+    let size = meta.size, buf = heap.alloc(size)
     if inode.read(buf, size, 0 as USize) as USize == size {
       // create user thread
       let thread = newUserThread(buf, host_tid)
