@@ -1,0 +1,26 @@
+// definition of sized type
+public type ISize = i32
+public type USize = u32
+
+// constants
+inline let FILE_NAME_MAX_LEN  = 28 as u32
+
+// file type
+public enum FileType {
+  File, Dir, CharDevice, BlockDevice,
+}
+
+// file status
+public struct Stat {
+  ino: u32,
+  file_type: FileType,
+  size: USize,
+  blk_size: USize,
+  blocks: USize,
+}
+
+// directory entry
+public struct Dirent {
+  inode_id: u32,
+  filename: u8[FILE_NAME_MAX_LEN],
+}
