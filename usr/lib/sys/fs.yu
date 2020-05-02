@@ -1,0 +1,13 @@
+// constants
+inline let FILE_NAME_MAX_LEN  = 28 as u32
+
+// file status
+public struct Stat {
+  // TODO
+}
+
+// directory entry
+public struct Dirent {
+  inode_id: u32,
+  filename: u8[FILE_NAME_MAX_LEN],
+}
