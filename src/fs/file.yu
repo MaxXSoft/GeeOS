@@ -42,6 +42,17 @@ public def setAllocated(this: File var&) {
   this.status = FileStatus.Allocated
 }
 
+// get metadata of inode
+public def getMetadata(this: File&, meta: Metadata var&): bool {
+  if this.isOpened() {
+    meta = this.inode.getMetadata()
+    true
+  }
+  else {
+    false
+  }
+}
+
 // open an inode and store necessary information to current fd
 public def open(this: File var&, inode: INode var*, flags: i32): i32 {
   if !this.isAllocated() {
