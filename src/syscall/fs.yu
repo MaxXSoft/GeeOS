@@ -1,9 +1,37 @@
 import proc.proc
 import fs.fs
 
+// file type
+public enum FileType {
+  File, Dir, CharDevice, BlockDevice,
+}
+
 // file status
 public struct Stat {
-  // TODO
+  ino: u32,
+  file_type: FileType,
+  size: USize,
+  blk_size: USize,
+  blocks: USize,
+}
+
+def convToFileType(this: INodeType): FileType {
+  when this {
+    INodeType.File { FileType.File }
+    INodeType.Dir { FileType.Dir }
+    INodeType.CharDevice { FileType.CharDevice }
+    else { FileType.BlockDevice }
+  }
+}
+
+def convToStat(this: Metadata&): Stat {
+  [Stat] {
+    this.id,
+    this.itype.convToFileType(),
+    this.size,
+    this.blk_size as USize,
+    this.blocks as USize,
+  }
 }
 
 // NOTE: current implementation will not sync offset between two fds
@@ -42,7 +70,8 @@ public def sysChdir(path: u8*): ISize {
   // get target inode
   let path = newStrView(path)
   let inode = fds.getCwd().lookup(path)
-  if inode != null as INode var* && inode.getType() == INodeType.Dir {
+  let meta = inode.getMetadata()
+  if inode != null as INode var* && meta.itype == INodeType.Dir {
     // set inode as cwd
     fds.setCwd(inode)
     ret = 0
@@ -119,10 +148,27 @@ public def sysWrite(fd: i32, buf: u8*, len: USize): ISize {
 }
 
 public def sysFstat(fd: i32, buf: Stat var*): ISize {
-  // TODO
+  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  fds.lock()
+  // get file by descriptor
+  let file = fds.getFile(fd)
+  if file != null as File var* {
+    // get metadata
+    var meta: Metadata
+    if (*file).getMetadata(meta) {
+      // fill file status info
+      (*buf) = meta.convToStat()
+      ret = 0
+    }
+  }
+  fds.unlock()
+  ret as ISize
 }
 
 public def sysSync(): ISize {
-  // TODO
-  0
+  var fds: FileInfo var& = getCurrentThread().getFds()
+  fds.lock()
+  let ret = if fds.getCwd().getFs().sync() { 0 } else { -1 }
+  fds.unlock()
+  ret as ISize
 }
