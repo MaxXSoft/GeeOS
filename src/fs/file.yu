@@ -1,5 +1,5 @@
 public import arch.arch
-public import fs.vfs.inode
+public import fs.vfs.vfs
 
 import lib.except
 import fs.consts
@@ -77,7 +77,10 @@ public def seek(this: File var&, offset: USize, whence: i32): USize {
     when whence {
       SEEK_SET { this.offset = offset }
       SEEK_CUR { this.offset += offset }
-      SEEK_END { this.offset = this.inode.getSize() + offset }
+      SEEK_END {
+        let meta = this.inode.getMetadata()
+        this.offset = meta.size + offset
+      }
       else { return -1 as USize }
     }
     this.offset

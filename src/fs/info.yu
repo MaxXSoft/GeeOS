@@ -1,5 +1,5 @@
 public import sync.semaphore
-public import fs.vfs.inode
+public import fs.vfs.vfs
 public import fs.file
 public import fs.consts
 
