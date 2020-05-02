@@ -1,7 +1,7 @@
 public import sync.spinlock
 public import lib.queue
 public import sync.condvar
-public import fs.vfs.inode
+public import fs.vfs.vfs
 
 import lib.alloc
 import lib.io
@@ -70,31 +70,31 @@ var stdout_ops: INodeOps
 
 public def newStdInINode(stdin: StdIn var*): INode var* {
   var inode = heap.alloc(sizeof StdInINode) as StdInINode var*
-  (inode as INode var*).init(INodeType.CharDevice, &stdin_ops)
+  (inode as INode var*).init(&stdin_ops)
   (*inode).stdin = stdin
   inode as INode var*
 }
 
 public def newStdOutINode(): INode var* {
   var inode = heap.alloc(sizeof StdOutINode) as StdOutINode var*
-  (inode as INode var*).init(INodeType.CharDevice, &stdout_ops)
+  (inode as INode var*).init(&stdout_ops)
   inode as INode var*
 }
 
 
 /*
- * virtual operations of stdio
+ * inode virtual operations of stdio
  */
+def stdIoGetFs(this: INode var*): FileSystem var* {
+  null as FileSystem var*
+}
+
+def stdIoGetMetadata(this: INode var*): Metadata {
+  [Metadata] {0 as u32, INodeType.CharDevice}
+}
+
 def stdIoFind(this: INode var*, name: StrView&): INode var* {
   null as INode var*
-}
-
-def stdIoGetRoot(this: INode var*): INode var* {
-  null as INode var*
-}
-
-def stdIoGetSize(this: INode var*): USize {
-  0 as USize
 }
 
 def stdIoRead(this: INode var*, buf: u8 var*, len: USize,
@@ -136,16 +136,16 @@ def stdOutWrite(this: INode var*, buf: u8*, len: USize,
 // initialize virtual operations
 public def initStdIoOps() {
   // stdin related ops
+  stdin_ops.op_get_fs = stdIoGetFs
+  stdin_ops.op_get_metadata = stdIoGetMetadata
   stdin_ops.op_find = stdIoFind
-  stdin_ops.op_get_root = stdIoGetRoot
-  stdin_ops.op_get_size = stdIoGetSize
   stdin_ops.op_read = stdInRead
   stdin_ops.op_write = stdIoWrite
   stdin_ops.op_cleanup = stdIoCleanUp
   // stdout related ops
+  stdout_ops.op_get_fs = stdIoGetFs
+  stdout_ops.op_get_metadata = stdIoGetMetadata
   stdout_ops.op_find = stdIoFind
-  stdout_ops.op_get_root = stdIoGetRoot
-  stdout_ops.op_get_size = stdIoGetSize
   stdout_ops.op_read = stdIoRead
   stdout_ops.op_write = stdOutWrite
   stdout_ops.op_cleanup = stdIoCleanUp

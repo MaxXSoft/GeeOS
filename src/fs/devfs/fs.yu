@@ -1,4 +1,4 @@
-public import fs.vfs.inode
+public import fs.vfs.vfs
 
 import fs.devfs.stdio
 
