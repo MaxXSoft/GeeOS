@@ -3,8 +3,8 @@ public import define.context
 import arch.arch
 import arch.riscv.csr
 import lib.io
-import fs.fs
-import trap.syscall
+import fs.devfs.fs
+import syscall.syscall
 import lib.except
 import proc.proc
 
@@ -24,12 +24,7 @@ def handleExternal() {
   // read character from UART
   let c = getChar()
   if c >= 0 {
-    if c as u8 == '\r' {
-      stdin.push('\n')
-    }
-    else {
-      stdin.push(c as u8)
-    }
+    pushChar(c as u8)
   }
 }
 
