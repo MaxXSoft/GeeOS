@@ -1,14 +1,17 @@
+// constants
 inline let MAGIC_NUM          = 0x9eef5000 as u32
 inline let DIRECT_BLOCK_NUM   = 12 as u32
 inline let BLOCK_OFS_SIZE     = sizeof u32
 inline let FILE_NAME_MAX_LEN  = 28 as u32
 
+// disk inode type
 public enum GfsINodeType: u32 {
   Unused  = 0 as u32,
   File    = 1 as u32,
   Dir     = 2 as u32,
 }
 
+// super block header
 public struct GfsSbHeader {
   magic_num: u32,                   // magic number
   header_size: u32,                 // size of current header
@@ -17,14 +20,17 @@ public struct GfsSbHeader {
   inode_blk_num: u32,               // number of inode blocks
 }
 
+// free map block header
 public struct GfsFmbHeader {
   unused_num: u32,                  // number of unused blocks
 }
 
+// inode block header
 public struct GfsInbHeader {
   unused_num: u32,                  // number of unused inodes
 }
 
+// disk inode
 public struct GfsINode {
   itype: GfsINodeType,              // type of inode
   size: u32,                        // size of file
@@ -34,6 +40,7 @@ public struct GfsINode {
   indirect2: u32,                   // 2nd indirect block id
 }
 
+// directory entry
 public struct GfsEntry {
   inode_id: u32,                    // inode id of file
   filename: u8[FILE_NAME_MAX_LEN],  // file name, ends with '\0'
