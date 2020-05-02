@@ -8,30 +8,19 @@ import mem.consts
 import mem.pm
 import mem.heap
 
-// set linear mapping of address range
-def mapRange(pt: PageTable var*, begin: USize, end: USize, flags: USize) {
-  let begin = begin / MEGAPAGE_SIZE as USize
-  let end = end / MEGAPAGE_SIZE as USize
-  var addr = begin
-  while addr <= end {
-    let pa = newPhysAddr(addr * MEGAPAGE_SIZE as USize)
-    let frame = newFrame(pa)
-    pt.getPte(pa.getPpn1()).set(frame, flags)
-    addr += 1 as USize
-  }
-}
-
 // initialize temporary root page table for kernel
 // returns temporary allocated root page table
 def initTempTable(): PageTable var* {
   let root_table = allocPhyMem() as PageTable var*
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
+  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as USize
   root_table.zero()
   // set identity mapping vm(KERNEL_BASE) -> pm(KERNEL_BASE)
-  root_table.mapRange(KERNEL_BASE as USize, PHY_STOP as USize,
-                      flags | PTE_FLAG_X)
+  root_table.mapLinearRange(KERNEL_BASE as USize, PHY_STOP as USize,
+                            offset, flags | PTE_FLAG_X)
   // set identity mapping vm(UART_ADDR) -> pm(UART_ADDR)
-  root_table.mapRange(UART_ADDR as USize, UART_END as USize, flags)
+  root_table.mapLinearRange(UART_ADDR as USize, UART_END as USize,
+                            offset, flags)
   // set recursive mapping
   let root_frame = newFrame(newPhysAddr(root_table as USize))
   root_table.setRecursive(RECURSIVE_INDEX, root_frame)
