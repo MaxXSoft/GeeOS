@@ -1,9 +1,9 @@
 public import fs.dev.device
-public import fs.geefs.structs
-public import lib.hashmap
-public import sync.semaphore
-public import fs.vfs.inode
+public import fs.vfs.vfs
 
+import fs.geefs.structs
+import lib.hashmap
+import sync.semaphore
 import lib.except
 import lib.alloc
 import lib.algo
@@ -11,7 +11,9 @@ import lib.algo
 // filesystem object
 // NOTE: this object will NOT HAVE any inodes
 //       i.e. stores only references of inodes
-public struct GeeFs {
+struct GeeFs {
+  // vfs interface
+  fs: FileSystem,
   // low-level device
   dev: DeviceInterface var*,
   // super block on disk
@@ -36,7 +38,7 @@ struct GeeFsINode {
  * INode related stuffs
  */
 // virtual operations of GeeFS object, shared static object
-var geefs_ops: INodeOps
+var inode_ops: INodeOps
 
 // inode type converter
 def convToINodeType(this: GfsINodeType): INodeType {
@@ -53,7 +55,7 @@ def convToINodeType(this: GfsINodeType): INodeType {
 def newGeeFsINode(id: u32, gfs_inode: GfsINode&,
                   fs: GeeFs var*): INode var* {
   var inode = heap.alloc(sizeof GeeFsINode) as GeeFsINode var*
-  (inode as INode var*).init(gfs_inode.itype.convToINodeType(), &geefs_ops)
+  (inode as INode var*).init(&inode_ops)
   (*inode).id = id
   (*inode).gfs_inode = gfs_inode
   (*inode).fs = fs
@@ -66,7 +68,7 @@ def getINode(this: INode var*): GeeFsINode var& {
 }
 
 // get filesystem object from inode
-def getFs(this: INode var*): GeeFs var& {
+def getGeeFs(this: INode var*): GeeFs var& {
   *(this.getINode().fs)
 }
 
@@ -74,6 +76,8 @@ def getFs(this: INode var*): GeeFs var& {
 /*
  * filesystem related stuffs
  */
+var geefs_ops: FileSystemOps
+
 // get inode from map
 // if not found, read inode from device and add inode to map
 def getINode(this: GeeFs var&, id: u32): INode var* {
@@ -143,22 +147,8 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
   }
 }
 
-public def newGeeFs(dev: DeviceInterface var*): GeeFs {
-  [GeeFs] {dev, [GfsSbHeader] {}, newHashMap(), newSemaphore()}
-}
-
-public def del(this: GeeFs var&) {
-  for kv in this.inodes.iter() {
-    let inode = kv.value() as INode var*
-    inode.del()
-  }
-  this.inodes.del()
-  this.sema.del()
-}
-
 // open filesystem image on device, returns false if failed
-// NOTE: thread unsafe!
-public def open(this: GeeFs var&): bool {
+def open(this: GeeFs var&): bool {
   // read super block header
   if !this.dev.readAssert(sizeof GfsSbHeader, &this.super_block as u8 var*,
                           0 as USize) {
@@ -176,23 +166,55 @@ public def open(this: GeeFs var&): bool {
   this.getINode(0 as u32) != null as INode var*
 }
 
-// get inode of root directory
-public def getRoot(this: GeeFs var&): INode var* {
-  this.sema.wait()
-  let root = this.inodes.get(0 as u32) as INode var*
-  assert(root != null as INode var*, "GeeFs.getRoot")
-  this.sema.signal()
-  root
+// create filesystem by opening image on device
+public def newGeeFs(dev: DeviceInterface var*): FileSystem var* {
+  // create GeeFs object
+  let geefs = heap.alloc(sizeof GeeFs) as GeeFs var*
+  (geefs as FileSystem var*).init(&geefs_ops)
+  (*geefs).dev = dev
+  (*geefs).super_block = [GfsSbHeader] {}
+  (*geefs).sema = newSemaphore()
+  (*geefs).inodes = newHashMap()
+  // perform open operation
+  if (*geefs).open() {
+    geefs as FileSystem var*
+  }
+  else {
+    (geefs as FileSystem var*).del()
+    null as FileSystem var*
+  }
+}
+
+// get GeeFs object from filesystem
+def getGeeFs(this: FileSystem var*): GeeFs var& {
+  *(this as GeeFs var*)
 }
 
 
 /*
- * virtual operations
+ * inode virtual operations
  */
-// find inode by name
-def gfsFind(this: INode var*, name: StrView&): INode var* {
+// get filesystem
+def gfsINodeGetFs(this: INode var*): FileSystem var* {
+  this.getINode().fs as FileSystem var*
+}
+
+// get metadata of current inode
+def gfsINodeGetMetadata(this: INode var*): Metadata {
   let inode: GfsINode& = this.getINode().gfs_inode
-  var fs: GeeFs var& = this.getFs()
+  [Metadata] {
+    this.getINode().id,
+    inode.itype.convToINodeType(),
+    inode.size,
+    this.getGeeFs().super_block.block_size,
+    inode.block_num,
+  }
+}
+
+// find inode by name
+def gfsINodeFind(this: INode var*, name: StrView&): INode var* {
+  let inode: GfsINode& = this.getINode().gfs_inode
+  var fs: GeeFs var& = this.getGeeFs()
   // make sure current inode represents a directory
   if inode.itype != GfsINodeType.Dir {
     return null as INode var*
@@ -230,21 +252,11 @@ def gfsFind(this: INode var*, name: StrView&): INode var* {
   null as INode var*
 }
 
-// get root inode of file system
-def gfsGetRoot(this: INode var*): INode var* {
-  this.getFs().getRoot()
-}
-
-// get size of current inode
-def gfsGetSize(this: INode var*): USize {
-  this.getINode().gfs_inode.size as USize
-}
-
 // read inode content to buffer
-def gfsRead(this: INode var*, buf: u8 var*, len: USize,
-            offset: USize): i32 {
+def gfsINodeRead(this: INode var*, buf: u8 var*, len: USize,
+                 offset: USize): i32 {
   let inode: GfsINode& = this.getINode().gfs_inode
-  var fs: GeeFs var& = this.getFs()
+  var fs: GeeFs var& = this.getGeeFs()
   // read file
   var data_len = 0, i = offset as u32
   let end_len = min((offset + len) as u32, inode.size)
@@ -266,15 +278,43 @@ def gfsRead(this: INode var*, buf: u8 var*, len: USize,
 }
 
 // write buffer content to inode
-def gfsWrite(this: INode var*, buf: u8*, len: USize,
-             offset: USize): i32 {
+def gfsINodeWrite(this: INode var*, buf: u8*, len: USize,
+                  offset: USize): i32 {
   // TODO
   -1
 }
 
 // clean up before being released
-def gfsCleanUp(this: INode var*) {
-  this.getFs().removeINode(this.getINode().id)
+def gfsINodeCleanUp(this: INode var*) {
+  this.getGeeFs().removeINode(this.getINode().id)
+}
+
+
+/*
+ * filesystem virtual operations
+ */
+// get inode of root directory
+def gfsGetRoot(this: FileSystem var*): INode var* {
+  let fs: GeeFs var& = this.getGeeFs()
+  fs.sema.wait()
+  let root = fs.inodes.get(0 as u32) as INode var*
+  assert(root != null as INode var*, "GeeFs.getRoot")
+  fs.sema.signal()
+  root
+}
+
+def gfsSync(this: FileSystem var*): bool {
+  this.getGeeFs().dev.sync()
+}
+
+def gfsCleanUp(this: FileSystem var*) {
+  let fs: GeeFs var& = this.getGeeFs()
+  for kv in fs.inodes.iter() {
+    let inode = kv.value() as INode var*
+    inode.del()
+  }
+  fs.inodes.del()
+  fs.sema.del()
 }
 
 
@@ -283,10 +323,15 @@ def gfsCleanUp(this: INode var*) {
  */
 // initialize virtual operations
 public def initGeeFsOps() {
-  geefs_ops.op_find = gfsFind
+  // inode ops
+  inode_ops.op_get_fs = gfsINodeGetFs
+  inode_ops.op_get_metadata = gfsINodeGetMetadata
+  inode_ops.op_find = gfsINodeFind
+  inode_ops.op_read = gfsINodeRead
+  inode_ops.op_write = gfsINodeWrite
+  inode_ops.op_cleanup = gfsINodeCleanUp
+  // filesystem ops
   geefs_ops.op_get_root = gfsGetRoot
-  geefs_ops.op_get_size = gfsGetSize
-  geefs_ops.op_read = gfsRead
-  geefs_ops.op_write = gfsWrite
+  geefs_ops.op_sync = gfsSync
   geefs_ops.op_cleanup = gfsCleanUp
 }
