@@ -1,13 +1,20 @@
+public import lib.sys.fs
+
 // definition of sized type
 public type ISize = i32
 public type USize = u32
 
 // id of system call
 public enum SyscallId {
+  Dup3 = 24,
+  Chdir = 49,
   Open = 56,
   Close = 57,
+  Lseek = 62,
   Read = 63,
   Write = 64,
+  Fstat = 80,
+  Sync = 81,
   Exit = 93,
   Yield = 124,
   Exec = 221,
@@ -15,6 +22,16 @@ public enum SyscallId {
 
 // defined in 'syscall.S'
 extern declare syscall: (i32, i32, i32, i32, i32, i32, i32, SyscallId): i32
+
+// duplicate file descriptor
+inline def dup3(oldfd: i32, newfd: i32, flags: i32): i32 {
+  syscall(oldfd, newfd, flags, 0, 0, 0, 0, SyscallId.Dup3)
+}
+
+// change cwd
+inline def chdir(path: u8*): i32 {
+  syscall(path as i32, 0, 0, 0, 0, 0, 0, SyscallId.Chdir)
+}
 
 // open file
 inline def open(path: u8*, flags: i32): i32 {
@@ -26,6 +43,11 @@ inline def close(fd: i32): i32 {
   syscall(fd, 0, 0, 0, 0, 0, 0, SyscallId.Close)
 }
 
+// reposition read/write file offset
+inline def lseek(fd: i32, offset: USize, whence: i32): USize {
+  syscall(fd, offset as i32, whence, 0, 0, 0, 0, SyscallId.Lseek) as USize
+}
+
 // read bytes from file to buffer
 inline def read(fd: i32, buf: u8 var*, len: USize): i32 {
   syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Read)
@@ -34,6 +56,16 @@ inline def read(fd: i32, buf: u8 var*, len: USize): i32 {
 // write bytes from buffer to file
 inline def write(fd: i32, buf: u8*, len: USize): i32 {
   syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Write)
+}
+
+// get file status
+inline def fstat(fd: i32, buf: Stat var*): i32 {
+  syscall(fd, buf as i32, 0, 0, 0, 0, 0, SyscallId.Fstat)
+}
+
+// commit filesystem caches to disk
+inline def sync() {
+  syscall(0, 0, 0, 0, 0, 0, 0, SyscallId.Sync)
 }
 
 // exit current thread
