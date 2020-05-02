@@ -1,0 +1,128 @@
+import proc.proc
+import fs.fs
+
+// file status
+public struct Stat {
+  // TODO
+}
+
+// NOTE: current implementation will not sync offset between two fds
+public def sysDup3(oldfd: i32, newfd: i32, flags: i32): ISize {
+  var fds: FileInfo var& = getCurrentThread().getFds()
+  fds.lock()
+  // get file1
+  let file1 = fds.getFile(oldfd)
+  if file1 == null as File var* || !(*file1).isOpened() {
+    fds.unlock()
+    return -1 as ISize
+  }
+  // initialize file2
+  var fd2 = newfd, file2 = fds.getFile(newfd)
+  if file2 == null as File var* {
+    // allocate new file
+    if !fds.allocFd(fd2) {
+      fds.unlock()
+      return -1 as ISize
+    }
+    file2 = fds.getFile(fd2)
+  }
+  else if (*file2).isOpened() {
+    // close file2 if it is opened
+    (*file2).close()
+  }
+  // duplicate
+  (*file2).replaceWith(*file1)
+  fds.unlock()
+  fd2 as ISize
+}
+
+public def sysChdir(path: u8*): ISize {
+  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  fds.lock()
+  // get target inode
+  let path = newStrView(path)
+  let inode = fds.getCwd().lookup(path)
+  if inode != null as INode var* && inode.getType() == INodeType.Dir {
+    // set inode as cwd
+    fds.setCwd(inode)
+    ret = 0
+  }
+  fds.unlock()
+  ret as ISize
+}
+
+public def sysOpen(path: u8*, flags: i32): ISize {
+  var fds: FileInfo var& = getCurrentThread().getFds(), fd = -1
+  fds.lock()
+  // lookup the specific file
+  let path = newStrView(path)
+  let inode = fds.getCwd().lookup(path)
+  if inode != null as INode var* {
+    // allocate a new file descriptor & open file
+    !fds.allocFd(fd) || (*fds.getFile(fd)).open(inode, flags) < 0
+  }
+  fds.unlock()
+  fd as ISize
+}
+
+public def sysClose(fd: i32): ISize {
+  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  fds.lock()
+  // get file by descriptor
+  let file = fds.getFile(fd)
+  if file != null as File var* {
+    // close file & deallocate file descriptor
+    ret = (*file).close()
+    if ret >= 0 { fds.deallocFd(fd) }
+  }
+  fds.unlock()
+  ret as ISize
+}
+
+public def sysLseek(fd: i32, offset: USize, whence: i32): USize {
+  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1 as USize
+  fds.lock()
+  // get file by descriptor
+  let file = fds.getFile(fd)
+  if file != null as File var* {
+    // seek offset
+    ret = (*file).seek(offset, whence)
+  }
+  fds.unlock()
+  ret
+}
+
+public def sysRead(fd: i32, buf: u8 var*, len: USize): ISize {
+  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  fds.lock()
+  // get file by descriptor
+  let file = fds.getFile(fd)
+  if file != null as File var* {
+    // read file
+    ret = (*file).read(buf, len)
+  }
+  fds.unlock()
+  ret as ISize
+}
+
+public def sysWrite(fd: i32, buf: u8*, len: USize): ISize {
+  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  fds.lock()
+  // get file by descriptor
+  let file = fds.getFile(fd)
+  if file != null as File var* {
+    // write file
+    ret = (*file).write(buf, len)
+  }
+  fds.unlock()
+  ret as ISize
+}
+
+public def sysFstat(fd: i32, buf: Stat var*): ISize {
+  // TODO
+}
+
+public def sysSync(): ISize {
+  // TODO
+  0
+}

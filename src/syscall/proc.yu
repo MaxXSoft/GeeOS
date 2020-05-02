@@ -1,0 +1,24 @@
+import proc.proc
+import lib.io
+
+public def sysExit(code: USize): ISize {
+  // TODO: remove this log
+  io <<< "user thread has exited!\n"
+  exit(code)
+  0 as ISize
+}
+
+public def sysYield(): ISize {
+  yield()
+  0
+}
+
+public def sysExec(path: u8*): ISize {
+  if execute(path, getCurrentTid()) {
+    sleep()
+    0 as ISize
+  }
+  else {
+    -1 as ISize
+  }
+}
