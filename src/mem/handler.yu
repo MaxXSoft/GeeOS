@@ -50,20 +50,20 @@ public struct LinearHandler {
   offset: ISize,
 }
 
-def mapLinear(this: MemoryHandler var*, pt: ActivePageTable var&,
+def linearMap(this: MemoryHandler var*, pt: ActivePageTable var&,
               addr: USize, attr: MemoryAttr&) {
   let this: LinearHandler& = *(this as LinearHandler*)
   attr.apply(pt.map(addr, (addr as ISize + this.offset) as USize))
 }
 
-def unmapLinear(this: MemoryHandler var*, pt: ActivePageTable var&,
+def linearUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
                 addr: USize) {
   pt.unmap(addr)
 }
 
 public def newLinearHandler(offset: ISize): MemoryHandler var* {
   let handler = heap.alloc(sizeof LinearHandler) as LinearHandler var*
-  (*handler).base = [MemoryHandler] {mapLinear, unmapLinear}
+  (*handler).base = [MemoryHandler] {linearMap, linearUnmap}
   (*handler).offset = offset
   handler as MemoryHandler var*
 }
@@ -74,15 +74,15 @@ public struct FrameHandler {
   base: MemoryHandler,
 }
 
-def mapFrame(this: MemoryHandler var*, pt: ActivePageTable var&,
+def frameMap(this: MemoryHandler var*, pt: ActivePageTable var&,
              addr: USize, attr: MemoryAttr&) {
   // allocate new frame
   let target = allocPhyMem() as USize
-  assert(target != 0 as USize, "mapFrame - OOM")
+  assert(target != 0 as USize, "frameMap - OOM")
   attr.apply(pt.map(addr, target))
 }
 
-def unmapFrame(this: MemoryHandler var*, pt: ActivePageTable var&,
+def frameUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
                addr: USize) {
   let frame = pt.unmap(addr)
   // release allocated frame
@@ -92,6 +92,6 @@ def unmapFrame(this: MemoryHandler var*, pt: ActivePageTable var&,
 
 public def newFrameHandler(): MemoryHandler var* {
   let handler = heap.alloc(sizeof FrameHandler) as FrameHandler var*
-  (*handler).base = [MemoryHandler] {mapFrame, unmapFrame}
+  (*handler).base = [MemoryHandler] {frameMap, frameUnmap}
   handler as MemoryHandler var*
 }
