@@ -12,34 +12,10 @@ public struct MemorySet {
   areas: MemAreaList,
 }
 
-public def push(this: MemorySet var&, start: USize, end: USize,
-                attr: MemoryAttr, handler: MemoryHandler var*) {
-  assert(start <= end, "invalid memory area")
-  let area = newMemArea(start, end, handler, attr)
-  this.areas.push(area)
-  for pt in this.page_table.edit() {
-    area.map(pt)
-  }
-}
-
-def mapKernel(this: MemorySet var&) {
-  let linear = newLinearHandler((KERNEL_VM_BASE - KERNEL_BASE) as ISize)
-  this.push(_text_start as USize, _text_end as USize,
-            newMemoryAttr().setExecute().setReadonly(), linear)
-  this.push(_rodata_start as USize, _rodata_end as USize,
-            newMemoryAttr().setReadonly(), linear)
-  this.push(_data_start as USize, PHY_STOP as USize,
-            newMemoryAttr(), linear)
-  this.push(UART_ADDR as USize, UART_END as USize,
-            newMemoryAttr(), linear)
-  this.push(PLIC_ADDR as USize, PLIC_END as USize,
-            newMemoryAttr(), linear)
-}
-
 public def newMemorySet(): MemorySet {
-  var ms = [MemorySet] {newInactivePageTable()}
-  ms.mapKernel()
-  ms
+  var pt = newInactivePageTable()
+  pt.mapKernel()
+  [MemorySet] {pt}
 }
 
 public def del(this: MemorySet var&) {
@@ -50,6 +26,16 @@ public def del(this: MemorySet var&) {
   // delete page table & area list
   this.page_table.del()
   this.areas.del()
+}
+
+public def push(this: MemorySet var&, start: USize, end: USize,
+                attr: MemoryAttr, handler: MemoryHandler var*) {
+  assert(start <= end, "invalid memory area")
+  let area = newMemArea(start, end, handler, attr)
+  this.areas.push(area)
+  for pt in this.page_table.edit() {
+    area.map(pt)
+  }
 }
 
 public def activate(this: MemorySet&) {
