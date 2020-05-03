@@ -116,11 +116,7 @@ struct PhysFrameDealloc {
 
 def deallocPhysFrame(this: FrameDeallocator var*, frame: Frame) {
   let pa = frame.getAddr()
-  let addr = pa.getAddr()
-  // deallocate only the frames managed by the frame allocator
-  if addr >= _geeos_end as USize && addr < HEAP_BASE as USize {
-    freePhyMem(addr as u8 var*)
-  }
+  freePhyMem(pa.getAddr() as u8 var*)
 }
 
 def newPhysFrameDealloc(): PhysFrameDealloc {
@@ -227,10 +223,10 @@ public def newInactivePageTable(): InactivePageTable {
 public def del(this: InactivePageTable var&) {
   let pa = this.root_frame.getAddr()
   let pt = pa.getAddr() as PageTable var*
-  // clear current page table (user space only)
+  // clear current page table
   var frame_dealloc = newPhysFrameDealloc()
   let dealloc = &frame_dealloc as FrameDeallocator var*
-  pt.clear(KERNEL_VM_BASE as USize / MEGAPAGE_SIZE as USize, dealloc)
+  pt.clear(RECURSIVE_INDEX, dealloc)
   // deallocate root frame
   freePhyMem(pt as u8 var*)
 }
