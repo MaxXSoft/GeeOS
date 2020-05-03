@@ -91,6 +91,7 @@ public def setExecute(this: PageEntry var&, value: bool) {
   (*this.pte).setFlag(PTE_FLAG_X, value)
 }
 
+
 // physical frame allocator
 struct PhysFrameAlloc {
   base: FrameAllocator,
@@ -115,14 +116,19 @@ struct PhysFrameDealloc {
 
 def deallocPhysFrame(this: FrameDeallocator var*, frame: Frame) {
   let pa = frame.getAddr()
-  freePhyMem(pa.getAddr() as u8 var*)
+  let addr = pa.getAddr()
+  // deallocate only the frames managed by the frame allocator
+  if addr >= _geeos_end as USize && addr < HEAP_BASE as USize {
+    freePhyMem(addr as u8 var*)
+  }
 }
 
 def newPhysFrameDealloc(): PhysFrameDealloc {
   [PhysFrameDealloc] {[FrameDeallocator] {deallocPhysFrame}}
 }
 
-// page table for user threads
+
+// activated page table
 public struct ActivePageTable {
   page_table: RecursivePageTable,
   entry: PageEntry,
@@ -187,7 +193,8 @@ def withTempMapEnd(this: ActivePageTable var&) {
   this.unmap(TEMP_PAGE_ADDR)
 }
 
-// page table for kernel threads
+
+// inactivated page table
 public struct InactivePageTable {
   root_frame: Frame,
 }
@@ -209,9 +216,8 @@ public struct IptWithIter {
 
 public def newInactivePageTable(): InactivePageTable {
   let frame = allocPhysFrame(null as FrameAllocator var*)
-  let target = frame.getAddr()
   var act_pt = newActivePageTable()
-  let temp_pt = act_pt.withTempMapBegin(target); {
+  let temp_pt = act_pt.withTempMapBegin(frame.getAddr()); {
     temp_pt.zero()
     temp_pt.setRecursive(RECURSIVE_INDEX, frame)
   }; act_pt.withTempMapEnd()
@@ -221,16 +227,34 @@ public def newInactivePageTable(): InactivePageTable {
 public def del(this: InactivePageTable var&) {
   let pa = this.root_frame.getAddr()
   let pt = pa.getAddr() as PageTable var*
-  // clear current page table
+  // clear current page table (user space only)
   var frame_dealloc = newPhysFrameDealloc()
   let dealloc = &frame_dealloc as FrameDeallocator var*
-  pt.clear(RECURSIVE_INDEX, dealloc)
+  pt.clear(KERNEL_VM_BASE as USize / MEGAPAGE_SIZE as USize, dealloc)
   // deallocate root frame
   freePhyMem(pt as u8 var*)
 }
 
 public def token(this: InactivePageTable&): USize {
   this.root_frame.getPpn() | SATP_SV32
+}
+
+// setup kernel mapping
+public def mapKernel(this: InactivePageTable var&) {
+  var act_pt = newActivePageTable()
+  let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
+  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as USize
+  let temp_pt = act_pt.withTempMapBegin(this.root_frame.getAddr()); {
+    // kernel and physical memory
+    temp_pt.mapLinearRange(KERNEL_BASE as USize, PHY_STOP as USize,
+                           offset, flags | PTE_FLAG_X)
+    // UART
+    temp_pt.mapLinearRange(UART_ADDR as USize, UART_END as USize,
+                           offset, flags)
+    // PLIC
+    temp_pt.mapLinearRange(PLIC_ADDR as USize, PLIC_END as USize,
+                           offset, flags)
+  }; act_pt.withTempMapEnd()
 }
 
 // activate current inactive page table temporarily
