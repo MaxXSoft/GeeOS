@@ -13,7 +13,7 @@ public enum SyscallId {
   Sync = 81,
   Exit = 93,
   Yield = 124,
-  Exec = 221,
+  Execve = 221,
 }
 
 // defined in 'syscall.S'
@@ -76,6 +76,7 @@ inline def yield(): i32 {
 }
 
 // execute program
-inline def exec(path: u8*): i32 {
-  syscall(path as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exec)
+inline def execve(path: u8*, argv: u8**, envp: u8**): i32 {
+  syscall(path as i32, argv as i32, envp as i32,
+          0, 0, 0, 0, SyscallId.Execve)
 }
