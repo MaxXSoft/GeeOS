@@ -28,6 +28,11 @@ inline def getFlag(this: PageTableEntry&, flag: USize): bool {
   (this.getFlags() & flag) != 0 as USize
 }
 
+inline def isLeaf(this: PageTableEntry&): bool {
+  let flag_vad = PTE_FLAG_V | PTE_FLAG_A | PTE_FLAG_D
+  (this.getFlags() & ~flag_vad) != 0 as USize
+}
+
 inline def setFlags(this: PageTableEntry var&, flags: USize) {
   this.data = (this.data & ~(0xff as USize)) | flags
 }
@@ -81,15 +86,16 @@ inline def zero(this: PageTable var*) {
   }
 }
 
-// deallocate all avaliable PTE frames before `index` and clear page table
+// deallocate & clear all avaliable non-leaf PTEs frames before `index`
 inline def clear(this: PageTable var*, index: USize,
                  dealloc: FrameDeallocator var*) {
   var i = 0
   while i as USize < index {
-    if !(*this).ptes[i].isUnused() {
-      let frame = (*this).ptes[i].getFrame()
+    var pte: PageTableEntry var& = this.getPte(i as USize)
+    if !pte.isUnused() && !pte.isLeaf() {
+      let frame = pte.getFrame()
       dealloc.dealloc(frame)
-      (*this).ptes[i].setUnused()
+      pte.setUnused()
     }
     i += 1
   }
