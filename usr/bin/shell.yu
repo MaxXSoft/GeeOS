@@ -109,7 +109,7 @@ def runCmd(): i32 {
   }
   else {
     // just execute
-    let ret = exec(buf as u8*)
+    let ret = execve(buf as u8*, null as u8**, null as u8**)
     if ret < 0 {
       io <<< "command not found: " <<< buf as u8* <<< '\n'
     }
