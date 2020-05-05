@@ -157,13 +157,12 @@ _handleTimer:
   lw    a3, 0(a1)
   add   a2, a2, a3
   sw    a2, 0(a1)
-  bgt   a2, a3, _skip_hi
+  sltu  a2, a2, a3
   # update higher 32-bit of 'mtimecmp'
   addi  a1, a1, 4
   lw    a3, 0(a1)
-  addi  a3, a3, 1
+  add   a3, a3, a2
   sw    a3, 0(a1)
-_skip_hi:
   # raise a supervisor software interrupt
   li    a1, 2
   csrw  sip, a1
