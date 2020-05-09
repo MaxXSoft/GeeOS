@@ -3,6 +3,7 @@
 inline let FLASH_ADDR   = 0x90020000
 inline let MEM_ADDR     = 0x80000000
 inline let MEM_SIZE_MIB = 4
+inline let SWITCH_ADDR  = 0x1000f020
 inline let UART_ADDR    = 0x90000104
 inline let UART_END     = 0x90000200
 inline let PLIC_ADDR    = 0x00000000
