@@ -7,14 +7,14 @@ import lib.c.string
 // boot from specific address
 extern declare jumpToAddr: (u8*)
 def boot(addr: u8*) {
-  io <<< "booting...\n\n"
+  io <<< "booting from 0x" <<$ addr as u32 <<< "...\n\n"
   jumpToAddr(addr)
 }
 
-// load ELF file from flash to memory
-def loadElfFromFlash(): u8* {
-  // get ELF file from flash
-  let elf = newElfFile(FLASH_ADDR as u8*)
+// load ELF file from specific address to memory
+def loadElf(addr: u8*): u8* {
+  // read & check ELF file
+  let elf = newElfFile(addr)
   let ehdr = elf.getEhdr()
   if !ehdr.isValid() {
     panic("invalid ELF file")
@@ -32,12 +32,67 @@ def loadElfFromFlash(): u8* {
   (ehdr.getEntry() - off) as u8*
 }
 
+// wait for 0x9e9e9e9e
+def waitMagicHeader() {
+  var i = 0
+  while i < 4 {
+    if io.getChar() == 0x9e as u8 {
+      i += 1
+    }
+    else {
+      i = 0
+    }
+  }
+}
+
+// read 32-bit word from UART
+def readWordFromUart(): u32 {
+  var word = io.getChar() as u32
+  word |= io.getChar() as u32 << 8 as u32
+  word |= io.getChar() as u32 << 16 as u32
+  word |= io.getChar() as u32 << 24 as u32
+  word
+}
+
+// receive data from UART
+def receiveFromUart(): u8* {
+  // wait header
+  io <<< "waiting for u32 sequence: 0x9e9e9e9e OFFSET LEN DATA...\n"
+  waitMagicHeader()
+  // read offset & len
+  let offset = readWordFromUart() as u8 var*, len = readWordFromUart()
+  io <<< "offset: 0x" <<$ offset as u32 <<< ", len: " <<< len <<< '\n'
+  // receive data
+  io <<< "receiving data...\n"
+  var i = 0
+  while i as u32 < len {
+    offset[i] = io.getChar()
+    i += 1
+  }
+  io <<< "done receiving data\n"
+  offset
+}
+
 extern def entry() {
   initIO()
   io <<< "GeeOS bootloader v0.0.1\n"
-  let addr = loadElfFromFlash()
+  // determine boot mode
+  io <<< "boot mode: "
+  let addr = if (*(SWITCH_ADDR as i32*) == 0) {
+    // boot from flash
+    io <<< "flash\n"
+    FLASH_ADDR as u8*
+  }
+  else {
+    // boot from UART
+    io <<< "UART\n"
+    receiveFromUart()
+  }
+  // load ELF data to memory
+  let entry = loadElf(addr)
+  // execute ELF data
   io <<< "exiting bootloader...\n"
-  boot(addr)
+  boot(entry)
 }
 
 extern def handleTrap(mepc: u32, mcause: u32, mtval: u32) {
