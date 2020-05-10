@@ -1,0 +1,52 @@
+import arch.arch
+import lib.io
+
+// read a byte from UART
+def readUart(): u8 {
+  var c = -1
+  while c < 0 {
+    c = getChar()
+  }
+  c as u8
+}
+
+// wait for 0x9e9e9e9e
+def waitMagicHeader() {
+  var i = 0
+  while i < 4 {
+    if readUart() == 0x9e as u8 {
+      i += 1
+    }
+    else {
+      i = 0
+    }
+  }
+}
+
+// read 32-bit word from UART
+def readWordFromUart(): u32 {
+  var word = readUart() as u32
+  word |= readUart() as u32 << 8 as u32
+  word |= readUart() as u32 << 16 as u32
+  word |= readUart() as u32 << 24 as u32
+  word
+}
+
+// receive data from UART
+public def receiveFromUart(): u8* {
+  // wait header
+  io <<< "waiting for u32 sequence: 0x9e9e9e9e OFFSET LEN DATA...\n"
+  waitMagicHeader()
+  // read offset & len
+  let offset = readWordFromUart() as u8 var*, len = readWordFromUart()
+  io <<< "offset: 0x" <<$ offset as u32 <<< ", len: " <<< len <<< '\n'
+  // receive data
+  io <<< "receiving data...\n"
+  var i = 0
+  while i as u32 < len {
+    offset[i] = readUart()
+    i += 1
+  }
+  io <<< "done receiving data\n"
+  offset
+}
