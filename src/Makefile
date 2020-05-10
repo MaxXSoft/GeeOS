@@ -61,8 +61,12 @@ $(LIB_TARGET): $(LIB_OBJ)
 
 $(BOOT_TARGET): $(BOOT_TARGET).elf
 	$(info making GeeOS bootloader...)
+	# create bin file
 	$(OBJC) -j .text -j .data $^ $@
+	# create dump
 	$(OBJD) $^ > $@.dump
+	# create coe file
+	$(UTILS_DIR)/bin2coe.py $@
 
 $(BOOT_TARGET).elf: $(BOOT_OBJ) $(BOOT_LDS) $(LIB_TARGET)
 	$(LD) -T$(BOOT_LDS) -L$(BUILD_DIR) -lgee -o $@ $(BOOT_OBJ)

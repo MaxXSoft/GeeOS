@@ -18,6 +18,7 @@ export BUILD_DIR := $(TOP_DIR)/build
 export SRC_DIR := $(TOP_DIR)/src
 export USR_DIR := $(TOP_DIR)/usr
 export MKFS_DIR := $(TOP_DIR)/mkfs
+export UTILS_DIR := $(TOP_DIR)/utils
 export OBJ_DIR := $(BUILD_DIR)/obj
 
 # all sub-makes
