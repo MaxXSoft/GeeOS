@@ -7,6 +7,7 @@ import mem.mset
 import mem.consts
 import mem.pm
 import mem.heap
+import lib.io
 
 // initialize temporary root page table for kernel
 // returns temporary allocated root page table
@@ -43,10 +44,13 @@ public def initMem() {
   // initialize phyical memory
   initPhyMem()
   // initialize heap memory
+  io <<< "initializing heap allocator...\n"
   initHeapMem()
   // initialize temporary page table
+  io <<< "setting up temp page table...\n"
   let temp_table = initTempTable()
   // remap kernel
+  io <<< "remapping kernel...\n"
   remapKernel()
   // free temporary page table
   freePhyMem(temp_table as u8 var*)
