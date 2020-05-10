@@ -26,6 +26,7 @@ _handleTrap:
   # jump to address
   .globl    jumpToAddr
 jumpToAddr:
+  fence.i
   jr        a0
 
 
