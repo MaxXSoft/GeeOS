@@ -6,6 +6,8 @@ all targets must define the following constants:
 - MEM_ADDR: i32:      physical memory start address
 - MEM_SIZE_MIB: i32:  physical memory size (MiB)
 - SWITCH_ADDR: i32:   address of GPIO switch
+- LED_ADDR: i32:      address of GPIO led
+- NUM_ADDR: i32:      address of GPIO segment display
 - UART_ADDR: i32:     address of UART device
 - UART_END: i32:      end address of UART device
 - PLIC_ADDR: i32:     address of PLIC device
