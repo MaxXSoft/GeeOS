@@ -9,13 +9,8 @@ from serial.tools.list_ports import comports
 
 import os
 import sys
-from time import sleep
 
 baudrate = 115200
-
-
-def delay():
-  sleep(0.0005)
 
 
 def get_word(num):
@@ -41,7 +36,6 @@ def make_packet(file_name, offset):
 def send_uart(ser, packet):
   for i in packet:
     ser.write(i)
-    delay()
     if ser.in_waiting:
       print(ser.read(ser.in_waiting).decode('utf-8'), end='')
 
