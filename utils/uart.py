@@ -21,33 +21,34 @@ def get_word(num):
   return bytes(byte_list)
 
 
-def make_packet(file_name, offset):
+def make_packet(file_name, offset, slice_len=8):
   packet = []
   with open(file_name, 'rb') as f:
     size = os.path.getsize(file_name)
     packet.append(get_word(0x9e9e9e9e))
     packet.append(get_word(offset))
     packet.append(get_word(size))
-    for _ in range(0, size, 4):
-      packet.append(f.read(4))
+    for _ in range(0, size, slice_len):
+      packet.append(f.read(slice_len))
   return packet
 
 
 def send_uart(ser, packet):
-  for i in packet:
-    ser.write(i)
+  for i, p in enumerate(packet):
+    ser.write(p)
+    print('sending {:.2%}...\r'.format(i / len(packet)), end='')
     if ser.in_waiting:
-      print(ser.read(ser.in_waiting).decode('utf-8'), end='')
+      print(ser.read(ser.in_waiting).decode('utf-8', errors='replace'), end='')
+  print()
 
 
 def read_uart(ser):
   try:
     while True:
       if ser.in_waiting:
-        print(ser.read(ser.in_waiting).decode('utf-8'), end='')
+        print(ser.read(ser.in_waiting).decode('utf-8', errors='replace'), end='')
   except KeyboardInterrupt:
     print()
-    return
 
 
 if __name__ == '__main__':
