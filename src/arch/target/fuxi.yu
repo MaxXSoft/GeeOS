@@ -1,0 +1,71 @@
+// arch definition of Fuxi SoC
+
+// constant address
+inline let FLASH_ADDR   = 0x10800000
+inline let MEM_ADDR     = 0x80000000
+inline let MEM_SIZE_MIB = 128
+inline let SWITCH_ADDR  = 0x1107f020
+inline let UART_ADDR    = 0x11040000
+inline let UART_END     = 0x11042000
+inline let PLIC_ADDR    = 0x11010000
+inline let PLIC_END     = 0x11020000
+inline let CLINT_MTIME  = 0x11000100
+inline let CLINT_MCMP   = 0x11000108
+
+// UART related definitions
+inline let UART_CLOCK_FREQ  = 100000000 as u32
+inline let UART_BAUD_RATE   = 115200 as u32
+inline let UART_DAT         = 0x11041000 as u32 volatile var*
+inline let UART_FCR         = 0x11041008 as u32 volatile var*
+inline let UART_LCR         = 0x1104100C as u32 volatile var*
+inline let UART_LSR         = 0x11041014 as u32 volatile var*
+inline let UART_DLL         = 0x11041000 as u32 volatile var*
+inline let UART_DLM         = 0x11041004 as u32 volatile var*
+inline let UART_MCR         = 0x11041010 as u32 volatile var*
+inline let UART_IER         = 0x11041004 as u32 volatile var*
+inline let UART_LCR_DLAB    = 0x80 as u32
+inline let UART_LCR_8BIT    = 0x03 as u32
+inline let UART_LSR_DA      = 0x01 as u32
+inline let UART_LSR_RI      = 0x40 as u32
+
+// initialize UART
+inline def initIO() {
+  // set baud rate
+  let divisor = UART_CLOCK_FREQ / ((16 as u32) * UART_BAUD_RATE)
+  (*UART_LCR) = UART_LCR_DLAB
+  (*UART_DLL) = divisor & 0xff as u32
+  (*UART_DLM) = divisor >> 8 as u32
+  // set transfer format (8-bit, no parity bit)
+  (*UART_LCR) = UART_LCR_8BIT
+  // enable 8 bytes receive FIFO
+  (*UART_FCR) = 0x81 as u32
+  // disable interrupts & modem controls
+  (*UART_IER) = 0 as u32
+  (*UART_MCR) = 0 as u32
+}
+
+// initialize PLIC
+inline def initIntr() {
+  // TODO
+}
+
+// put character
+inline def putChar(c: u8) {
+  while ((*UART_LSR) & UART_LSR_RI) == 0 as u32 {}
+  (*UART_DAT) = c as u32
+}
+
+// get character
+inline def getChar(): i32 {
+  if ((*UART_LSR) & UART_LSR_DA) != 0 as u32 {
+    (*UART_DAT) as i32
+  }
+  else {
+    -1
+  }
+}
+
+// halt
+inline def halt(code: i32) {
+  while true {}
+}
