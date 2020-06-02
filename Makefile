@@ -35,6 +35,7 @@ clean:
 	-rm -rf $(OBJ_DIR)
 	-$(MAKE) -C $(SRC_DIR) $@
 	-$(MAKE) -C $(USR_DIR) $@
+	-$(MAKE) -C $(MKFS_DIR) $@
 
 libgee: $(BUILD_DIR) $(SRC_DIR)
 
