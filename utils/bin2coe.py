@@ -9,7 +9,7 @@ import sys
 
 def read_bin(file_name):
   words = []
-  with open(bin_file, 'rb') as f:
+  with open(file_name, 'rb') as f:
     while True:
       x = f.read(4)
       if x == b'':
