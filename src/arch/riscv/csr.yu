@@ -35,7 +35,7 @@ inline let TRAP_INST_FAULT  = 12 as USize
 inline let TRAP_LOAD_FAULT  = 13 as USize
 inline let TRAP_STORE_FAULT = 15 as USize
 
-// declarations of functions in 'arch.S'
+// declarations of functions in 'csr.S'
 extern declare getMstatus: (): USize
 extern declare setMstatus: (USize)
 extern declare setMepc: (USize)
@@ -69,7 +69,7 @@ inline def runSfence() {
   asm { "sfence.vma" }
 }
 
-// enable devide interrupts
+// enable device interrupts
 inline def setIntrOn() {
   setSie(getSie() | SIE_SEIE | SIE_STIE | SIE_SSIE)
   setSstatus(getSstatus() | SSTATUS_SIE)
