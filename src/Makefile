@@ -75,6 +75,7 @@ $(KERNEL_TARGET): $(KERNEL_OBJ) $(KERNEL_LDS) $(LIB_TARGET)
 	$(info making GeeOS kernel...)
 	$(LD) -T$(KERNEL_LDS) -L$(BUILD_DIR) -lgee -o $@ $(KERNEL_OBJ)
 	$(OBJD) $@ > $@.dump
+	$(if $(filter 0, $(DEBUG)), $(STRIP) $@ -o $@)
 
 $(KERNEL_INIT_OBJ): $(KERNEL_INIT) $(USER_IMG)
 	$(info AS  $@)

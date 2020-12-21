@@ -47,6 +47,7 @@ $(BIN_TARGET_DIR)/%: $(BIN_OBJ_DIR)/%.yu.o $(LIB_TARGET)
 	$(info making user binary "$(notdir $@)"...)
 	$(LD) -L$(BUILD_DIR) -lgrt -o $@ $<
 	$(OBJD) $@ > $@.dump
+	$(if $(filter 0, $(DEBUG)), $(STRIP) $@ -o $@)
 
 $(USER_IMG): $(BIN_TARGET_DIR) $(BIN_TARGET)
 	$(info making filesystem image...)
