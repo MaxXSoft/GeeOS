@@ -55,7 +55,7 @@ OBJDFLAGS := -D
 export OBJD := objdump $(OBJDFLAGS)
 
 # strip
-STRIPFLAGS := -s
+STRIPFLAGS := --strip-unneeded --strip-sections
 export STRIP := $(LLVM_BIN)/llvm-strip $(STRIPFLAGS)
 
 # archiver
