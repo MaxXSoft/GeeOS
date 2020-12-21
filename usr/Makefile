@@ -29,6 +29,7 @@ all: libgrt user
 clean:
 	-rm $(LIB_TARGET)
 	-rm -rf $(BIN_TARGET_DIR)
+	-rm $(USER_IMG)
 
 libgrt: $(LIB_TARGET)
 
