@@ -25,7 +25,11 @@ def loadElf(addr: u8*): u8* {
   for phdr in elf.getPhdrIter() {
     let dst = phdr.getPaddr() as u8 var*
     let src = elf.getPhdrData(phdr)
+    // copy data
     memcpy(dst, src, phdr.getFileSize() as USize)
+    // fill zeros to the end of the data
+    let rem_size = phdr.getMemSize() - phdr.getFileSize()
+    memset(dst + phdr.getFileSize(), 0, rem_size as USize)
   }
   // get address of entry
   let phdr = elf.getPhdr()
