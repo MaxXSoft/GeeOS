@@ -51,6 +51,6 @@ $(BIN_TARGET_DIR)/%: $(BIN_OBJ_DIR)/%.yu.o $(LIB_TARGET)
 
 $(USER_IMG): $(BIN_TARGET_DIR) $(BIN_TARGET)
 	$(info making filesystem image...)
-	$(BUILD_DIR)/mkfs $@ -c 512 1 4 -a $(BIN_TARGET)
+	$(BUILD_DIR)/mkfs $@ -c 256 1 2 -a $(BIN_TARGET)
 
 include $(TOP_DIR)/rules.mk
