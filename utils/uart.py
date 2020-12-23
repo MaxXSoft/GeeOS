@@ -21,7 +21,7 @@ def get_word(num):
   return bytes(byte_list)
 
 
-def make_packet(file_name, offset, slice_len=8):
+def make_packet(file_name, offset, slice_len=1):
   packet = []
   with open(file_name, 'rb') as f:
     size = os.path.getsize(file_name)
