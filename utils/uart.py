@@ -42,13 +42,60 @@ def send_uart(ser, packet):
   print()
 
 
+if sys.platform == 'win32':
+  from msvcrt import kbhit as has_char
+  from msvcrt import getch as get_char
+
+  def init_tty():
+    pass
+
+  def restore_tty(settings):
+    pass
+else:
+  import tty
+
+  def init_tty():
+    from termios import tcgetattr
+    from tty import setraw
+    fd = sys.stdin.fileno()
+    settings = tcgetattr(sys.stdin.fileno())
+    setraw(fd)
+    return settings
+
+  def restore_tty(settings):
+    from termios import tcsetattr, TCSADRAIN
+    tcsetattr(sys.stdin.fileno(), TCSADRAIN, settings)
+
+  def has_char():
+    from select import select
+    return select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+
+  def get_char():
+    return sys.stdin.read(1)
+
+
 def read_uart(ser):
+  settings = init_tty()
   try:
     while True:
+      # read from UART
       if ser.in_waiting:
-        print(ser.read(ser.in_waiting).decode('utf-8', errors='replace'), end='')
+        sys.stdout.write(ser.read(ser.in_waiting).decode(
+                         'utf-8', errors='replace'))
+        sys.stdout.flush()
+      # read user input
+      if has_char():
+        ch = get_char()
+        # ^C, just exit
+        if ord(ch) == 3:
+          print()
+          break
+        # send to uart
+        ser.write(ch)
   except KeyboardInterrupt:
     print()
+  finally:
+    restore_tty(settings)
 
 
 if __name__ == '__main__':
