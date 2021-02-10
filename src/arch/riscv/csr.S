@@ -130,16 +130,6 @@ getStval:
   csrr  a0, stval
   ret
 
-  .globl  getSp
-getSp:
-  mv    a0, sp
-  ret
-
-  .globl  getRa
-getRa:
-  mv    a0, ra
-  ret
-
   .globl  runSfence
 runSfence:
   sfence.vma a0, a1

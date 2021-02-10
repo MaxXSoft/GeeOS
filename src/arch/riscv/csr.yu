@@ -62,8 +62,6 @@ extern declare setSscratch: (USize)
 extern declare setMscratch: (USize)
 extern declare getScause: (): USize
 extern declare getStval: (): USize
-extern declare getSp: (): USize
-extern declare getRa: (): USize
 extern declare runSfence: (USize, USize)
 inline def runSfence() {
   asm { "sfence.vma" }
