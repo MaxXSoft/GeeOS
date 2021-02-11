@@ -21,9 +21,10 @@ def handleTimer() {
 
 // handle external interrupt
 def handleExternal() {
-  // read character from UART
-  let c = getChar()
-  if c >= 0 {
+  // read characters from UART
+  while true {
+    let c = getChar()
+    if c < 0 { break }
     pushChar(c as u8)
   }
 }
