@@ -159,13 +159,11 @@ _handleTimer:
   sw    a2, 0(a1)
   sltu  a2, a2, a3
   # update higher 32-bit of 'mtimecmp'
-  addi  a1, a1, 4
-  lw    a3, 0(a1)
+  lw    a3, 4(a1)
   add   a3, a3, a2
-  sw    a3, 0(a1)
+  sw    a3, 4(a1)
   # raise a supervisor software interrupt
-  li    a1, 2
-  csrw  sip, a1
+  csrsi sip, 1 << 1
   # restore registers
   lw    a3, 8(a0)
   lw    a2, 4(a0)
