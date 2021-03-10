@@ -61,7 +61,7 @@ def createP1IfNotExist(this: RecursivePageTable var&, vpn1: USize,
                        alloc: FrameAllocator var*): PageTable var* {
   assert(vpn1 < this.index || vpn1 > this.index + 2 as USize,
          "invalid vpn1")
-  var pte: PageTableEntry var& = this.root_table.getPte(vpn1)
+  let pte: PageTableEntry var& = this.root_table.getPte(vpn1)
   if pte.isUnused() {
     let frame = alloc.alloc()
     pte.set(frame, PTE_FLAG_V)
@@ -131,7 +131,7 @@ public def unmap(this: RecursivePageTable var&, page: Page,
   }
   let p1_frame = this.root_table.getPte(page.getVpn1()).getFrame()
   let p1_table = this.temp_map.map(p1_frame)
-  var p1_entry: PageTableEntry var& = p1_table.getPte(page.getVpn0())
+  let p1_entry: PageTableEntry var& = p1_table.getPte(page.getVpn0())
   if !(p1_entry.getFlags() & PTE_FLAG_V) {
     panic("unmap - page not mapped")
   }

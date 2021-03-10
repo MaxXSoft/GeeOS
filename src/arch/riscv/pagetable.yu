@@ -91,7 +91,7 @@ inline def clear(this: PageTable var*, index: USize,
                  dealloc: FrameDeallocator var*) {
   var i = 0
   while i as USize < index {
-    var pte: PageTableEntry var& = this.getPte(i as USize)
+    let pte: PageTableEntry var& = this.getPte(i as USize)
     if !pte.isUnused() && !pte.isLeaf() {
       let frame = pte.getFrame()
       dealloc.dealloc(frame)

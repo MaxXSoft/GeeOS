@@ -214,7 +214,7 @@ def gfsINodeGetMetadata(this: INode var*): Metadata {
 // find inode by name
 def gfsINodeFind(this: INode var*, name: StrView&): INode var* {
   let inode: GfsINode& = this.getINode().gfs_inode
-  var fs: GeeFs var& = this.getGeeFs()
+  let fs: GeeFs var& = this.getGeeFs()
   // make sure current inode represents a directory
   if inode.itype != GfsINodeType.Dir {
     return null as INode var*
@@ -256,7 +256,7 @@ def gfsINodeFind(this: INode var*, name: StrView&): INode var* {
 def gfsINodeRead(this: INode var*, buf: u8 var*, len: USize,
                  offset: USize): i32 {
   let inode: GfsINode& = this.getINode().gfs_inode
-  var fs: GeeFs var& = this.getGeeFs()
+  let fs: GeeFs var& = this.getGeeFs()
   // read file
   var data_len = 0, i = offset as u32
   let end_len = min((offset + len) as u32, inode.size)

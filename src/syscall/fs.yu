@@ -36,7 +36,7 @@ def convToStat(this: Metadata&): Stat {
 
 // NOTE: current implementation will not sync offset between two fds
 public def sysDup3(oldfd: i32, newfd: i32, flags: i32): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds()
+  let fds: FileInfo var& = getCurrentThread().getFds()
   fds.lock()
   // get file1
   let file1 = fds.getFile(oldfd)
@@ -65,7 +65,8 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): ISize {
 }
 
 public def sysChdir(path: u8*): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var ret = -1
   fds.lock()
   // get target inode
   let path = newStrView(path)
@@ -81,7 +82,8 @@ public def sysChdir(path: u8*): ISize {
 }
 
 public def sysOpen(path: u8*, flags: i32): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), fd = -1
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var fd = -1
   fds.lock()
   // lookup the specific file
   let path = newStrView(path)
@@ -95,7 +97,8 @@ public def sysOpen(path: u8*, flags: i32): ISize {
 }
 
 public def sysClose(fd: i32): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
@@ -109,7 +112,8 @@ public def sysClose(fd: i32): ISize {
 }
 
 public def sysLseek(fd: i32, offset: USize, whence: i32): USize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1 as USize
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var ret = -1 as USize
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
@@ -122,7 +126,8 @@ public def sysLseek(fd: i32, offset: USize, whence: i32): USize {
 }
 
 public def sysRead(fd: i32, buf: u8 var*, len: USize): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
@@ -135,7 +140,8 @@ public def sysRead(fd: i32, buf: u8 var*, len: USize): ISize {
 }
 
 public def sysWrite(fd: i32, buf: u8*, len: USize): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
@@ -148,7 +154,8 @@ public def sysWrite(fd: i32, buf: u8*, len: USize): ISize {
 }
 
 public def sysFstat(fd: i32, buf: Stat var*): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds(), ret = -1
+  let fds: FileInfo var& = getCurrentThread().getFds()
+  var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
@@ -166,7 +173,7 @@ public def sysFstat(fd: i32, buf: Stat var*): ISize {
 }
 
 public def sysSync(): ISize {
-  var fds: FileInfo var& = getCurrentThread().getFds()
+  let fds: FileInfo var& = getCurrentThread().getFds()
   fds.lock()
   let ret = if fds.getCwd().getFs().sync() { 0 } else { -1 }
   fds.unlock()

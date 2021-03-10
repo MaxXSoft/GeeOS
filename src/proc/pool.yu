@@ -44,7 +44,7 @@ def allocTid(this: ThreadPool&): Tid {
 }
 
 def getInfo(this: ThreadPool var&, tid: Tid): ThreadInfo var& {
-  var info: ThreadInfo var& = this.threads[tid]
+  let info: ThreadInfo var& = this.threads[tid]
   assert(info.status.status != ThreadStatus.Unused,
          "thread does not exist")
   info
