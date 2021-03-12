@@ -4,21 +4,21 @@ import lib.alloc
 extern def main(argc: i32, argv: u8**): i32 {
   io <<< "testing heap allocator...\n"
 
-  let mem4 = alloc.alloc(4 as u32) as i32 var*
+  let mem4 = alloc.alloc(4 as usize) as i32 var*
   (*mem4) = 42
-  io <<< "allocated 4-byte mem: " <<$ mem4 as u32 <<< '\n'
+  io <<< "allocated 4-byte mem: " <<$ mem4 as usize <<< '\n'
 
-  let mem32 = alloc.alloc(32 as u32) as i32 var*
+  let mem32 = alloc.alloc(32 as usize) as i32 var*
   mem32[0] = 233
   mem32[4] = 0xdeadbeef
-  io <<< "allocated 32-byte mem: " <<$ mem32 as u32 <<< '\n'
+  io <<< "allocated 32-byte mem: " <<$ mem32 as usize <<< '\n'
 
   alloc.dealloc(mem32 as u8 var*)
   io <<< "deallocated 32-byte mem\n"
 
-  let mem2 = alloc.alloc(2 as u32) as i16 var*
+  let mem2 = alloc.alloc(2 as usize) as i16 var*
   (*mem2) = 16 as i16
-  io <<< "allocated 2-byte mem: " <<$ mem2 as u32 <<< '\n'
+  io <<< "allocated 2-byte mem: " <<$ mem2 as usize <<< '\n'
 
   alloc.dealloc(mem4 as u8 var*)
   alloc.dealloc(mem2 as u8 var*)
