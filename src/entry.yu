@@ -10,7 +10,7 @@ extern declare _handleTimer: ()
 let TIMER_INTERVAL = 1000000
 
 // scratch area for M-mode timer interrupt
-public var mscratch: USize[5] = [USize[5]] {}
+public var mscratch: usize[5] = [usize[5]] {}
 
 // initialize timer interrupt
 def initTimer() {
@@ -18,11 +18,11 @@ def initTimer() {
   let time = *(CLINT_MTIME as u64 volatile var*)
   (*(CLINT_MCMP as u64 volatile var*)) = time + TIMER_INTERVAL as u64
   // initialize scratch area
-  mscratch[3] = CLINT_MCMP as USize
-  mscratch[4] = TIMER_INTERVAL as USize
-  setMscratch(mscratch as USize)
+  mscratch[3] = CLINT_MCMP as usize
+  mscratch[4] = TIMER_INTERVAL as usize
+  setMscratch(mscratch as usize)
   // set M-mode handler
-  setMtvec(_handleTimer as USize)
+  setMtvec(_handleTimer as usize)
   // enable timer interrupt
   setMstatus(getMstatus() | MSTATUS_MIE)
   setMie(getMie() | MIE_MTIE)
@@ -39,12 +39,12 @@ extern def entry() {
   ms |= MSTATUS_MPP_S
   setMstatus(ms)
   // set mepc to S-mode entry
-  setMepc(main as USize)
+  setMepc(main as usize)
   // disable paging
-  setSatp(0 as USize)
+  setSatp(0 as usize)
   // delegate all interrupts & exceptions to S-mode
-  setMedeleg(0xffff as USize)
-  setMideleg(0xffff as USize)
+  setMedeleg(0xffff as usize)
+  setMideleg(0xffff as usize)
   // initialize timer
   initTimer()
   // enter S-mode

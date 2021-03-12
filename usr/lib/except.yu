@@ -4,7 +4,7 @@ import lib.io
 public def panic(str: u8*) {
   io <<< "===== USER PANIC! =====\n"
   io <<< "message: " <<< str <<< '\n'
-  exit(1 as USize)
+  exit(1 as usize)
 }
 
 public def abort() {

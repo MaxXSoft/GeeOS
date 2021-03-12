@@ -19,7 +19,7 @@ public struct Processor {
   current_thread: Thread var*,
 }
 
-public def newProcessor(max_time: USize): Processor var* {
+public def newProcessor(max_time: usize): Processor var* {
   let proc = heap.alloc(sizeof Processor) as Processor var*
   (*proc).pool.init(max_time)
   (*proc).idle = newIdleThread()
@@ -98,7 +98,7 @@ public def tick(this: Processor var*) {
 }
 
 // exit current thread
-public def exit(this: Processor var*, code: USize) {
+public def exit(this: Processor var*, code: usize) {
   // turn off interrupt because processor will switch to idle thread
   setIntrOff()
   // tell pool a thread just exited

@@ -32,14 +32,14 @@ def handleExternal() {
 // handle system call
 def handleSyscall(tf: TrapFrame var&) {
   tf.incSepc()
-  tf.x[10] = runSyscall(tf) as USize
+  tf.x[10] = runSyscall(tf) as usize
 }
 
 // handle page fault
 def handlePageFault(tf: TrapFrame var&) {
   if tf.isUser() {
     io <<< "ERROR: user thread memory access violation\n"
-    exit(-1 as USize)
+    exit(-1 as usize)
   }
   else {
     io <<< "scause  = " <<< tf.scause <<< '\n'
@@ -52,8 +52,8 @@ def handlePageFault(tf: TrapFrame var&) {
 // initialize trap handling
 public def initTrap() {
   initIntr()
-  setSscratch(0 as USize)
-  setStvec(_handleTrap as USize)
+  setSscratch(0 as usize)
+  setStvec(_handleTrap as usize)
 }
 
 // trap handler

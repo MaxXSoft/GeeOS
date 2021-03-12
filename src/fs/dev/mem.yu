@@ -8,15 +8,15 @@ public struct MemDevice {
   dev: DeviceInterface,
   sema: Semaphore,
   buf: u8 var*,
-  len: USize,
+  len: usize,
 }
 
 def getMemDev(this: DeviceInterface var*): MemDevice var& {
   *(this as MemDevice var*)
 }
 
-public def readMem(this: DeviceInterface var*, buf: u8 var*, len: USize,
-                   offset: USize): i32 {
+public def readMem(this: DeviceInterface var*, buf: u8 var*, len: usize,
+                   offset: usize): i32 {
   let dev: MemDevice var& = this.getMemDev()
   if offset > dev.len { return -1 }
   // read memory
@@ -27,8 +27,8 @@ public def readMem(this: DeviceInterface var*, buf: u8 var*, len: USize,
   len as i32
 }
 
-public def writeMem(this: DeviceInterface var*, buf: u8*, len: USize,
-                    offset: USize): i32 {
+public def writeMem(this: DeviceInterface var*, buf: u8*, len: usize,
+                    offset: usize): i32 {
   let dev: MemDevice var& = this.getMemDev()
   if offset > dev.len { return -1 }
   // write memory
@@ -43,7 +43,7 @@ public def syncMem(this: DeviceInterface var*): bool {
   true
 }
 
-public def newMemDevice(buf: u8 var*, len: USize): MemDevice {
+public def newMemDevice(buf: u8 var*, len: usize): MemDevice {
   [MemDevice] {
     [DeviceInterface] {readMem, writeMem, syncMem},
     newSemaphore(),

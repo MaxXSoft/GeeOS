@@ -25,7 +25,7 @@ public def del(this: StdIn var&) {
 
 public def push(this: StdIn var&, c: u8) {
   this.lock.acquire()
-  this.buf.push(c as USize)
+  this.buf.push(c as usize)
   this.lock.release()
   this.pushed.notify()
 }
@@ -97,32 +97,32 @@ def stdIoFind(this: INode var*, name: StrView&): INode var* {
   null as INode var*
 }
 
-def stdIoRead(this: INode var*, buf: u8 var*, len: USize,
-              offset: USize): i32 {
+def stdIoRead(this: INode var*, buf: u8 var*, len: usize,
+              offset: usize): i32 {
   -1
 }
 
-def stdIoWrite(this: INode var*, buf: u8*, len: USize,
-               offset: USize): i32 {
+def stdIoWrite(this: INode var*, buf: u8*, len: usize,
+               offset: usize): i32 {
   -1
 }
 
 def stdIoCleanUp(this: INode var*) {}
 
-def stdInRead(this: INode var*, buf: u8 var*, len: USize,
-              offset: USize): i32 {
+def stdInRead(this: INode var*, buf: u8 var*, len: usize,
+              offset: usize): i32 {
   var i = 0
-  while i as USize < len {
+  while i as usize < len {
     buf[i] = (*(*(this as StdInINode var*)).stdin).pop()
     i += 1
   }
   i
 }
 
-def stdOutWrite(this: INode var*, buf: u8*, len: USize,
-                offset: USize): i32 {
+def stdOutWrite(this: INode var*, buf: u8*, len: usize,
+                offset: usize): i32 {
   var i = 0
-  while i as USize < len {
+  while i as usize < len {
     io.putChar(buf[i])
     i += 1
   }

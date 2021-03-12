@@ -8,12 +8,12 @@ import lib.alloc
 // The C programming Language, 2nd ed.  Section 8.7.
 
 // size of heap memory that to be allocated each time
-let LEAST_ALLOC = 32 as USize
+let LEAST_ALLOC = 32 as usize
 
 // definition of linked list header
 struct Header {
   next: Header var*,
-  size: USize,
+  size: usize,
 }
 
 struct Heap {
@@ -31,7 +31,7 @@ struct Heap {
 var heap_mem: Heap
 
 // allocate more heap space
-def increaseHeap(size: USize): u8 var* {
+def increaseHeap(size: usize): u8 var* {
   if heap_mem.heap_base + size > heap_mem.heap_mem + HEAP_SIZE {
     // heap is full
     null as u8 var*
@@ -74,9 +74,9 @@ def freeMem(ptr: u8 var*) {
   heap_mem.free_unit = q
 }
 
-def moreCore(len: USize): Header var* {
+def moreCore(len: usize): Header var* {
   // get size of increased headers
-  let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1 as USize) /
+  let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1 as usize) /
                                  LEAST_ALLOC)
   // allocate more headers
   let core_ptr = increaseHeap(unit_size * sizeof Header)
@@ -92,9 +92,9 @@ def moreCore(len: USize): Header var* {
   }
 }
 
-def allocMem(size: USize): u8 var* {
-  let unit_size = ((size + sizeof Header - 1 as USize) /
-                   sizeof Header) + 1 as USize
+def allocMem(size: usize): u8 var* {
+  let unit_size = ((size + sizeof Header - 1 as usize) /
+                   sizeof Header) + 1 as usize
   var ret = null as u8 var*
   // check if no free blocks
   var prev = heap_mem.free_unit
@@ -102,7 +102,7 @@ def allocMem(size: USize): u8 var* {
     prev = &heap_mem.base
     heap_mem.free_unit = prev
     heap_mem.base.next = heap_mem.free_unit
-    heap_mem.base.size = 0 as USize
+    heap_mem.base.size = 0 as usize
   }
   // allocate free block
   var p = (*prev).next
@@ -138,7 +138,7 @@ def allocMem(size: USize): u8 var* {
 }
 
 // allocate new heap memory
-def allocHeapMem(size: USize): u8 var* {
+def allocHeapMem(size: usize): u8 var* {
   heap_mem.lock.acquire()
   let ret = allocMem(size)
   heap_mem.lock.release()

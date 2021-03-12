@@ -16,7 +16,7 @@ var dev: MemDevice
 public def initGeeFs() {
   // initialize device
   dev = newMemDevice(_user_img_start as u8 var*,
-                     _user_img_end as USize - _user_img_start as USize)
+                     _user_img_end as usize - _user_img_start as usize)
   // initialize GeeFS
   initGeeFsOps()
   geefs = newGeeFs(&dev as DeviceInterface var*)

@@ -13,7 +13,7 @@ public struct File {
   readable: bool,
   writable: bool,
   inode: INode var*,
-  offset: USize,
+  offset: usize,
 }
 
 public def newFile(): File {
@@ -67,7 +67,7 @@ public def open(this: File var&, inode: INode var*, flags: i32): i32 {
   inode.open()
   this.inode = inode
   this.status = FileStatus.Opened
-  this.offset = 0 as USize
+  this.offset = 0 as usize
   0
 }
 
@@ -83,7 +83,7 @@ public def close(this: File var&): i32 {
   }
 }
 
-public def seek(this: File var&, offset: USize, whence: i32): USize {
+public def seek(this: File var&, offset: usize, whence: i32): usize {
   if this.isOpened() {
     when whence {
       SEEK_SET { this.offset = offset }
@@ -92,19 +92,19 @@ public def seek(this: File var&, offset: USize, whence: i32): USize {
         let meta = this.inode.getMetadata()
         this.offset = meta.size + offset
       }
-      else { return -1 as USize }
+      else { return -1 as usize }
     }
     this.offset
   }
   else {
-    -1 as USize
+    -1 as usize
   }
 }
 
-public def read(this: File var&, buf: u8 var*, len: USize): i32 {
+public def read(this: File var&, buf: u8 var*, len: usize): i32 {
   if this.isOpened() && this.readable {
     let s = this.inode.read(buf, len, this.offset)
-    this.offset += s as USize
+    this.offset += s as usize
     s
   }
   else {
@@ -112,10 +112,10 @@ public def read(this: File var&, buf: u8 var*, len: USize): i32 {
   }
 }
 
-public def write(this: File var&, buf: u8*, len: USize): i32 {
+public def write(this: File var&, buf: u8*, len: usize): i32 {
   if this.isOpened() && this.writable {
     let s = this.inode.write(buf, len, this.offset)
-    this.offset += s as USize
+    this.offset += s as usize
     s
   }
   else {

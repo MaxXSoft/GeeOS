@@ -104,7 +104,7 @@ def getCmd(): bool {
 def runCmd(): i32 {
   if !strcmp(buf as u8*, "exit") {
     // exit current thread
-    exit(0 as USize)
+    exit(0 as usize)
     0
   }
   else {

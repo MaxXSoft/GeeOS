@@ -7,19 +7,19 @@ extern declare _retTrap: ()
 // definition of trap frame
 public struct TrapFrame {
   // GPRs
-  x: USize[32],
+  x: usize[32],
   // supervisor status register
-  sstatus: USize,
+  sstatus: usize,
   // supervisor exception program counter
-  sepc: USize,
+  sepc: usize,
   // supervisor trap value
-  stval: USize,
+  stval: usize,
   // supervisor trap cause
-  scause: USize,
+  scause: usize,
 }
 
 inline def incSepc(this: TrapFrame var&) {
-  this.sepc += 4 as USize
+  this.sepc += 4 as usize
 }
 
 inline def isUser(this: TrapFrame&): bool {
@@ -29,11 +29,11 @@ inline def isUser(this: TrapFrame&): bool {
 // definition of context of thread context
 public struct ContextContext {
   // return address
-  ra: USize,
+  ra: usize,
   // page table
-  satp: USize,
+  satp: usize,
   // saved registers
-  s: USize[12],
+  s: usize[12],
   // trap frame
   tf: TrapFrame,
 }
@@ -44,38 +44,38 @@ public struct Context {
 }
 
 // create new context of kernel context
-def newKernelCC(entry: USize, kstack_top: USize,
-                satp: USize): ContextContext {
+def newKernelCC(entry: usize, kstack_top: usize,
+                satp: usize): ContextContext {
   // make sure privilege mode after 'sret' in kernel thread is still S-mode
   var tf = [TrapFrame] {}
   tf.x[2] = kstack_top
   tf.sepc = entry
   tf.sstatus = (getSstatus() | SSTATUS_SPP | SSTATUS_SPIE) & ~SSTATUS_SIE
   [ContextContext] {
-    _retTrap as USize,
+    _retTrap as usize,
     satp,
-    [USize[12]] {},
+    [usize[12]] {},
     tf,
   }
 }
 
 // create new context of user context
-def newUserCC(entry: USize, ustack_top: USize,
-              satp: USize): ContextContext {
+def newUserCC(entry: usize, ustack_top: usize,
+              satp: usize): ContextContext {
   // make sure privilege mode after 'sret' in user thread is U-mode
   var tf = [TrapFrame] {}
   tf.x[2] = ustack_top
   tf.sepc = entry
   tf.sstatus = (getSstatus() | SSTATUS_SPIE) & ~SSTATUS_SIE & ~SSTATUS_SPP
   [ContextContext] {
-    _retTrap as USize,
+    _retTrap as usize,
     satp,
-    [USize[12]] {},
+    [usize[12]] {},
     tf
   }
 }
 
-def pushAt(this: ContextContext, stack_top: USize): Context {
+def pushAt(this: ContextContext, stack_top: usize): Context {
   let ptr = stack_top as ContextContext var* - 1
   (*ptr) = this
   [Context] {ptr}
@@ -87,19 +87,19 @@ public def newNullContext(): Context {
 }
 
 // create new kernel thread context
-public def newKernelContext(entry: USize, kstack_top: USize,
-                            satp: USize): Context {
+public def newKernelContext(entry: usize, kstack_top: usize,
+                            satp: usize): Context {
   newKernelCC(entry, kstack_top, satp).pushAt(kstack_top)
 }
 
 // create new user thread context
-public def newUserContext(entry: USize, ustack_top: USize,
-                          kstack_top: USize, satp: USize): Context {
+public def newUserContext(entry: usize, ustack_top: usize,
+                          kstack_top: usize, satp: usize): Context {
   newUserCC(entry, ustack_top, satp).pushAt(kstack_top)
 }
 
 // set initialize arguments for context
-public def appendInitArgs(this: Context&, args: USize[3]) {
+public def appendInitArgs(this: Context&, args: usize[3]) {
   let cc: ContextContext var& = *this.context_addr
   cc.tf.x[10] = args[0]
   cc.tf.x[11] = args[1]

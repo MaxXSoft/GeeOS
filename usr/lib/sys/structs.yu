@@ -1,7 +1,3 @@
-// definition of sized type
-public type ISize = i32
-public type USize = u32
-
 // constants
 inline let FILE_NAME_MAX_LEN  = 28 as u32
 
@@ -14,9 +10,9 @@ public enum FileType {
 public struct Stat {
   ino: u32,
   file_type: FileType,
-  size: USize,
-  blk_size: USize,
-  blocks: USize,
+  size: usize,
+  blk_size: usize,
+  blocks: usize,
 }
 
 // directory entry

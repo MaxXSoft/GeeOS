@@ -7,5 +7,5 @@ extern declare main: (i32, u8**): i32
 // entry of user threads
 extern def _start(argc: i32, argv: u8**) {
   initUserHeap()
-  exit(main(argc, argv) as USize)
+  exit(main(argc, argv) as usize)
 }

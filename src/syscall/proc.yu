@@ -1,7 +1,7 @@
 import proc.proc
 import lib.io
 
-public def sysExit(code: USize): ISize {
+public def sysExit(code: usize): ISize {
   exit(code)
   0 as ISize
 }

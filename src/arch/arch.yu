@@ -29,10 +29,6 @@ all targets must define the following functions:
 // use the following target
 public import arch.target.virt
 
-// sized types
-public type ISize = i32
-public type USize = u32
-
 // halt the CPU
 inline def halt() {
   halt(0)

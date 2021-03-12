@@ -5,39 +5,39 @@ public import arch.riscv.framealloc
 
 // definition of RISC-V PTE
 public struct PageTableEntry {
-  data: USize,
+  data: usize,
 }
 
-inline def newPte(data: USize) {
+inline def newPte(data: usize) {
   [PageTableEntry] {data}
 }
 
 inline def isUnused(this: PageTableEntry&): bool {
-  this.data == 0 as USize
+  this.data == 0 as usize
 }
 
 inline def setUnused(this: PageTableEntry var&) {
-  this.data = 0 as USize
+  this.data = 0 as usize
 }
 
-inline def getFlags(this: PageTableEntry&): USize {
-  this.data & 0xff as USize
+inline def getFlags(this: PageTableEntry&): usize {
+  this.data & 0xff as usize
 }
 
-inline def getFlag(this: PageTableEntry&, flag: USize): bool {
-  (this.getFlags() & flag) != 0 as USize
+inline def getFlag(this: PageTableEntry&, flag: usize): bool {
+  (this.getFlags() & flag) != 0 as usize
 }
 
 inline def isLeaf(this: PageTableEntry&): bool {
   let flag_vad = PTE_FLAG_V | PTE_FLAG_A | PTE_FLAG_D
-  (this.getFlags() & ~flag_vad) != 0 as USize
+  (this.getFlags() & ~flag_vad) != 0 as usize
 }
 
-inline def setFlags(this: PageTableEntry var&, flags: USize) {
-  this.data = (this.data & ~(0xff as USize)) | flags
+inline def setFlags(this: PageTableEntry var&, flags: usize) {
+  this.data = (this.data & ~(0xff as usize)) | flags
 }
 
-inline def setFlag(this: PageTableEntry var&, flag: USize, value: bool) {
+inline def setFlag(this: PageTableEntry var&, flag: usize, value: bool) {
   let flags = if value {
     this.getFlags() | flag
   }
@@ -47,25 +47,25 @@ inline def setFlag(this: PageTableEntry var&, flag: USize, value: bool) {
   this.setFlags(flags)
 }
 
-inline def clearFlag(this: PageTableEntry var&, flag: USize) {
+inline def clearFlag(this: PageTableEntry var&, flag: usize) {
   this.setFlag(flag, false)
 }
 
-inline def getPpn(this: PageTableEntry&): USize {
-  this.data >> 10 as USize
+inline def getPpn(this: PageTableEntry&): usize {
+  this.data >> 10 as usize
 }
 
 inline def getAddr(this: PageTableEntry&): PhysAddr {
-  newPhysAddr(this.getPpn() << 12 as USize)
+  newPhysAddr(this.getPpn() << 12 as usize)
 }
 
 inline def getFrame(this: PageTableEntry&): Frame {
   newFrame(this.getPpn())
 }
 
-inline def set(this: PageTableEntry var&, frame: Frame, flags: USize) {
+inline def set(this: PageTableEntry var&, frame: Frame, flags: usize) {
   let flags = flags | PTE_FLAG_A | PTE_FLAG_D
-  this.data = (frame.getPpn() << 10 as USize) | flags
+  this.data = (frame.getPpn() << 10 as usize) | flags
 }
 
 // RISC-V page table
@@ -73,7 +73,7 @@ public struct PageTable {
   ptes: PageTableEntry[PTE_COUNT],
 }
 
-inline def getPte(this: PageTable var*, i: USize): PageTableEntry var& {
+inline def getPte(this: PageTable var*, i: usize): PageTableEntry var& {
   (*this).ptes[i]
 }
 
@@ -87,11 +87,11 @@ inline def zero(this: PageTable var*) {
 }
 
 // deallocate & clear all avaliable non-leaf PTEs frames before `index`
-inline def clear(this: PageTable var*, index: USize,
+inline def clear(this: PageTable var*, index: usize,
                  dealloc: FrameDeallocator var*) {
   var i = 0
-  while i as USize < index {
-    let pte: PageTableEntry var& = this.getPte(i as USize)
+  while i as usize < index {
+    let pte: PageTableEntry var& = this.getPte(i as usize)
     if !pte.isUnused() && !pte.isLeaf() {
       let frame = pte.getFrame()
       dealloc.dealloc(frame)
@@ -105,28 +105,28 @@ inline def clear(this: PageTable var*, index: USize,
 // root page table resides, it can be anywhere in the main memory.
 // Denote `recursive_index` by K, then virtual address of the
 // root page table is (K, K+1, 0) in Sv32.
-inline def setRecursive(this: PageTable var*, index: USize, frame: Frame) {
+inline def setRecursive(this: PageTable var*, index: usize, frame: Frame) {
   (*this).ptes[index].set(frame, PTE_FLAG_V)
-  (*this).ptes[index + 1 as USize].set(frame, PTE_FLAG_V | PTE_FLAG_R |
+  (*this).ptes[index + 1 as usize].set(frame, PTE_FLAG_V | PTE_FLAG_R |
                                               PTE_FLAG_W)
 }
 
 // setup linear mapping for the page with `PPN[1]`
-inline def mapLinear(this: PageTable var*, ppn1: USize,
-                     offset: USize, flags: USize) {
-  let pa = newPhysAddr((ppn1 * MEGAPAGE_SIZE as USize) + offset)
+inline def mapLinear(this: PageTable var*, ppn1: usize,
+                     offset: usize, flags: usize) {
+  let pa = newPhysAddr((ppn1 * MEGAPAGE_SIZE as usize) + offset)
   (*this).ptes[ppn1].set(newFrame(pa), flags)
 }
 
 // setup linear mapping of address range
 // `begin` & `end` will be treated as virtual address
-inline def mapLinearRange(this: PageTable var*, begin: USize, end: USize,
-                          offset: USize, flags: USize) {
-  let begin_ppn = begin / MEGAPAGE_SIZE as USize
-  let end_ppn = end / MEGAPAGE_SIZE as USize
+inline def mapLinearRange(this: PageTable var*, begin: usize, end: usize,
+                          offset: usize, flags: usize) {
+  let begin_ppn = begin / MEGAPAGE_SIZE as usize
+  let end_ppn = end / MEGAPAGE_SIZE as usize
   var ppn1 = begin_ppn
   while ppn1 <= end_ppn {
     this.mapLinear(ppn1, offset, flags)
-    ppn1 += 1 as USize
+    ppn1 += 1 as usize
   }
 }

@@ -28,7 +28,7 @@ public def del(this: MemorySet var&) {
   this.areas.del()
 }
 
-public def push(this: MemorySet var&, start: USize, end: USize,
+public def push(this: MemorySet var&, start: usize, end: usize,
                 attr: MemoryAttr, handler: MemoryHandler var*) {
   assert(start <= end, "invalid memory area")
   let area = newMemArea(start, end, handler, attr)
@@ -46,6 +46,6 @@ public def with(this: MemorySet&): IptWithIter {
   this.page_table.with()
 }
 
-public def token(this: MemorySet&): USize {
+public def token(this: MemorySet&): usize {
   this.page_table.token()
 }

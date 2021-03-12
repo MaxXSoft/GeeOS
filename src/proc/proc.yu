@@ -23,7 +23,7 @@ public def execute(path: u8*, host_tid: Tid): bool {
     // read content of inode
     let meta = inode.getMetadata()
     let size = meta.size, buf = heap.alloc(size)
-    if inode.read(buf, size, 0 as USize) as USize == size {
+    if inode.read(buf, size, 0 as usize) as usize == size {
       // create user thread
       let thread = newUserThread(buf, host_tid)
       if thread != null as Thread var* {
@@ -62,7 +62,7 @@ public def tick() {
   cpu.tick()
 }
 
-public def exit(code: USize) {
+public def exit(code: usize) {
   cpu.exit(code)
 }
 

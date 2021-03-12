@@ -1,12 +1,12 @@
 public import lib.sys.structs
 
-extern def memcmp(lhs: u8*, rhs: u8*, count: USize): i32 {
-  var l = lhs, r = rhs, n = 0 as USize
+extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
+  var l = lhs, r = rhs, n = 0 as usize
   while n < count {
     if l[n] != r[n] {
       return (l[n] - r[n]) as i32
     }
-    n += 1 as USize
+    n += 1 as usize
   }
   0
 }

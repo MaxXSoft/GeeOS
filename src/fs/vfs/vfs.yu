@@ -14,7 +14,7 @@ public enum INodeType {
 public struct Metadata {
   id: u32,
   itype: INodeType,
-  size: USize,
+  size: usize,
   blk_size: u32,
   blocks: u32,
 }
@@ -39,8 +39,8 @@ public struct INodeOps {
   op_get_fs: (INode var*): FileSystem var*,
   op_get_metadata: (INode var*): Metadata,
   op_find: (INode var*, StrView&): INode var*,
-  op_read: (INode var*, u8 var*, USize, USize): i32,
-  op_write: (INode var*, u8*, USize, USize): i32,
+  op_read: (INode var*, u8 var*, usize, usize): i32,
+  op_write: (INode var*, u8*, usize, usize): i32,
   op_cleanup: (INode var*),
 }
 
@@ -90,15 +90,15 @@ inline def find(this: INode var*, name: StrView&): INode var* {
 }
 
 // read the content of current inode to buffer
-inline def read(this: INode var*, buf: u8 var*, len: USize,
-                offset: USize): i32 {
+inline def read(this: INode var*, buf: u8 var*, len: usize,
+                offset: usize): i32 {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_read)(this, buf, len, offset)
 }
 
 // write the content of buffer to current inode
-inline def write(this: INode var*, buf: u8*, len: USize,
-                 offset: USize): i32 {
+inline def write(this: INode var*, buf: u8*, len: usize,
+                 offset: usize): i32 {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_write)(this, buf, len, offset)
 }
@@ -162,7 +162,7 @@ public def lookup(this: INode var*, path: StrView&): INode var* {
   }
   // get trimmed path
   var path = path
-  if path.getLen() > 1 as USize && path.back() == '/' {
+  if path.getLen() > 1 as usize && path.back() == '/' {
     path.removeSuffix(1)
   }
   // get current inode

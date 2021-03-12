@@ -17,7 +17,7 @@ import proc.consts
 
 // size of kernel stack
 // must be page size because stack is allocated by frame allocator
-let STACK_SIZE  = PAGE_SIZE as USize
+let STACK_SIZE  = PAGE_SIZE as usize
 
 // definition of kernel thread stack
 public struct KernelStack {
@@ -40,8 +40,8 @@ public def del(this: KernelStack var&) {
 }
 
 // get top of kernel stack
-public def getTop(this: KernelStack&): USize {
-  this.addr as USize + STACK_SIZE
+public def getTop(this: KernelStack&): usize {
+  this.addr as usize + STACK_SIZE
 }
 
 
@@ -127,8 +127,8 @@ def makeMemorySet(this: ElfFile&): MemorySet {
     }
     // copy data to page
     for _ in ms.with() {
-      memcpy(target, data, data_len as USize)
-      memset(target + data_len, 0, (mem_size - data_len) as USize)
+      memcpy(target, data, data_len as usize)
+      memset(target + data_len, 0, (mem_size - data_len) as usize)
     }
   }
   ms
@@ -147,7 +147,7 @@ public def newIdleThread(): Thread var* {
 }
 
 // create new kernel thread
-public def newKernelThread(entry: USize): Thread var* {
+public def newKernelThread(entry: usize): Thread var* {
   let kstack = newKernelStack()
   let thread = heap.alloc(sizeof Thread) as Thread var*
   (*thread) = [Thread] {
@@ -170,8 +170,8 @@ public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   // create page table & user stack
   var ms = elf.makeMemorySet()
   let ustack_top = {
-    let ustack_bottom = USER_STACK_OFFSET as USize
-    let ustack_top = (USER_STACK_OFFSET + USER_STACK_SIZE) as USize
+    let ustack_bottom = USER_STACK_OFFSET as usize
+    let ustack_top = (USER_STACK_OFFSET + USER_STACK_SIZE) as usize
     let handler = newFrameHandler()
     ms.push(ustack_bottom, ustack_top, newMemoryAttr().setUser(), handler)
     ustack_top
@@ -201,7 +201,7 @@ public def del(this: Thread var*) {
 }
 
 // append initial arguments for current thread
-public def appendInitArgs(this: Thread*, args: USize[3]) {
+public def appendInitArgs(this: Thread*, args: usize[3]) {
   (*this).context.appendInitArgs(args)
 }
 

@@ -18,13 +18,13 @@ public def del(this: CondVar var&) {
 
 public def wait(this: CondVar var&) {
   this.lock.acquire()
-  this.wait_queue.push(getCurrentTid() as USize)
+  this.wait_queue.push(getCurrentTid() as usize)
   this.lock.release()
   sleep()
 }
 
 public def notify(this: CondVar var&) {
-  var tid: USize
+  var tid: usize
   // pop thread id from queue
   this.lock.acquire()
   let valid = !this.wait_queue.empty()

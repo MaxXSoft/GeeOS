@@ -10,9 +10,9 @@ public enum FileType {
 public struct Stat {
   ino: u32,
   file_type: FileType,
-  size: USize,
-  blk_size: USize,
-  blocks: USize,
+  size: usize,
+  blk_size: usize,
+  blocks: usize,
 }
 
 def convToFileType(this: INodeType): FileType {
@@ -29,8 +29,8 @@ def convToStat(this: Metadata&): Stat {
     this.id,
     this.itype.convToFileType(),
     this.size,
-    this.blk_size as USize,
-    this.blocks as USize,
+    this.blk_size as usize,
+    this.blocks as usize,
   }
 }
 
@@ -111,9 +111,9 @@ public def sysClose(fd: i32): ISize {
   ret as ISize
 }
 
-public def sysLseek(fd: i32, offset: USize, whence: i32): USize {
+public def sysLseek(fd: i32, offset: usize, whence: i32): usize {
   let fds: FileInfo var& = getCurrentThread().getFds()
-  var ret = -1 as USize
+  var ret = -1 as usize
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
@@ -125,7 +125,7 @@ public def sysLseek(fd: i32, offset: USize, whence: i32): USize {
   ret
 }
 
-public def sysRead(fd: i32, buf: u8 var*, len: USize): ISize {
+public def sysRead(fd: i32, buf: u8 var*, len: usize): ISize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -139,7 +139,7 @@ public def sysRead(fd: i32, buf: u8 var*, len: USize): ISize {
   ret as ISize
 }
 
-public def sysWrite(fd: i32, buf: u8*, len: USize): ISize {
+public def sysWrite(fd: i32, buf: u8*, len: usize): ISize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()

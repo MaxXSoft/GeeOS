@@ -3,7 +3,7 @@ public import arch.arch
 import lib.alloc
 
 public struct QueueElem {
-  val: USize,
+  val: usize,
   prev: QueueElem var*,
   next: QueueElem var*,
 }
@@ -25,7 +25,7 @@ public def empty(this: Queue&): bool {
 }
 
 // push element to back of queue
-public def push(this: Queue var&, val: USize) {
+public def push(this: Queue var&, val: usize) {
   let elem = heap.alloc(sizeof QueueElem) as QueueElem var*
   (*elem).val = val
   // push into queue
@@ -37,7 +37,7 @@ public def push(this: Queue var&, val: USize) {
 }
 
 // pop element from front of queue
-public def pop(this: Queue var&): USize {
+public def pop(this: Queue var&): usize {
   // get result
   let elem = (*this.head).next, val = (*elem).val
   // pop from queue

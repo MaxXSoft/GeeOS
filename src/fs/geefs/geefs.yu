@@ -97,7 +97,7 @@ def getINode(this: GeeFs var&, id: u32): INode var* {
   // read inode
   var inode: GfsINode
   if !this.dev.readAssert(sizeof GfsINode, &inode as u8 var*,
-                          offset as USize) {
+                          offset as usize) {
     this.sema.signal()
     return null as INode var*
   }
@@ -151,7 +151,7 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
 def open(this: GeeFs var&): bool {
   // read super block header
   if !this.dev.readAssert(sizeof GfsSbHeader, &this.super_block as u8 var*,
-                          0 as USize) {
+                          0 as usize) {
     return false
   }
   // clear the inode map
@@ -205,7 +205,7 @@ def gfsINodeGetMetadata(this: INode var*): Metadata {
   [Metadata] {
     this.getINode().id,
     inode.itype.convToINodeType(),
-    inode.size as USize,
+    inode.size as usize,
     this.getGeeFs().super_block.block_size,
     inode.block_num,
   }
@@ -253,8 +253,8 @@ def gfsINodeFind(this: INode var*, name: StrView&): INode var* {
 }
 
 // read inode content to buffer
-def gfsINodeRead(this: INode var*, buf: u8 var*, len: USize,
-                 offset: USize): i32 {
+def gfsINodeRead(this: INode var*, buf: u8 var*, len: usize,
+                 offset: usize): i32 {
   let inode: GfsINode& = this.getINode().gfs_inode
   let fs: GeeFs var& = this.getGeeFs()
   // read file
@@ -278,8 +278,8 @@ def gfsINodeRead(this: INode var*, buf: u8 var*, len: USize,
 }
 
 // write buffer content to inode
-def gfsINodeWrite(this: INode var*, buf: u8*, len: USize,
-                  offset: USize): i32 {
+def gfsINodeWrite(this: INode var*, buf: u8*, len: usize,
+                  offset: usize): i32 {
   // TODO
   -1
 }

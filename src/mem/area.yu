@@ -8,13 +8,13 @@ import lib.alloc
 
 // representation of a memory area 
 public struct MemoryArea {
-  start: USize,
-  end: USize,
+  start: usize,
+  end: usize,
   handler: MemoryHandler var*,
   attr: MemoryAttr,
 }
 
-public def newMemArea(start: USize, end: USize,
+public def newMemArea(start: usize, end: usize,
                       handler: MemoryHandler var*,
                       attr: MemoryAttr): MemoryArea {
   handler.incCounter()
@@ -40,11 +40,11 @@ public def unmap(this: MemoryArea&, page_table: ActivePageTable var&) {
 }
 
 // check if overlaps with specific address range
-public def isOverlap(this: MemoryArea&, start: USize, end: USize): bool {
-  let p1 = this.start / PAGE_SIZE as USize
-  let p2 = (this.end - 1 as USize) / (PAGE_SIZE + 1) as USize
-  let p3 = start / PAGE_SIZE as USize
-  let p4 = (end - 1 as USize) / (PAGE_SIZE + 1) as USize
+public def isOverlap(this: MemoryArea&, start: usize, end: usize): bool {
+  let p1 = this.start / PAGE_SIZE as usize
+  let p2 = (this.end - 1 as usize) / (PAGE_SIZE + 1) as usize
+  let p3 = start / PAGE_SIZE as usize
+  let p4 = (end - 1 as usize) / (PAGE_SIZE + 1) as usize
   !(p1 >= p4 || p2 <= p3)
 }
 

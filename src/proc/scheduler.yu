@@ -6,7 +6,7 @@ public struct RoundRobinInfo {
   // is current thread valid
   is_valid: bool,
   // time slice of current thread
-  time: USize,
+  time: usize,
   // index of previous element in queue
   prev: Tid,
   // index of next element in queue
@@ -18,13 +18,13 @@ public struct Scheduler {
   // info of all threads (threads[0] for head of queue)
   threads: RoundRobinInfo[MAX_THREAD_COUNT + 1],
   // maximum time slice
-  max_time: USize,
+  max_time: usize,
   // index of current thread
   current: Tid,
 }
 
 // initialize current scheduler
-public def init(this: Scheduler var&, max_time: USize) {
+public def init(this: Scheduler var&, max_time: usize) {
   var i = 0
   while i < MAX_THREAD_COUNT + 1 {
     this.threads[i] = [RoundRobinInfo] {false}
@@ -78,7 +78,7 @@ public def pop(this: Scheduler var&, tid: Tid var&): bool {
 public def tick(this: Scheduler var&): bool {
   let tid = this.current
   if tid != 0 as Tid {
-    this.threads[tid].time -= 1 as USize
+    this.threads[tid].time -= 1 as usize
     !this.threads[tid].time
   }
   else {

@@ -6,18 +6,18 @@ import syscall.proc
 import lib.io
 
 // definitions of system call id
-let SYS_DUP3    = 24 as USize
-let SYS_CHDIR   = 49 as USize
-let SYS_OPEN    = 56 as USize
-let SYS_CLOSE   = 57 as USize
-let SYS_LSEEK   = 62 as USize
-let SYS_READ    = 63 as USize
-let SYS_WRITE   = 64 as USize
-let SYS_FSTAT   = 80 as USize
-let SYS_SYNC    = 81 as USize
-let SYS_EXIT    = 93 as USize
-let SYS_YIELD   = 124 as USize
-let SYS_EXECVE  = 221 as USize
+let SYS_DUP3    = 24 as usize
+let SYS_CHDIR   = 49 as usize
+let SYS_OPEN    = 56 as usize
+let SYS_CLOSE   = 57 as usize
+let SYS_LSEEK   = 62 as usize
+let SYS_READ    = 63 as usize
+let SYS_WRITE   = 64 as usize
+let SYS_FSTAT   = 80 as usize
+let SYS_SYNC    = 81 as usize
+let SYS_EXIT    = 93 as usize
+let SYS_YIELD   = 124 as usize
+let SYS_EXECVE  = 221 as usize
 
 
 // perform system call
@@ -33,10 +33,10 @@ public def runSyscall(tf: TrapFrame var&): ISize {
       sysLseek(tf.x[10] as i32, tf.x[11], tf.x[12] as i32) as ISize
     }
     SYS_READ {
-      sysRead(tf.x[10] as i32, tf.x[11] as u8 var*, tf.x[12] as USize)
+      sysRead(tf.x[10] as i32, tf.x[11] as u8 var*, tf.x[12] as usize)
     }
     SYS_WRITE {
-      sysWrite(tf.x[10] as i32, tf.x[11] as u8*, tf.x[12] as USize)
+      sysWrite(tf.x[10] as i32, tf.x[11] as u8*, tf.x[12] as usize)
     }
     SYS_FSTAT { sysFstat(tf.x[10] as i32, tf.x[11] as Stat var*) }
     SYS_SYNC { sysSync() }

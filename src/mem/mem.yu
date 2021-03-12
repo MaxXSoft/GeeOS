@@ -14,16 +14,16 @@ import lib.io
 def initTempTable(): PageTable var* {
   let root_table = allocPhyMem() as PageTable var*
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
-  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as USize
+  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as usize
   root_table.zero()
   // set identity mapping vm(KERNEL_BASE) -> pm(KERNEL_BASE)
-  root_table.mapLinearRange(KERNEL_BASE as USize, PHY_STOP as USize,
+  root_table.mapLinearRange(KERNEL_BASE as usize, PHY_STOP as usize,
                             offset, flags | PTE_FLAG_X)
   // set identity mapping vm(UART_ADDR) -> pm(UART_ADDR)
-  root_table.mapLinearRange(UART_ADDR as USize, UART_END as USize,
+  root_table.mapLinearRange(UART_ADDR as usize, UART_END as usize,
                             offset, flags)
   // set recursive mapping
-  let root_frame = newFrame(newPhysAddr(root_table as USize))
+  let root_frame = newFrame(newPhysAddr(root_table as usize))
   root_table.setRecursive(RECURSIVE_INDEX, root_frame)
   // activate root page table
   setSatp(root_frame.getPpn() | SATP_SV32)

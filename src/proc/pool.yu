@@ -16,7 +16,7 @@ public enum ThreadStatus {
 // definition of thread status with code
 public struct ThreadStatusCode {
   status: ThreadStatus,
-  code: USize,
+  code: usize,
 }
 
 public struct ThreadInfo {
@@ -51,7 +51,7 @@ def getInfo(this: ThreadPool var&, tid: Tid): ThreadInfo var& {
 }
 
 // initialize thread pool
-public def init(this: ThreadPool var&, max_time: USize) {
+public def init(this: ThreadPool var&, max_time: usize) {
   var i = 0
   while i < MAX_THREAD_COUNT {
     this.threads[i] = [ThreadInfo] {
@@ -68,7 +68,7 @@ public def init(this: ThreadPool var&, max_time: USize) {
 public def add(this: ThreadPool var&, thread: Thread var*) {
   let tid = this.allocTid()
   this.threads[tid] = [ThreadInfo] {
-    [ThreadStatusCode] {ThreadStatus.Ready, 0 as USize},
+    [ThreadStatusCode] {ThreadStatus.Ready, 0 as usize},
     true,
     thread,
   }
@@ -116,7 +116,7 @@ public def tick(this: ThreadPool var&): bool {
 }
 
 // mark specific thread as exited
-public def exit(this: ThreadPool var&, tid: Tid, code: USize) {
+public def exit(this: ThreadPool var&, tid: Tid, code: usize) {
   let info: ThreadInfo var& = this.getInfo(tid)
   info.status.status = ThreadStatus.Exited
   info.status.code = code

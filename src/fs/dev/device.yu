@@ -2,18 +2,18 @@ public import arch.arch
 
 // interface of devices
 public struct DeviceInterface {
-  read: (DeviceInterface var*, u8 var*, USize, USize): i32,
-  write: (DeviceInterface var*, u8*, USize, USize): i32,
+  read: (DeviceInterface var*, u8 var*, usize, usize): i32,
+  write: (DeviceInterface var*, u8*, usize, usize): i32,
   sync: (DeviceInterface var*): bool,
 }
 
-inline def read(this: DeviceInterface var*, buf: u8 var*, len: USize,
-                offset: USize): i32 {
+inline def read(this: DeviceInterface var*, buf: u8 var*, len: usize,
+                offset: usize): i32 {
   ((*this).read)(this, buf, len, offset)
 }
 
-inline def write(this: DeviceInterface var*, buf: u8*, len: USize,
-                 offset: USize): i32 {
+inline def write(this: DeviceInterface var*, buf: u8*, len: usize,
+                 offset: usize): i32 {
   ((*this).write)(this, buf, len, offset)
 }
 
@@ -21,12 +21,12 @@ inline def sync(this: DeviceInterface var*): bool {
   ((*this).sync)(this)
 }
 
-inline def readAssert(this: DeviceInterface var*, size: USize,
-                      buf: u8 var*, offset: USize): bool {
+inline def readAssert(this: DeviceInterface var*, size: usize,
+                      buf: u8 var*, offset: usize): bool {
   this.read(buf, size, offset) == size as i32
 }
 
-inline def writeAssert(this: DeviceInterface var*, size: USize,
-                       buf: u8*, offset: USize): bool {
+inline def writeAssert(this: DeviceInterface var*, size: usize,
+                       buf: u8*, offset: usize): bool {
   this.write(buf, size, offset) == size as i32
 }

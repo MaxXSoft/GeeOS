@@ -10,8 +10,8 @@ import lib.except
 // interface of memory handler
 // object of this structure must be allocated on heap
 public struct MemoryHandler {
-  map: (MemoryHandler var*, ActivePageTable var&, USize, MemoryAttr&),
-  unmap: (MemoryHandler var*, ActivePageTable var&, USize),
+  map: (MemoryHandler var*, ActivePageTable var&, usize, MemoryAttr&),
+  unmap: (MemoryHandler var*, ActivePageTable var&, usize),
   ref_count: i32,
 }
 
@@ -33,13 +33,13 @@ public def decCounter(this: MemoryHandler var*) {
 
 // map address to page table
 public def map(this: MemoryHandler var*, pt: ActivePageTable var&,
-               addr: USize, attr: MemoryAttr&) {
+               addr: usize, attr: MemoryAttr&) {
   ((*this).map)(this, pt, addr, attr)
 }
 
 // unmap address in page table
 public def unmap(this: MemoryHandler var*, pt: ActivePageTable var&,
-                 addr: USize) {
+                 addr: usize) {
   ((*this).unmap)(this, pt, addr)
 }
 
@@ -51,13 +51,13 @@ public struct LinearHandler {
 }
 
 def linearMap(this: MemoryHandler var*, pt: ActivePageTable var&,
-              addr: USize, attr: MemoryAttr&) {
+              addr: usize, attr: MemoryAttr&) {
   let this: LinearHandler& = *(this as LinearHandler*)
-  attr.apply(pt.map(addr, (addr as ISize + this.offset) as USize))
+  attr.apply(pt.map(addr, (addr as ISize + this.offset) as usize))
 }
 
 def linearUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
-                addr: USize) {
+                addr: usize) {
   pt.unmap(addr)
 }
 
@@ -75,15 +75,15 @@ public struct FrameHandler {
 }
 
 def frameMap(this: MemoryHandler var*, pt: ActivePageTable var&,
-             addr: USize, attr: MemoryAttr&) {
+             addr: usize, attr: MemoryAttr&) {
   // allocate new frame
-  let target = allocPhyMem() as USize
-  assert(target != 0 as USize, "frameMap - OOM")
+  let target = allocPhyMem() as usize
+  assert(target != 0 as usize, "frameMap - OOM")
   attr.apply(pt.map(addr, target))
 }
 
 def frameUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
-               addr: USize) {
+               addr: usize) {
   let frame = pt.unmap(addr)
   // release allocated frame
   let pa = frame.getAddr()

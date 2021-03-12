@@ -40,17 +40,17 @@ inline def close(fd: i32): i32 {
 }
 
 // reposition read/write file offset
-inline def lseek(fd: i32, offset: USize, whence: i32): USize {
-  syscall(fd, offset as i32, whence, 0, 0, 0, 0, SyscallId.Lseek) as USize
+inline def lseek(fd: i32, offset: usize, whence: i32): usize {
+  syscall(fd, offset as i32, whence, 0, 0, 0, 0, SyscallId.Lseek) as usize
 }
 
 // read bytes from file to buffer
-inline def read(fd: i32, buf: u8 var*, len: USize): i32 {
+inline def read(fd: i32, buf: u8 var*, len: usize): i32 {
   syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Read)
 }
 
 // write bytes from buffer to file
-inline def write(fd: i32, buf: u8*, len: USize): i32 {
+inline def write(fd: i32, buf: u8*, len: usize): i32 {
   syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Write)
 }
 
@@ -65,7 +65,7 @@ inline def sync() {
 }
 
 // exit current thread
-inline def exit(code: USize) {
+inline def exit(code: usize) {
   syscall(code as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exit)
   while true {}
 }

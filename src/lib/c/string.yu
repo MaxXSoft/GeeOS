@@ -1,57 +1,57 @@
 public import arch.arch
 
-extern def memset(dst: u8 var*, c: i32, n: USize): u8 var* {
-  var d = dst, i = 0 as USize
+extern def memset(dst: u8 var*, c: i32, n: usize): u8 var* {
+  var d = dst, i = 0 as usize
   while i < n {
     d[i] = c as u8
-    i += 1 as USize
+    i += 1 as usize
   }
   dst
 }
 
-extern def memmove(dst: u8 var*, src: u8*, n: USize): u8 var* {
+extern def memmove(dst: u8 var*, src: u8*, n: usize): u8 var* {
   var s = src, d = dst, n = n
   if s < d && s + n > d {
     // overlapped
     s += n
     d += n
-    while n > 0 as USize {
+    while n > 0 as usize {
       d -= 1
       s -= 1
       (*d) = *s
-      n -= 1 as USize
+      n -= 1 as usize
     }
   }
   else {
-    while n > 0 as USize {
+    while n > 0 as usize {
       *d = *s
       d += 1
       s += 1
-      n -= 1 as USize
+      n -= 1 as usize
     }
   }
   dst
 }
 
-extern def memcpy(dst: u8 var*, src: u8*, n: USize): u8 var* {
+extern def memcpy(dst: u8 var*, src: u8*, n: usize): u8 var* {
   memmove(dst, src, n)
 }
 
-extern def memcmp(lhs: u8*, rhs: u8*, count: USize): i32 {
-  var l = lhs, r = rhs, n = 0 as USize
+extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
+  var l = lhs, r = rhs, n = 0 as usize
   while n < count {
     if l[n] != r[n] {
       return (l[n] - r[n]) as i32
     }
-    n += 1 as USize
+    n += 1 as usize
   }
   0
 }
 
-extern def strlen(str: u8*): USize {
+extern def strlen(str: u8*): usize {
   var len = 0
   while str[len] != '\0' {
     len += 1
   }
-  len as USize
+  len as usize
 }

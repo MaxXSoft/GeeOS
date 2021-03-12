@@ -10,11 +10,11 @@ import lib.except
 import mem.consts
 
 // address for temporary mapping
-let TEMP_PAGE_ADDR  = 0xcafeb000 as USize
+let TEMP_PAGE_ADDR  = 0xcafeb000 as usize
 // address of root page table
 let ROOT_PAGE_TABLE =
-    ((RECURSIVE_INDEX << 22 as USize) |
-     ((RECURSIVE_INDEX + 1 as USize) << 12 as USize)) as PageTable var*
+    ((RECURSIVE_INDEX << 22 as usize) |
+     ((RECURSIVE_INDEX + 1 as usize) << 12 as usize)) as PageTable var*
 
 
 // page entry representation
@@ -29,7 +29,7 @@ public def newPageEntry(pte: PageTableEntry var*, page: Page): PageEntry {
 
 public def update(this: PageEntry var&) {
   let pa = this.page.getAddr()
-  runSfence(0 as USize, pa.getAddr())
+  runSfence(0 as usize, pa.getAddr())
 }
 
 public def isAccessed(this: PageEntry&): bool {
@@ -64,12 +64,12 @@ public def setPresent(this: PageEntry var&, value: bool) {
   (*this.pte).setFlag(PTE_FLAG_V, value)
 }
 
-public def getTarget(this: PageEntry&): USize {
+public def getTarget(this: PageEntry&): usize {
   let pa = (*this.pte).getAddr()
   pa.getAddr()
 }
 
-public def setTarget(this: PageEntry var&, target: USize) {
+public def setTarget(this: PageEntry var&, target: usize) {
   let flags = (*this.pte).getFlags()
   let frame = newFrame(newPhysAddr(target))
   (*this.pte).set(frame, flags)
@@ -98,8 +98,8 @@ struct PhysFrameAlloc {
 }
 
 def allocPhysFrame(this: FrameAllocator var*): Frame {
-  let addr = allocPhyMem() as USize
-  if addr == 0 as USize {
+  let addr = allocPhyMem() as usize
+  if addr == 0 as usize {
     panic("allocPhysFrame - OOM")
   }
   newFrame(newPhysAddr(addr))
@@ -130,7 +130,7 @@ public struct ActivePageTable {
   entry: PageEntry,
 }
 
-def getEntry(this: ActivePageTable var&, vaddr: USize): PageEntry var& {
+def getEntry(this: ActivePageTable var&, vaddr: usize): PageEntry var& {
   let page = newPage(newVirtAddr(vaddr))
   let pte_ptr = this.page_table.getPtePtr(page)
   if pte_ptr == null as PageTableEntry var* {
@@ -140,7 +140,7 @@ def getEntry(this: ActivePageTable var&, vaddr: USize): PageEntry var& {
   this.entry
 }
 
-def getEntryPtr(this: ActivePageTable var&, vaddr: USize): PageEntry var* {
+def getEntryPtr(this: ActivePageTable var&, vaddr: usize): PageEntry var* {
   let page = newPage(newVirtAddr(vaddr))
   let pte_ptr = this.page_table.getPtePtr(page)
   if pte_ptr == null as PageTableEntry var* {
@@ -156,8 +156,8 @@ public def newActivePageTable(): ActivePageTable {
   [ActivePageTable] {newRecursivePageTable(ROOT_PAGE_TABLE)}
 }
 
-public def map(this: ActivePageTable var&, addr: USize,
-               target: USize): PageEntry var& {
+public def map(this: ActivePageTable var&, addr: usize,
+               target: usize): PageEntry var& {
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
   let page = newPage(newVirtAddr(addr))
   let frame = newFrame(newPhysAddr(target))
@@ -167,7 +167,7 @@ public def map(this: ActivePageTable var&, addr: USize,
   this.getEntry(addr)
 }
 
-public def unmap(this: ActivePageTable var&, addr: USize): Frame {
+public def unmap(this: ActivePageTable var&, addr: usize): Frame {
   let page = newPage(newVirtAddr(addr))
   var frame: Frame
   this.page_table.unmap(page, frame).flush()
@@ -206,8 +206,8 @@ public struct IptEditIter {
 // helper iterator for `with` method
 public struct IptWithIter {
   last: bool,
-  old_token: USize,
-  new_token: USize,
+  old_token: usize,
+  new_token: usize,
 }
 
 public def newInactivePageTable(): InactivePageTable {
@@ -231,7 +231,7 @@ public def del(this: InactivePageTable var&) {
   freePhyMem(pt as u8 var*)
 }
 
-public def token(this: InactivePageTable&): USize {
+public def token(this: InactivePageTable&): usize {
   this.root_frame.getPpn() | SATP_SV32
 }
 
@@ -239,16 +239,16 @@ public def token(this: InactivePageTable&): USize {
 public def mapKernel(this: InactivePageTable var&) {
   var act_pt = newActivePageTable()
   let flags = PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W
-  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as USize
+  let offset = (KERNEL_VM_BASE - KERNEL_BASE) as usize
   let temp_pt = act_pt.withTempMapBegin(this.root_frame.getAddr()); {
     // kernel and physical memory
-    temp_pt.mapLinearRange(KERNEL_BASE as USize, PHY_STOP as USize,
+    temp_pt.mapLinearRange(KERNEL_BASE as usize, PHY_STOP as usize,
                            offset, flags | PTE_FLAG_X)
     // UART
-    temp_pt.mapLinearRange(UART_ADDR as USize, UART_END as USize,
+    temp_pt.mapLinearRange(UART_ADDR as usize, UART_END as usize,
                            offset, flags)
     // PLIC
-    temp_pt.mapLinearRange(PLIC_ADDR as USize, PLIC_END as USize,
+    temp_pt.mapLinearRange(PLIC_ADDR as usize, PLIC_END as usize,
                            offset, flags)
   }; act_pt.withTempMapEnd()
 }
@@ -326,20 +326,20 @@ public def activate(this: InactivePageTable&) {
 
 // iterator for pages
 public struct PageRange {
-  start: USize,
-  end: USize,
+  start: usize,
+  end: usize,
 }
 
-public def newPageRange(start_addr: USize, end_addr: USize): PageRange {
+public def newPageRange(start_addr: usize, end_addr: usize): PageRange {
   [PageRange] {
-    start_addr / PAGE_SIZE as USize,
-    (end_addr - 1 as USize) / PAGE_SIZE as USize + 1 as USize,
+    start_addr / PAGE_SIZE as usize,
+    (end_addr - 1 as usize) / PAGE_SIZE as usize + 1 as usize,
   }
 }
 
-public def next(this: PageRange var&): USize {
-  let page = this.start * PAGE_SIZE as USize
-  this.start += 1 as USize
+public def next(this: PageRange var&): usize {
+  let page = this.start * PAGE_SIZE as usize
+  this.start += 1 as usize
   page
 }
 
