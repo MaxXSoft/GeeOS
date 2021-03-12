@@ -11,13 +11,13 @@ public let io: IO = [IO] {}
 
 // put character
 public def putChar(this: IO&, c: u8) {
-  write(FD_STDOUT, &c, 1 as USize)
+  write(FD_STDOUT, &c, 1 as usize)
 }
 
 // get character
 public def getChar(this: IO&): u8 {
   var c: u8
-  read(FD_STDIN, &c, 1 as USize)
+  read(FD_STDIN, &c, 1 as usize)
   c
 }
 
@@ -31,23 +31,23 @@ public def printString(this: IO&, str: u8*) {
 }
 
 // print integer in specific base
-public def printInt(this: IO&, int: u32, base: i32) {
-  var buf: u8[32], len = 0, digit: u32
+public def printInt(this: IO&, int: usize, base: i32) {
+  var buf: u8[(sizeof usize) * 8 as usize], len = 0, digit: usize
   if !int {
     buf[0] = '0'
     len = 1
   }
   else {
-    let b = base as u32
+    let b = base as usize
     var n = int
-    while n != 0 as u32 {
+    while n != 0 as usize {
       digit = n % b
       n /= b
-      buf[len] = if digit < 10 as u32 {
+      buf[len] = if digit < 10 as usize {
         '0' + digit as u8
       }
       else {
-        'a' + (digit - 10 as u32) as u8
+        'a' + (digit - 10 as usize) as u8
       }
       len += 1
     }
@@ -77,12 +77,18 @@ public def <<<(this: IO&, int: i32): IO& {
     this.putChar('-')
     i = -i
   }
-  this.printInt(i as u32, 10)
+  this.printInt(i as usize, 10)
   this
 }
 
 // print unsigned integer (decimal)
 public def <<<(this: IO&, int: u32): IO& {
+  this.printInt(int as usize, 10)
+  this
+}
+
+// print pointer-sized unsigned integer (decimal)
+public def <<<(this: IO&, int: usize): IO& {
   this.printInt(int, 10)
   this
 }
@@ -94,12 +100,18 @@ public def <<$(this: IO&, int: i32): IO& {
     this.putChar('-')
     i = -i
   }
-  this.printInt(i as u32, 16)
+  this.printInt(i as usize, 16)
   this
 }
 
 // print unsigned integer (hexadecimal)
 public def <<$(this: IO&, int: u32): IO& {
+  this.printInt(int as usize, 16)
+  this
+}
+
+// print pointer-sized unsigned integer (hexadecimal)
+public def <<$(this: IO&, int: usize): IO& {
   this.printInt(int, 16)
   this
 }
