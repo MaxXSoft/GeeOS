@@ -18,7 +18,7 @@ public struct Stack {
  * stack frame related stuffs
  */
 def newStackFrame(next: StackFrame var*): StackFrame var* {
-  let frame = alloc.alloc(sizeof StackFrame) as  StackFrame var*
+  let frame = alloc.alloc(sizeof StackFrame) as StackFrame var*
   (*frame).next = next
   frame
 }
