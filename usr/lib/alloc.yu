@@ -4,14 +4,14 @@ import lib.sync.spinlock
 // The C programming Language, 2nd ed.  Section 8.7.
 
 // size of heap
-let HEAP_SIZE   = 0x4000 as u32
+let HEAP_SIZE   = 0x4000 as usize
 // size of heap memory that to be allocated each time
-let LEAST_ALLOC = 32 as u32
+let LEAST_ALLOC = 32 as usize
 
 // definition of linked list header
 struct Header {
   next: Header var*,
-  size: u32,
+  size: usize,
 }
 
 // heap manager
@@ -38,7 +38,7 @@ public let alloc: HeapAllocator = [HeapAllocator] {}
 
 
 // allocate more heap space
-def increaseHeap(size: u32): u8 var* {
+def increaseHeap(size: usize): u8 var* {
   if heap.heap_base + size > heap.heap_mem + HEAP_SIZE {
     // heap is full
     null as u8 var*
@@ -81,9 +81,9 @@ def freeMem(ptr: u8 var*) {
   heap.free_unit = q
 }
 
-def moreCore(len: u32): Header var* {
+def moreCore(len: usize): Header var* {
   // get size of increased headers
-  let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1 as u32) /
+  let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1 as usize) /
                                  LEAST_ALLOC)
   // allocate more headers
   let core_ptr = increaseHeap(unit_size * sizeof Header)
@@ -99,9 +99,9 @@ def moreCore(len: u32): Header var* {
   }
 }
 
-def allocMem(size: u32): u8 var* {
-  let unit_size = ((size + sizeof Header - 1 as u32) /
-                   sizeof Header) + 1 as u32
+def allocMem(size: usize): u8 var* {
+  let unit_size = ((size + sizeof Header - 1 as usize) /
+                   sizeof Header) + 1 as usize
   var ret = null as u8 var*
   // check if no free blocks
   var prev = heap.free_unit
@@ -109,7 +109,7 @@ def allocMem(size: u32): u8 var* {
     prev = &heap.base
     heap.free_unit = prev
     heap.base.next = heap.free_unit
-    heap.base.size = 0 as u32
+    heap.base.size = 0 as usize
   }
   // allocate free block
   var p = (*prev).next
@@ -145,7 +145,7 @@ def allocMem(size: u32): u8 var* {
 }
 
 // allocate new heap memory
-def allocHeapMem(size: u32): u8 var* {
+def allocHeapMem(size: usize): u8 var* {
   heap.lock.acquire()
   let ret = allocMem(size)
   heap.lock.release()
@@ -167,7 +167,7 @@ public def initUserHeap() {
 }
 
 // allocate memory
-public def alloc(this: HeapAllocator&, size: u32): u8 var* {
+public def alloc(this: HeapAllocator&, size: usize): u8 var* {
   allocHeapMem(size)
 }
 
