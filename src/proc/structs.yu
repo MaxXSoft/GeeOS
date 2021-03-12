@@ -122,7 +122,8 @@ def makeMemorySet(this: ElfFile&): MemorySet {
     let data = this.getPhdrData(ph), data_len = ph.getFileSize()
     // get slice of target virtual address
     let target = {
-      ms.push(virt_addr, virt_addr + mem_size, ph.toAttr(), handler)
+      ms.push(virt_addr as usize, (virt_addr + mem_size) as usize,
+              ph.toAttr(), handler)
       virt_addr as u8 var*
     }
     // copy data to page
@@ -183,7 +184,7 @@ public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
   let kstack = newKernelStack()
   let thread = heap.alloc(sizeof Thread) as Thread var*
   (*thread) = [Thread] {
-    newUserContext(entry, ustack_top, kstack.getTop(), ms.token()),
+    newUserContext(entry as usize, ustack_top, kstack.getTop(), ms.token()),
     kstack,
     proc,
     wait_thread,
