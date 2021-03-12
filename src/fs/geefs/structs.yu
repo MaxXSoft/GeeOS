@@ -1,7 +1,7 @@
 // constants
 inline let MAGIC_NUM          = 0x9eef5000 as u32
 inline let DIRECT_BLOCK_NUM   = 12 as u32
-inline let BLOCK_OFS_SIZE     = sizeof u32
+inline let BLOCK_OFS_SIZE     = sizeof u32 as u32
 inline let FILE_NAME_MAX_LEN  = 28 as u32
 
 // disk inode type

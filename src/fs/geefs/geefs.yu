@@ -130,17 +130,20 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
   else if n - DIRECT_BLOCK_NUM < ofs_per_blk {
     let offset = inode.indirect * this.super_block.block_size +
                  (n - DIRECT_BLOCK_NUM) * BLOCK_OFS_SIZE
-    this.dev.readAssert(BLOCK_OFS_SIZE, &ofs as u8 var*, offset)
+    this.dev.readAssert(BLOCK_OFS_SIZE as usize, &ofs as u8 var*,
+                        offset as usize)
   }
   else if n - DIRECT_BLOCK_NUM - ofs_per_blk < ofs_per_blk * ofs_per_blk {
     var offset = inode.indirect2 * this.super_block.block_size +
                  (n / ofs_per_blk) * BLOCK_OFS_SIZE
-    if !this.dev.readAssert(BLOCK_OFS_SIZE, &offset as u8 var*, offset) {
+    if !this.dev.readAssert(BLOCK_OFS_SIZE as usize, &offset as u8 var*,
+                            offset as usize) {
       return false
     }
     offset *= this.super_block.block_size
     offset += (n % ofs_per_blk) & BLOCK_OFS_SIZE
-    this.dev.readAssert(BLOCK_OFS_SIZE, &ofs as u8 var*, offset)
+    this.dev.readAssert(BLOCK_OFS_SIZE as usize, &ofs as u8 var*,
+                        offset as usize)
   }
   else {
     false
@@ -236,9 +239,10 @@ def gfsINodeFind(this: INode var*, name: StrView&): INode var* {
     var j = 0 as u32
     while j < entry_num {
       // read entry
-      let ent_ofs = offset + j * sizeof GfsEntry
+      let ent_ofs = offset + j * sizeof GfsEntry as u32
       var entry: GfsEntry
-      if !fs.dev.readAssert(sizeof GfsEntry, &entry as u8 var*, ent_ofs) {
+      if !fs.dev.readAssert(sizeof GfsEntry, &entry as u8 var*,
+                            ent_ofs as usize) {
         return null as INode var*
       }
       // get inode
@@ -270,7 +274,9 @@ def gfsINodeRead(this: INode var*, buf: u8 var*, len: usize,
     let ofs = blk_ofs * fs.super_block.block_size +
               i % fs.super_block.block_size
     // read to buffer
-    if !fs.dev.readAssert(1 as u32, buf + data_len, ofs) { break }
+    if !fs.dev.readAssert(1 as usize, buf + data_len, ofs as usize) {
+      break
+    }
     i += 1 as u32
     data_len += 1
   }
