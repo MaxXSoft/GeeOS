@@ -47,13 +47,13 @@ public def unmap(this: MemoryHandler var*, pt: ActivePageTable var&,
 // linear mapping
 public struct LinearHandler {
   base: MemoryHandler,
-  offset: ISize,
+  offset: isize,
 }
 
 def linearMap(this: MemoryHandler var*, pt: ActivePageTable var&,
               addr: usize, attr: MemoryAttr&) {
   let this: LinearHandler& = *(this as LinearHandler*)
-  attr.apply(pt.map(addr, (addr as ISize + this.offset) as usize))
+  attr.apply(pt.map(addr, (addr as isize + this.offset) as usize))
 }
 
 def linearUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
@@ -61,7 +61,7 @@ def linearUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
   pt.unmap(addr)
 }
 
-public def newLinearHandler(offset: ISize): MemoryHandler var* {
+public def newLinearHandler(offset: isize): MemoryHandler var* {
   let handler = heap.alloc(sizeof LinearHandler) as LinearHandler var*
   (*handler).base = [MemoryHandler] {linearMap, linearUnmap}
   (*handler).offset = offset

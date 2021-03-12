@@ -21,7 +21,7 @@ let SYS_EXECVE  = 221 as usize
 
 
 // perform system call
-public def runSyscall(tf: TrapFrame var&): ISize {
+public def runSyscall(tf: TrapFrame var&): isize {
   when tf.x[17] {
     SYS_DUP3 {
       sysDup3(tf.x[10] as i32, tf.x[11] as i32, tf.x[12] as i32)
@@ -30,7 +30,7 @@ public def runSyscall(tf: TrapFrame var&): ISize {
     SYS_OPEN { sysOpen(tf.x[10] as u8*, tf.x[11] as i32) }
     SYS_CLOSE { sysClose(tf.x[10] as i32) }
     SYS_LSEEK {
-      sysLseek(tf.x[10] as i32, tf.x[11], tf.x[12] as i32) as ISize
+      sysLseek(tf.x[10] as i32, tf.x[11], tf.x[12] as i32) as isize
     }
     SYS_READ {
       sysRead(tf.x[10] as i32, tf.x[11] as u8 var*, tf.x[12] as usize)
@@ -47,7 +47,7 @@ public def runSyscall(tf: TrapFrame var&): ISize {
     }
     else {
       io <<< "unknown user system call! id = " <<< tf.x[17] <<< '\n'
-      -1 as ISize
+      -1 as isize
     }
   }
 }

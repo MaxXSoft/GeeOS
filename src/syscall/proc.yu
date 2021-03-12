@@ -1,22 +1,22 @@
 import proc.proc
 import lib.io
 
-public def sysExit(code: usize): ISize {
+public def sysExit(code: usize): isize {
   exit(code)
-  0 as ISize
+  0 as isize
 }
 
-public def sysYield(): ISize {
+public def sysYield(): isize {
   yield()
   0
 }
 
-public def sysExecve(path: u8*, argv: u8**, envp: u8**): ISize {
+public def sysExecve(path: u8*, argv: u8**, envp: u8**): isize {
   if execute(path, getCurrentTid()) {
     sleep()
-    0 as ISize
+    0 as isize
   }
   else {
-    -1 as ISize
+    -1 as isize
   }
 }

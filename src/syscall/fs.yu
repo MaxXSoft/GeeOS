@@ -35,14 +35,14 @@ def convToStat(this: Metadata&): Stat {
 }
 
 // NOTE: current implementation will not sync offset between two fds
-public def sysDup3(oldfd: i32, newfd: i32, flags: i32): ISize {
+public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   fds.lock()
   // get file1
   let file1 = fds.getFile(oldfd)
   if file1 == null as File var* || !(*file1).isOpened() {
     fds.unlock()
-    return -1 as ISize
+    return -1 as isize
   }
   // initialize file2
   var fd2 = newfd, file2 = fds.getFile(newfd)
@@ -50,7 +50,7 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): ISize {
     // allocate new file
     if !fds.allocFd(fd2) {
       fds.unlock()
-      return -1 as ISize
+      return -1 as isize
     }
     file2 = fds.getFile(fd2)
   }
@@ -61,10 +61,10 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): ISize {
   // duplicate
   (*file2).replaceWith(*file1)
   fds.unlock()
-  fd2 as ISize
+  fd2 as isize
 }
 
-public def sysChdir(path: u8*): ISize {
+public def sysChdir(path: u8*): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -78,10 +78,10 @@ public def sysChdir(path: u8*): ISize {
     ret = 0
   }
   fds.unlock()
-  ret as ISize
+  ret as isize
 }
 
-public def sysOpen(path: u8*, flags: i32): ISize {
+public def sysOpen(path: u8*, flags: i32): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var fd = -1
   fds.lock()
@@ -93,10 +93,10 @@ public def sysOpen(path: u8*, flags: i32): ISize {
     !fds.allocFd(fd) || (*fds.getFile(fd)).open(inode, flags) < 0
   }
   fds.unlock()
-  fd as ISize
+  fd as isize
 }
 
-public def sysClose(fd: i32): ISize {
+public def sysClose(fd: i32): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -108,7 +108,7 @@ public def sysClose(fd: i32): ISize {
     if ret >= 0 { fds.deallocFd(fd) }
   }
   fds.unlock()
-  ret as ISize
+  ret as isize
 }
 
 public def sysLseek(fd: i32, offset: usize, whence: i32): usize {
@@ -125,7 +125,7 @@ public def sysLseek(fd: i32, offset: usize, whence: i32): usize {
   ret
 }
 
-public def sysRead(fd: i32, buf: u8 var*, len: usize): ISize {
+public def sysRead(fd: i32, buf: u8 var*, len: usize): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -136,10 +136,10 @@ public def sysRead(fd: i32, buf: u8 var*, len: usize): ISize {
     ret = (*file).read(buf, len)
   }
   fds.unlock()
-  ret as ISize
+  ret as isize
 }
 
-public def sysWrite(fd: i32, buf: u8*, len: usize): ISize {
+public def sysWrite(fd: i32, buf: u8*, len: usize): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -150,10 +150,10 @@ public def sysWrite(fd: i32, buf: u8*, len: usize): ISize {
     ret = (*file).write(buf, len)
   }
   fds.unlock()
-  ret as ISize
+  ret as isize
 }
 
-public def sysFstat(fd: i32, buf: Stat var*): ISize {
+public def sysFstat(fd: i32, buf: Stat var*): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -169,13 +169,13 @@ public def sysFstat(fd: i32, buf: Stat var*): ISize {
     }
   }
   fds.unlock()
-  ret as ISize
+  ret as isize
 }
 
-public def sysSync(): ISize {
+public def sysSync(): isize {
   let fds: FileInfo var& = getCurrentThread().getFds()
   fds.lock()
   let ret = if fds.getCwd().getFs().sync() { 0 } else { -1 }
   fds.unlock()
-  ret as ISize
+  ret as isize
 }
