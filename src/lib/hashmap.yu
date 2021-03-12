@@ -31,11 +31,11 @@ public struct HashMap {
   // size of hash map
   size: usize,
   // hash function
-  hash_func: (HashMap var&, u32): u32,
+  hash_func: (HashMap var&, u32): usize,
 }
 
 // hash function
-public type HashFunc = (HashMap var&, u32): u32
+public type HashFunc = (HashMap var&, u32): usize
 
 
 /*
@@ -174,12 +174,12 @@ def iter(this: KvPairTable&): KvPairTableIter {
 let TABLE_SIZE = 32 as usize
 
 // default hash function
-def defaultHasher(this: HashMap var&, key: u32): u32 {
-  key * 0x9e3779b9 as u32
+def defaultHasher(this: HashMap var&, key: u32): usize {
+  (key as usize) * 0x9e3779b9 as usize
 }
 
 // call hash function and returns table index
-def hash(this: HashMap var&, key: u32): u32 {
+def hash(this: HashMap var&, key: u32): usize {
   (this.hash_func)(this, key) % this.table.size
 }
 
