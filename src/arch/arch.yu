@@ -19,6 +19,7 @@ all targets must define the following functions:
 
 - initIO: ():         initialize IO driver (like UART)
 - initIntr: ():       initialize interrupt (PLIC)
+- ackIntr: ():        acknowledge all IRQs (PLIC)
 - putChar: (u8):      put a character to IO
 - getChar: (): i32:   get a character from IO
 - halt: (i32):        halt the CPU, and return exit code (if possible)
