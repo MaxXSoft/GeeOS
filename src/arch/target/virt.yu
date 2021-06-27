@@ -54,6 +54,9 @@ inline def initIntr() {
   (*S_MODE_PRIORITY) = 0 as u32
 }
 
+// acknowledge all IRQs from PLIC
+inline def ackIntr() {}
+
 // put character
 inline def putChar(c: u8) {
   while (UART_DEV[UART_LSR] & UART_LSR_RI) == 0 as u8 {}
