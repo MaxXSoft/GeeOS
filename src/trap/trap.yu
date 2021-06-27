@@ -21,6 +21,8 @@ def handleTimer() {
 
 // handle external interrupt
 def handleExternal() {
+  // acknowledge IRQ
+  ackIntr()
   // read characters from UART
   while true {
     let c = getChar()
@@ -37,14 +39,16 @@ def handleSyscall(tf: TrapFrame var&) {
 
 // handle page fault
 def handlePageFault(tf: TrapFrame var&) {
+  // print debug info
+  io <<< "scause  = " <<< tf.scause <<< '\n'
+  io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
+  io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
+  // exit or panic
   if tf.isUser() {
     io <<< "ERROR: user thread memory access violation\n"
     exit(-1 as usize)
   }
   else {
-    io <<< "scause  = " <<< tf.scause <<< '\n'
-    io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
-    io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
     panic("page fault!")
   }
 }
