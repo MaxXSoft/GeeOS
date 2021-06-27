@@ -30,6 +30,11 @@ inline let UART_LCR_8BIT    = 0x03 as u32
 inline let UART_LSR_DA      = 0x01 as u32
 inline let UART_LSR_RI      = 0x40 as u32
 
+// PLIC related definitions
+inline let PLIC_IER         = 0x08
+inline let PLIC_IAR         = 0x0c
+inline let PLIC_MER         = 0x1c
+
 // initialize UART
 inline def initIO() {
   // set baud rate
@@ -41,14 +46,24 @@ inline def initIO() {
   (*UART_LCR) = UART_LCR_8BIT
   // enable 8 bytes receive FIFO
   (*UART_FCR) = 0x81 as u32
-  // disable interrupts & modem controls
-  (*UART_IER) = 0 as u32
+  // enable interrupts
+  (*UART_IER) = 0x01 as u32
+  // disable modem controls
   (*UART_MCR) = 0 as u32
 }
 
 // initialize PLIC
 inline def initIntr() {
-  // TODO
+  let UART_IRQ = 1 << 2
+  (*((PLIC_ADDR + PLIC_IER) as u32 volatile var*)) = UART_IRQ as u32
+  (*((PLIC_ADDR + PLIC_MER) as u32 volatile var*)) = 3 as u32
+}
+
+// acknowledge all IRQs from PLIC
+inline def ackIntr() {
+  // acknowledge IRQ #2 (UART) only
+  let UART_IRQ = 1 << 2
+  (*((PLIC_ADDR + PLIC_IAR) as u32 volatile var*)) = UART_IRQ as u32
 }
 
 // put character
