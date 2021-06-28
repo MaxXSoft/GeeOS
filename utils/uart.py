@@ -102,13 +102,18 @@ if __name__ == '__main__':
   args = sys.argv
   args.pop(0)
 
-  if len(args) < 3:
-    print('usage: ./uart.py DEVICE FILE OFFSET')
+  if len(args) < 1:
+    print('usage: ./uart.py DEVICE')
+    print('   or: ./uart.py DEVICE FILE OFFSET')
     print('avaliable devices:')
     for i in comports():
       print(f'  {i.device}')
+  elif len(args) < 3:
+    print(f'reading via {args[0]}...')
+    ser = serial.Serial(args[0], baudrate, timeout=1)
+    read_uart(ser)
   else:
-    print(args[0])
+    print(f'sending via {args[0]}...')
     ser = serial.Serial(args[0], baudrate, timeout=1)
     packet = make_packet(args[1], int(eval(args[2])))
     send_uart(ser, packet)
