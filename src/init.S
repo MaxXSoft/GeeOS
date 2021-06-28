@@ -10,6 +10,7 @@ _start:
   # filesystem image
   .section  .data
   .globl    _user_img_start
+  .align    2
 _user_img_start:
   .incbin   "user.img"
   .globl    _user_img_end
