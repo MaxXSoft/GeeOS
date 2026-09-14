@@ -14,8 +14,9 @@ else
 endif
 
 # cross compile toolchain prefix
-LLVM_BIN := /usr/local/opt/llvm/bin
-YU_BIN := /Users/maxxing/Programming/MyRepo/YuLang/build
+LLVM_BIN ?= $(shell command -v llvm-config | sed 's,/[^/]*$$,,')
+YU_BIN ?= $(abspath ../YuLang/build)
+LLD ?= $(LLVM_BIN)/ld.lld
 
 # cross Yu compiler
 YUFLAGS := -Werror $(YU_OPT_ARG)
@@ -40,7 +41,7 @@ export LLC := $(LLVM_BIN)/llc $(LLCFLAGS)
 
 # cross linker
 LDFLAGS := -nostdlib -melf32lriscv
-export LD := $(LLVM_BIN)/ld.lld $(LDFLAGS)
+export LD := $(LLD) $(LDFLAGS)
 
 # native linker
 NLDFLAGS :=
@@ -52,7 +53,7 @@ export OBJC := $(LLVM_BIN)/llvm-objcopy $(OBJCFLAGS)
 
 # objdump
 OBJDFLAGS := -D
-export OBJD := objdump $(OBJDFLAGS)
+export OBJD := $(LLVM_BIN)/llvm-objdump $(OBJDFLAGS)
 
 # strip
 STRIPFLAGS := --strip-unneeded --strip-sections
@@ -65,3 +66,6 @@ export AR := $(LLVM_BIN)/llvm-ar $(ARFLAGS)
 # ranlib
 RANLIBFLAGS :=
 export RANLIB := $(LLVM_BIN)/llvm-ranlib $(RANLIBFLAGS)
+
+# Python 3
+export PYTHON ?= python3
