@@ -33,6 +33,8 @@ extern def entry() {
   // initialize IO
   initIO()
   io <<< "GeeOS is initializing...\n"
+  // allow supervisor/user accesses
+  initPmp()
   // set previous mode to S-mode
   var ms = getMstatus()
   ms &= ~MSTATUS_MPP_MASK

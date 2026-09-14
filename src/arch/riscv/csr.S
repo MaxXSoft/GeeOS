@@ -134,3 +134,12 @@ getStval:
 runSfence:
   sfence.vma a0, a1
   ret
+
+  # Allow all RV32 physical addresses through a read/write/execute TOR entry.
+  .globl initPmp
+initPmp:
+  li    t0, -1
+  csrw  pmpaddr0, t0
+  li    t0, 15
+  csrw  pmpcfg0, t0
+  ret
