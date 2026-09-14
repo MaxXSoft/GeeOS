@@ -23,6 +23,7 @@ def loadElf(addr: u8*): u8* {
   // copy ELF to RAM
   io <<< "loading ELF...\n"
   for phdr in elf.getPhdrIter() {
+    if phdr.getType() != ElfPtype.Load { continue }
     let dst = phdr.getPaddr() as u8 var*
     let src = elf.getPhdrData(phdr)
     // copy data
