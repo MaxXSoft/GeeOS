@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 # convert binary data file to coe file
 # designed for Fuxi SoC
