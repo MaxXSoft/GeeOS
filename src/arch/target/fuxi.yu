@@ -60,11 +60,15 @@ inline def initIntr() {
 }
 
 // acknowledge all IRQs from PLIC
-inline def ackIntr() {
+inline def ackIntr(): u32 {
   // acknowledge IRQ #2 (UART) only
   let UART_IRQ = 1 << 2
   (*((PLIC_ADDR + PLIC_IAR) as u32 volatile var*)) = UART_IRQ as u32
+  0 as u32
 }
+
+// This platform does not require a separate IRQ completion.
+inline def finishIntr(irq: u32) {}
 
 // put character
 inline def putChar(c: u8) {

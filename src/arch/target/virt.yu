@@ -54,8 +54,16 @@ inline def initIntr() {
   (*S_MODE_PRIORITY) = 0 as u32
 }
 
-// acknowledge all IRQs from PLIC
-inline def ackIntr() {}
+// Claim before servicing UART; complete after draining its receive FIFO.
+inline def ackIntr(): u32 {
+  *((PLIC_ADDR + 0x201004) as u32 volatile var*)
+}
+
+inline def finishIntr(irq: u32) {
+  if irq != 0 as u32 {
+    (*((PLIC_ADDR + 0x201004) as u32 volatile var*)) = irq
+  }
+}
 
 // put character
 inline def putChar(c: u8) {
