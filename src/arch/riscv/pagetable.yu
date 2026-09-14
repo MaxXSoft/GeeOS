@@ -64,7 +64,13 @@ inline def getFrame(this: PageTableEntry&): Frame {
 }
 
 inline def set(this: PageTableEntry var&, frame: Frame, flags: usize) {
-  let flags = flags | PTE_FLAG_A | PTE_FLAG_D
+  // Non-leaf entries reserve A/D; Fuxi requires them preset on leaves.
+  let flags = if (flags & (PTE_FLAG_R | PTE_FLAG_X)) != 0 as usize {
+    flags | PTE_FLAG_A | PTE_FLAG_D
+  }
+  else {
+    flags & ~(PTE_FLAG_A | PTE_FLAG_D)
+  }
   this.data = (frame.getPpn() << 10 as usize) | flags
 }
 
