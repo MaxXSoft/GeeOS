@@ -52,4 +52,4 @@ GeeOS is heavily influenced by [rCore](https://github.com/rcore-os/rCore) and [x
 
 ## License
 
-Copyright (C) 2010-2020 MaxXing. License GPLv3.
+Copyright (C) 2020-2026 MaxXing. License GPLv3.
