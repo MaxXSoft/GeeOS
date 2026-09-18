@@ -34,11 +34,6 @@ CXXFLAGS := -Wall -Werror -c $(C_DEBUG_ARG) $(C_OPT_ARG)
 CXXFLAGS += -std=c++17
 export CXX := clang++ $(CXXFLAGS)
 
-# cross LLVM compiler
-LLCFLAGS := $(C_OPT_ARG) -filetype=obj
-LLCFLAGS += -march=riscv32 -mcpu=generic-rv32 -mattr=+m,+a
-export LLC := $(LLVM_BIN)/llc $(LLCFLAGS)
-
 # cross linker
 LDFLAGS := -nostdlib -melf32lriscv
 export LD := $(LLD) $(LDFLAGS)

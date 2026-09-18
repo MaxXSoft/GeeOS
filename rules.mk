@@ -1,7 +1,7 @@
-$(OBJ_DIR)/%.yu.ll: $(TOP_DIR)/%.yu
+$(OBJ_DIR)/%.yu.o: $(TOP_DIR)/%.yu
 	$(info YUC $@)
 	-mkdir -p $(dir $@)
-	$(YUC) $(YUCFLAGS) -ot llvm $^ > $@
+	$(YUC) $(YUCFLAGS) -ot obj -MD -o $@ $<
 
 $(OBJ_DIR)/%.c.o: $(TOP_DIR)/%.c
 	$(info CC  $@)
@@ -17,7 +17,3 @@ $(OBJ_DIR)/%.S.o: $(TOP_DIR)/%.S
 	$(info AS  $@)
 	-mkdir -p $(dir $@)
 	$(CC) $(ASFLAGS) -o $@ $^
-
-$(OBJ_DIR)/%.o: $(OBJ_DIR)/%.ll
-	$(info LLC $@)
-	$(LLC) $(LLCFLAGS) $^ -o $@

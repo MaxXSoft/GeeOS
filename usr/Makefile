@@ -24,6 +24,9 @@ CFLAGS := -I$(USR_DIR)
 
 .PHONY: all clean libgrt user
 
+# Keep user objects for incremental builds instead of treating them as intermediates.
+.SECONDARY: $(BIN_OBJ)
+
 all: libgrt user
 
 clean:
@@ -54,3 +57,5 @@ $(USER_IMG): $(BIN_TARGET_DIR) $(BIN_TARGET)
 	$(BUILD_DIR)/mkfs $@ -c 256 1 2 -a $(BIN_TARGET)
 
 include $(TOP_DIR)/rules.mk
+
+-include $(addsuffix .d, $(filter %.yu.o, $(LIB_OBJ) $(BIN_OBJ)))

@@ -82,3 +82,5 @@ $(KERNEL_INIT_OBJ): $(KERNEL_INIT) $(USER_IMG)
 	$(CC) $(ASFLAGS) -o $@ $<
 
 include $(TOP_DIR)/rules.mk
+
+-include $(addsuffix .d, $(filter %.yu.o, $(LIB_OBJ) $(BOOT_OBJ) $(KERNEL_OBJ)))
