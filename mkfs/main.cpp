@@ -28,7 +28,7 @@ int LogError(string_view msg) {
   return 1;
 }
 
-IOStreamDevice GetDeviceFromFile(fstream &fs, string_view file_name) {
+IOStreamDevice GetDeviceFromFile(fstream &fs, const char *file_name) {
   fs.open(file_name, ios::binary | ios::in | ios::out);
   if (!fs.is_open()) {
     fs.clear();
