@@ -36,7 +36,7 @@ Run this command from the repository root. `-bios none` is required because GeeO
 
 After the shell appears, try `hello`, `alloc`, or `notepad`. Press Ctrl-A, then X to quit QEMU. Run `python3 tests/qemu_smoke.py` for an automated smoke test covering shell commands, heap allocation and repeated UART input.
 
-For Fuxi, change the target import in `src/arch/arch.yu` to `arch.target.fuxi` and rebuild both the bootloader and kernel. Run `make clean` before switching targets or optimization settings; object files are shared between configurations. The QEMU ELF cannot be used unchanged on Fuxi because the peripheral maps differ.
+For Fuxi, change the target import in `src/arch/arch.yu` to `arch.target.fuxi` and run `make -j` to rebuild the affected library, bootloader and kernel objects. Run `make clean` when changing toolchain paths or optimization settings; object files are shared between configurations. The QEMU ELF cannot be used unchanged on Fuxi because the peripheral maps differ.
 
 ## Details
 
