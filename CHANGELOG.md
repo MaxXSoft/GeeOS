@@ -4,6 +4,10 @@ All notable changes to the Gee OS will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- CI for building and testing GeeOS.
+
 ### Changed
 
 - Generate object file and Makefile dependencies directly with new YuLang compiler.
