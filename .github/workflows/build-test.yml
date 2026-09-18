@@ -1,0 +1,63 @@
+name: Build and QEMU Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Includes direct object output and -MD dependency generation.
+  YULANG_COMMIT: 4d95a3159d0ec8e28c52bab93f042e46def6b9f9
+  LLVM_VERSION: 23
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip-ci')"
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout GeeOS
+        uses: actions/checkout@v4
+
+      - name: Checkout YuLang
+        uses: actions/checkout@v4
+        with:
+          repository: MaxXSoft/YuLang
+          ref: ${{ env.YULANG_COMMIT }}
+          submodules: recursive
+          path: build/yulang
+
+      - name: Install LLVM ${{ env.LLVM_VERSION }} and QEMU
+        run: |
+          wget -q https://apt.llvm.org/llvm.sh -O "$RUNNER_TEMP/llvm.sh"
+          sudo bash "$RUNNER_TEMP/llvm.sh" "$LLVM_VERSION"
+          sudo apt-get install -y "llvm-$LLVM_VERSION-dev" "lld-$LLVM_VERSION" \
+            qemu-system-misc cmake ninja-build build-essential python3
+          echo "$(llvm-config-$LLVM_VERSION --bindir)" >> "$GITHUB_PATH"
+
+      - name: Build YuLang
+        run: |
+          cmake -S build/yulang -B build/yulang/build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+            -DCMAKE_C_COMPILER="clang-$LLVM_VERSION" \
+            -DCMAKE_CXX_COMPILER="clang++-$LLVM_VERSION" \
+            -DLLVM_DIR="$(llvm-config-$LLVM_VERSION --cmakedir)"
+          cmake --build build/yulang/build --target yuc --parallel 2
+
+      - name: Build GeeOS
+        run: |
+          make -j2 LLVM_BIN="$(llvm-config-$LLVM_VERSION --bindir)" \
+            LLD="$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
+            YU_BIN="$GITHUB_WORKSPACE/build/yulang/build"
+
+      - name: QEMU smoke test
+        timeout-minutes: 5
+        run: |
+          python3 tests/qemu_smoke.py
+          cat build/qemu-smoke.log
