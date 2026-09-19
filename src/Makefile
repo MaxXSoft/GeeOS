@@ -31,9 +31,14 @@ USER_IMG := $(BUILD_DIR)/user.img
 KERNEL_TARGET := $(BUILD_DIR)/geeos.elf
 
 # compiler flags
-YUCFLAGS := -I $(SRC_DIR)
+YUCFLAGS := -I $(SRC_DIR) -D GEEOS_TARGET=$(TARGET)
 CFLAGS := -I$(SRC_DIR)
 ASFLAGS := -I$(BUILD_DIR)
+
+# Make does not track compiler arguments. Update this file only when the
+# selected platform changes, including when switching back to an earlier one.
+TARGET_CONFIG := $(OBJ_DIR)/geeos-target
+YU_OBJ := $(filter %.yu.o, $(LIB_OBJ) $(BOOT_OBJ) $(KERNEL_OBJ))
 
 
 .PHONY: all clean libgee boot kernel
@@ -52,6 +57,18 @@ libgee: $(LIB_TARGET)
 boot: $(BOOT_TARGET)
 
 kernel: $(KERNEL_TARGET)
+
+# Mark changed configurations phony so even Make versions with one-second
+# timestamp resolution rebuild objects when targets are switched rapidly.
+ifneq ($(shell cat $(TARGET_CONFIG) 2>/dev/null),$(TARGET))
+.PHONY: $(TARGET_CONFIG)
+endif
+
+$(TARGET_CONFIG):
+	mkdir -p $(dir $@)
+	printf '%s\n' '$(TARGET)' > $@
+
+$(YU_OBJ): $(TARGET_CONFIG)
 
 $(LIB_TARGET): $(LIB_OBJ)
 	$(info making GeeOS kernel library...)
@@ -83,4 +100,4 @@ $(KERNEL_INIT_OBJ): $(KERNEL_INIT) $(USER_IMG)
 
 include $(TOP_DIR)/rules.mk
 
--include $(addsuffix .d, $(filter %.yu.o, $(LIB_OBJ) $(BOOT_OBJ) $(KERNEL_OBJ)))
+-include $(addsuffix .d, $(YU_OBJ))

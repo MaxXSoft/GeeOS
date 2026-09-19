@@ -1,3 +1,6 @@
+# platform selection
+export TARGET ?= virt
+
 # toolchain
 include toolchain.mk
 

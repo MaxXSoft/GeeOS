@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 env:
-  # Includes direct object output and -MD dependency generation.
-  YULANG_COMMIT: 4d95a3159d0ec8e28c52bab93f042e46def6b9f9
+  # Includes direct object output, -MD dependencies and -D macro replacement.
+  YULANG_COMMIT: 959b15d04e6baf862513e8856cf613d2c5a39403
   LLVM_VERSION: 23
 
 jobs:

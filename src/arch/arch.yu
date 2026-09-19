@@ -29,7 +29,7 @@ all targets must define the following functions:
 
 
 // use the following target
-public import arch.target.virt
+public import arch.target.GEEOS_TARGET
 
 // halt the CPU
 inline def halt() {
