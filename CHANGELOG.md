@@ -11,6 +11,7 @@ All notable changes to the Gee OS will be documented in this file.
 ### Changed
 
 - Generate object file and Makefile dependencies directly with new YuLang compiler.
+- Switch target platform of GeeOS by specifying `make TARGET=xxx`.
 
 ### Fixed
 
