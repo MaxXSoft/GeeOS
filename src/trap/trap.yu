@@ -81,7 +81,13 @@ extern def handleTrap(tf: TrapFrame var&) {
       io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
       io <<< "scause  = " <<< tf.scause <<< '\n'
       io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
-      panic("uexpected trap!")
+      if tf.isUser() && (tf.scause & (1 << 31) as usize) == 0 as usize {
+        io <<< "ERROR: user thread exception\n"
+        exit(-1 as usize)
+      }
+      else {
+        panic("unexpected trap!")
+      }
     }
   }
 }

@@ -1,0 +1,8 @@
+import lib.io
+
+extern def main(argc: i32, argv: u8**): i32 {
+  io <<< "CHECK: user breakpoint\n"
+  asm { "ebreak" }
+  io <<< "FAIL: breakpoint returned\n"
+  1
+}
