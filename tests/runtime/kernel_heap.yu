@@ -1,0 +1,17 @@
+import lib.alloc
+import mem.heap
+import mem.consts
+import heap_cases
+
+def allocate(size: usize): u8 var* {
+  heap.alloc(size)
+}
+
+def release(ptr: u8 var*) {
+  heap.dealloc(ptr)
+}
+
+extern def test_main(): i32 {
+  initHeapMem()
+  runHeapCases(allocate, release, HEAP_SIZE as usize)
+}

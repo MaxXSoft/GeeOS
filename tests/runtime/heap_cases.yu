@@ -1,0 +1,67 @@
+extern declare test_check: (bool, u8*)
+
+public def runHeapCases(allocate: (usize): u8 var*,
+                       release: (u8 var*), capacity: usize): i32 {
+  // The largest legal block consumes the whole arena, including its header.
+  let full = allocate(capacity - 8 as usize)
+  test_check(full != null as u8 var*, "largest allocation fits")
+  full[0] = 17 as u8
+  full[capacity - 9 as usize] = 23 as u8
+  test_check(allocate(1 as usize) == null as u8 var*, "full heap rejects allocation")
+  test_check(full[0] == 17 as u8 && full[capacity - 9 as usize] == 23 as u8,
+             "exhaustion preserves allocation")
+  release(full)
+
+  let guard = allocate(17 as usize)
+  test_check(guard != null as u8 var*, "small allocation after exhaustion")
+  var i = 0 as usize
+  while i < 17 as usize {
+    guard[i] = (i + 1 as usize) as u8
+    i += 1 as usize
+  }
+  // Cover both byte-rounding overflow and header-count multiplication wrap.
+  var size = 0xffffffff as usize
+  var count = 0
+  while count < 512 {
+    test_check(allocate(size) == null as u8 var*, "oversized allocation rejected")
+    size -= 1 as usize
+    count += 1
+  }
+  test_check(allocate(capacity) == null as u8 var*, "capacity excludes header")
+  test_check(allocate(capacity + 1 as usize) == null as u8 var*, "over-capacity rejected")
+  i = 0 as usize
+  while i < 17 as usize {
+    test_check(guard[i] == (i + 1 as usize) as u8, "failed requests preserve live data")
+    i += 1 as usize
+  }
+  release(guard)
+
+  // Exercise 0, small alignments, multi-header sizes and coalescing together.
+  var blocks: u8 var*[64]
+  i = 0 as usize
+  while i < 64 as usize {
+    let size = i * 3 as usize
+    blocks[i] = allocate(size)
+    test_check(blocks[i] != null as u8 var*, "small allocations remain usable")
+    var j = 0 as usize
+    while j < size {
+      blocks[i][j] = (i + j) as u8
+      j += 1 as usize
+    }
+    i += 1 as usize
+  }
+  i = 0 as usize
+  while i < 64 as usize {
+    var j = 0 as usize
+    while j < i * 3 as usize {
+      test_check(blocks[i][j] == (i + j) as u8, "allocations do not overlap")
+      j += 1 as usize
+    }
+    release(blocks[i])
+    i += 1 as usize
+  }
+  let coalesced = allocate(capacity - 8 as usize)
+  test_check(coalesced != null as u8 var*, "freed blocks coalesce")
+  release(coalesced)
+  0
+}

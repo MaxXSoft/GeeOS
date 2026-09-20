@@ -12,7 +12,16 @@ USER_MODULES = [
     'lib/except.yu', 'lib/io.yu', 'lib/c/string.yu',
     'lib/sys/syscall.S', 'lib/sync/slimpl.c',
 ]
-CASES = {'stack': ('usr', 'stack.yu', USER_MODULES)}
+KERNEL_MODULES = [
+    'mem/heap.yu', 'lib/alloc.yu', 'sync/spinlock.yu', 'sync/intr.yu',
+    'lib/except.yu', 'lib/io.yu', 'lib/c/string.yu',
+    'arch/riscv/csr.S', 'sync/slimpl.c',
+]
+CASES = {
+    'stack': ('usr', ['stack.yu'], USER_MODULES),
+    'user-heap': ('usr', ['user_heap.yu', 'heap_cases.yu'], USER_MODULES),
+    'kernel-heap': ('src', ['kernel_heap.yu', 'heap_cases.yu'], KERNEL_MODULES),
+}
 
 
 def run(command):
@@ -45,16 +54,17 @@ def main():
              '--oformat=binary', output / 'boot.o', '-o', output / 'boot.bin'])
     failures = []
     for case in args.case or CASES:
-        folder, test, modules = CASES[case]
+        folder, tests, modules = CASES[case]
         for optimization in (0, 2):
             work = output / f'{case}-O{optimization}'
             work.mkdir(exist_ok=True)
             objects = [output / 'start.o', output / 'runtime.o']
-            yu = [args.yuc.resolve(), '-I', ROOT / folder,
+            yu = [args.yuc.resolve(), '-I', ROOT / folder, '-I', HERE,
                   '-D', f'GEEOS_TARGET={target}', '-ot', 'obj',
                   '-tt', 'riscv32-unknown-elf', '-tc', 'generic-rv32',
                   '-tf', '+m,+a', '-O', str(optimization)]
-            sources = [HERE / test] + [ROOT / folder / item for item in modules]
+            sources = [HERE / test for test in tests]
+            sources += [ROOT / folder / item for item in modules]
             for index, source in enumerate(sources):
                 obj = work / f'{index}-{source.name}.o'
                 compiler = yu if source.suffix == '.yu' else cc + [f'-O{optimization}']

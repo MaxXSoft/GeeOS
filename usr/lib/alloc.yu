@@ -39,7 +39,8 @@ public let alloc: HeapAllocator = [HeapAllocator] {}
 
 // allocate more heap space
 def increaseHeap(size: usize): u8 var* {
-  if heap.heap_base + size > heap.heap_mem + HEAP_SIZE {
+  let used = heap.heap_base as usize - heap.heap_mem as usize
+  if size > HEAP_SIZE - used {
     // heap is full
     null as u8 var*
   }
@@ -82,6 +83,11 @@ def freeMem(ptr: u8 var*) {
 }
 
 def moreCore(len: usize): Header var* {
+  // Bound the rounded request before adding units or multiplying bytes.
+  let max_units = HEAP_SIZE / sizeof Header
+  if len > max_units - max_units % LEAST_ALLOC {
+    return null as Header var*
+  }
   // get size of increased headers
   let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1 as usize) /
                                  LEAST_ALLOC)
@@ -100,8 +106,9 @@ def moreCore(len: usize): Header var* {
 }
 
 def allocMem(size: usize): u8 var* {
-  let unit_size = ((size + sizeof Header - 1 as usize) /
-                   sizeof Header) + 1 as usize
+  // Divide first so a request near usize's maximum cannot wrap to zero.
+  let unit_size = size / sizeof Header +
+                  (size % sizeof Header != 0 as usize) as usize + 1 as usize
   var ret = null as u8 var*
   // check if no free blocks
   var prev = heap.free_unit
