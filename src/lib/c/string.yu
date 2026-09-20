@@ -65,7 +65,7 @@ extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
   var l = lhs, r = rhs, n = 0 as usize
   while n < count {
     if l[n] != r[n] {
-      return (l[n] - r[n]) as i32
+      return l[n] as i32 - r[n] as i32
     }
     n += 1 as usize
   }

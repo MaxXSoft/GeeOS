@@ -21,6 +21,8 @@ CASES = {
     'stack': ('usr', ['stack.yu'], USER_MODULES),
     'user-heap': ('usr', ['user_heap.yu', 'heap_cases.yu'], USER_MODULES),
     'kernel-heap': ('src', ['kernel_heap.yu', 'heap_cases.yu'], KERNEL_MODULES),
+    'user-memcmp': ('usr', ['memcmp.c'], ['lib/c/string.yu']),
+    'kernel-memcmp': ('src', ['memcmp.c'], ['lib/c/string.yu']),
 }
 
 
