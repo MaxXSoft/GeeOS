@@ -262,26 +262,31 @@ def gfsINodeRead(this: INode var*, buf: u8 var*, len: usize,
                  offset: usize): i32 {
   let inode: GfsINode& = this.getINode().gfs_inode
   let fs: GeeFs var& = this.getGeeFs()
+  if offset >= inode.size as usize { return 0 }
   // read file
-  var data_len = 0, i = offset as u32
-  let end_len = min((offset + len) as u32, inode.size)
-  while i < end_len {
+  var data_len = 0 as u32, i = offset as u32
+  var remaining = inode.size - i
+  if len < remaining as usize { remaining = len as u32 }
+  remaining = min(remaining, 0x7fffffff as u32)
+  while remaining != 0 as u32 {
     // get block offset
     let n = i / fs.super_block.block_size
     if n >= inode.block_num { break }
     var blk_ofs: u32
     if !fs.getBlockOffset(inode, n, blk_ofs) { break }
     // get offset
-    let ofs = blk_ofs * fs.super_block.block_size +
-              i % fs.super_block.block_size
-    // read to buffer
-    if !fs.dev.readAssert(1 as usize, buf + data_len, ofs as usize) {
+    let in_block = i % fs.super_block.block_size
+    let ofs = blk_ofs * fs.super_block.block_size + in_block
+    // Resolve the index and read once per block, including partial blocks.
+    let count = min(remaining, fs.super_block.block_size - in_block)
+    if !fs.dev.readAssert(count as usize, buf + data_len, ofs as usize) {
       break
     }
-    i += 1 as u32
-    data_len += 1
+    i += count
+    data_len += count
+    remaining -= count
   }
-  data_len
+  data_len as i32
 }
 
 // write buffer content to inode
