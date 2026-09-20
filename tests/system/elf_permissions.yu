@@ -1,0 +1,29 @@
+import lib.io
+import lib.sys.syscall
+
+var initialized = 0x13579bdf as u32
+var zeroed: u8[5000]
+
+extern def main(argc: i32, argv: u8**): i32 {
+  if initialized != 0x13579bdf as u32 {
+    io <<< "FAIL: initialized ELF data\n"; return 1
+  }
+  var i = 0
+  while i < 5000 {
+    if zeroed[i] != 0 as u8 {
+      io <<< "FAIL: ELF BSS not zeroed\n"; return 1
+    }
+    zeroed[i] = 0x5a as u8
+    i += 1
+  }
+  initialized = 7 as u32
+  if initialized != 7 as u32 || zeroed[4999] != 0x5a as u8 {
+    io <<< "FAIL: ELF data not writable\n"; return 1
+  }
+  if execve("fault_text", null as u8**, null as u8**) != 0 ||
+     execve("fault_rodata", null as u8**, null as u8**) != 0 {
+    io <<< "FAIL: readonly child could not start\n"; return 1
+  }
+  io <<< "PASS: elf_permissions\n"
+  0
+}

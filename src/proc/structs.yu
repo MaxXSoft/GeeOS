@@ -185,6 +185,9 @@ def toAttr(this: Elf32Phdr*): MemoryAttr {
   if this.isExecute() {
     attr = attr.setExecute()
   }
+  if !this.isWrite() {
+    attr = attr.setReadonly()
+  }
   attr
 }
 
@@ -198,20 +201,25 @@ def makeMemorySet(this: ElfFile&): MemorySet {
     if ph.getType() != ElfPtype.Load || ph.getMemSize() == 0 as u32 {
       continue
     }
-    // get address info
-    let virt_addr = ph.getVaddr(), mem_size = ph.getMemSize()
-    // get data of program header
-    let data = this.getPhdrData(ph), data_len = ph.getFileSize()
-    // get slice of target virtual address
-    let target = {
-      ms.push(virt_addr as usize, (virt_addr + mem_size) as usize,
-              ph.toAttr(), handler)
-      virt_addr as u8 var*
-    }
-    // copy data to page
-    for _ in ms.with() {
-      memcpy(target, data, data_len as usize)
-      memset(target + data_len, 0, (mem_size - data_len) as usize)
+    let start = ph.getVaddr() as usize
+    let end = start + ph.getMemSize() as usize
+    let data = this.getPhdrData(ph)
+    let file_end = start + ph.getFileSize() as usize
+    ms.push(start, end, ph.toAttr(), handler)
+    // Initialize through the kernel's physical mapping. User mappings and
+    // MemoryArea metadata retain their final ELF permissions throughout.
+    for pt in ms.page_table.edit() {
+      for page in newPageRange(start, end) {
+        let frame = pt.getEntry(page).getTarget() as u8 var*
+        memset(frame, 0, PAGE_SIZE as usize)
+        let copy_start = if start > page { start } else { page }
+        let page_end = page + PAGE_SIZE as usize
+        let copy_end = if file_end < page_end { file_end } else { page_end }
+        if copy_start < copy_end {
+          memcpy(frame + (copy_start - page), data + (copy_start - start),
+                 copy_end - copy_start)
+        }
+      }
     }
   }
   // Newly copied executable bytes must be visible to instruction fetch.

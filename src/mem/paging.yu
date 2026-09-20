@@ -130,7 +130,7 @@ public struct ActivePageTable {
   entry: PageEntry,
 }
 
-def getEntry(this: ActivePageTable var&, vaddr: usize): PageEntry var& {
+public def getEntry(this: ActivePageTable var&, vaddr: usize): PageEntry var& {
   let page = newPage(newVirtAddr(vaddr))
   let pte_ptr = this.page_table.getPtePtr(page)
   if pte_ptr == null as PageTableEntry var* {
