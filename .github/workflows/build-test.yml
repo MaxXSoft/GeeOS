@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 env:
-  # Includes direct object output, -MD dependencies and -D macro replacement.
-  YULANG_COMMIT: 959b15d04e6baf862513e8856cf613d2c5a39403
+  # Includes boolean widening, constant folding and LLVM integer-width fixes.
+  YULANG_COMMIT: 109324bf45269c1527202a8623b141b8d41fac42
   LLVM_VERSION: 23
 
 jobs:
@@ -62,7 +62,23 @@ jobs:
           python3 tests/smoke/qemu_smoke.py
           cat build/qemu-smoke.log
 
-      - name: Memory primitive regression
+      - name: Host filesystem regressions
+        run: python3 tests/host/run.py --cxx "clang++-$LLVM_VERSION"
+
+      - name: Runtime regressions
         run: |
-          python3 tests/runtime/memset_test.py --yuc build/yulang/build/yuc \
+          python3 tests/runtime/run.py --yuc build/yulang/build/yuc \
             --clang "clang-$LLVM_VERSION" --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld"
+
+      - name: Kernel syscall and ELF regressions
+        run: |
+          python3 tests/system/run.py --build build --optimization 0 \
+            --yuc build/yulang/build/yuc --llvm-bin "$(llvm-config-$LLVM_VERSION --bindir)" \
+            --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld"
+
+      - name: Image dependency regression
+        run: |
+          python3 tests/incremental/run.py --build build \
+            --make-arg "LLVM_BIN=$(llvm-config-$LLVM_VERSION --bindir)" \
+            --make-arg "LLD=$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
+            --make-arg "YU_BIN=$GITHUB_WORKSPACE/build/yulang/build"
