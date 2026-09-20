@@ -58,8 +58,12 @@ class GeeFS {
  private:
   // allocate a data block, returns block offset
   std::optional<std::uint32_t> AllocDataBlock();
+  // release a data block after a failed allocation operation
+  void FreeDataBlock(std::uint32_t blk_ofs);
   // allocate an inode, returns inode id
   std::optional<std::uint32_t> AllocINode();
+  // release an inode reservation that has not been initialized
+  void FreeINode(std::uint32_t id);
   // initialize data block of directory
   void InitDirBlock(std::uint32_t blk_ofs, std::uint32_t cur_id,
                     std::uint32_t parent_id);

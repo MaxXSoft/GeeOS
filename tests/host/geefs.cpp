@@ -79,11 +79,52 @@ void IndirectBlocks() {
   CheckRead(reopened, data, 0, data.size());
 }
 
+void FailedCreation() {
+  MemoryDevice device;
+  GeeFS fs(device);
+  Check(fs.Create(256, 1, 2), "create image failed");
+  Check(fs.CreateFile("file"), "create file failed");
+  for (int i = 0; i < 8; ++i) {
+    Check(!fs.CreateFile("file"), "duplicate file accepted");
+    Check(!fs.MakeDir("file"), "conflicting directory accepted");
+    Check(!fs.CreateFile(std::string(28, 'x')), "long filename accepted");
+    Check(!fs.MakeDir(std::string(28, 'x')), "long directory name accepted");
+  }
+  Check(fs.MakeDir("dir"), "failed creates leaked inode or data blocks");
+  Check(fs.ChangeDir("dir"), "new directory is inaccessible");
+  Check(fs.CreateFile("nested"), "nested file creation failed");
+  Check(fs.ChangeDir(".."), "parent directory is inaccessible");
+  Check(fs.CreateFile("remaining1"), "failed creates leaked inodes");
+  Check(fs.CreateFile("remaining2"), "last free inode was lost");
+  Check(!fs.CreateFile("full"), "inode exhaustion was not reported");
+}
+
+void DirectoryExhaustion() {
+  MemoryDevice device;
+  GeeFS fs(device);
+  Check(fs.Create(256, 1, 2), "create image failed");
+  Check(fs.CreateFile("file"), "create file failed");
+  // The root uses one of 2016 blocks. This file uses 1983 data blocks and
+  // 32 index blocks, leaving no space for a new directory's first block.
+  const auto data = Pattern(1983 * 256);
+  std::istringstream input(data);
+  Check(fs.Write("file", input, 0, data.size()) == data.size(),
+        "filling image failed");
+  for (int i = 0; i < 8; ++i) {
+    Check(!fs.MakeDir("dir"), "directory creation on full image succeeded");
+    Check(!fs.ChangeDir("dir"), "failed directory creation left an entry");
+  }
+  Check(fs.CreateFile("dir"), "failed directory creation leaked its name or inode");
+  CheckRead(fs, data, 0, data.size());
+}
+
 }  // namespace
 
 int main() {
   try {
     IndirectBlocks();
+    FailedCreation();
+    DirectoryExhaustion();
     std::cout << "PASS: GeeFS host regressions\n";
   }
   catch (const std::exception &error) {

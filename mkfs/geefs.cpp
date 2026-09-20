@@ -112,6 +112,39 @@ std::optional<std::uint32_t> GeeFS::AllocINode() {
   return {};
 }
 
+void GeeFS::FreeDataBlock(std::uint32_t blk_ofs) {
+  auto n = blk_ofs - (1 + super_block_.free_map_num +
+                     super_block_.inode_blk_num);
+  auto bits_per_map = (super_block_.block_size - sizeof(FreeMapBlockHeader)) * 8;
+  auto offset = (1 + n / bits_per_map) * super_block_.block_size;
+  FreeMapBlockHeader hdr;
+  [[maybe_unused]] auto ret = dev_.ReadAssert(sizeof(hdr), hdr, offset);
+  assert(ret);
+  ++hdr.unused_num;
+  ret = dev_.WriteAssert(sizeof(hdr), hdr, offset);
+  assert(ret);
+  auto byte_offset = offset + sizeof(hdr) + (n % bits_per_map) / 8;
+  std::uint8_t byte;
+  ret = dev_.ReadAssert(1, byte, byte_offset);
+  assert(ret);
+  byte &= ~(1 << (7 - n % 8));
+  ret = dev_.WriteAssert(1, byte, byte_offset);
+  assert(ret);
+}
+
+void GeeFS::FreeINode(std::uint32_t id) {
+  auto in_per_blk = (super_block_.block_size - sizeof(INodeBlockHeader)) /
+                    sizeof(INode);
+  auto offset = (1 + super_block_.free_map_num + id / in_per_blk) *
+                super_block_.block_size;
+  INodeBlockHeader hdr;
+  [[maybe_unused]] auto ret = dev_.ReadAssert(sizeof(hdr), hdr, offset);
+  assert(ret);
+  ++hdr.unused_num;
+  ret = dev_.WriteAssert(sizeof(hdr), hdr, offset);
+  assert(ret);
+}
+
 void GeeFS::InitDirBlock(std::uint32_t blk_ofs, std::uint32_t cur_id,
                          std::uint32_t parent_id) {
   Entry ent;
@@ -394,7 +427,10 @@ bool GeeFS::CreateFile(std::string_view file_name) {
   auto inode_id = AllocINode();
   if (!inode_id) return false;
   // create new entry
-  if (!AddEntry(*inode_id, file_name)) return false;
+  if (!AddEntry(*inode_id, file_name)) {
+    FreeINode(*inode_id);
+    return false;
+  }
   // update allocated inode
   INode inode = {INodeType::File};
   UpdateINode(inode, *inode_id);
@@ -405,11 +441,17 @@ bool GeeFS::MakeDir(std::string_view dir_name) {
   // allocate new inode for directory
   auto inode_id = AllocINode();
   if (!inode_id) return false;
-  // create new entry
-  if (!AddEntry(*inode_id, dir_name)) return false;
-  // allocate data block for directory
+  // Reserve directory storage before publishing its entry.
   auto blk_ofs = AllocDataBlock();
-  if (!blk_ofs) return false;
+  if (!blk_ofs) {
+    FreeINode(*inode_id);
+    return false;
+  }
+  if (!AddEntry(*inode_id, dir_name)) {
+    FreeDataBlock(*blk_ofs);
+    FreeINode(*inode_id);
+    return false;
+  }
   // update allocated inode
   INode inode = {INodeType::Dir, 2 * sizeof(Entry), 1, {*blk_ofs}};
   UpdateINode(inode, *inode_id);
