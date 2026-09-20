@@ -1,0 +1,72 @@
+import lib.hashmap
+import mem.heap
+
+extern declare test_check: (bool, u8*)
+extern declare test_metric: (u8*, u32)
+
+def exercise(stride: u32) {
+  var map = newHashMap()
+  var insert_probes = 0 as u32
+  var i = 0 as u32
+  while i < 1024 as u32 {
+    let key = i * stride
+    // Count nodes examined by insert's duplicate search before any rehash.
+    let index = (map.hash_func)(map, key) % map.table.size
+    var cur = map.table.table[index]
+    while cur != null as KeyValue var* {
+      insert_probes += 1 as u32
+      cur = (*cur).next
+    }
+    test_check(map.insert(key, (i + 1 as u32) as u8 var*), "unique insert succeeds")
+    i += 1 as u32
+  }
+  test_check(map.size == 1024 as usize, "map size after inserts")
+  let buckets = map.table.size
+  test_check(buckets <= (2 as usize) * map.size, "growth stays proportional to entries")
+  var index = 0 as usize, longest = 0 as u32, lookup_probes = 0 as u32
+  while index < map.table.size {
+    var length = 0 as u32, cur = map.table.table[index]
+    while cur != null as KeyValue var* {
+      length += 1 as u32
+      // Looking up every key visits each chain's depths 1 through length.
+      lookup_probes += length
+      cur = (*cur).next
+    }
+    if length > longest { longest = length }
+    index += 1 as usize
+  }
+  test_metric("stride", stride)
+  test_metric("buckets", buckets as u32)
+  test_metric("longest_chain", longest)
+  test_metric("insert_search_nodes", insert_probes)
+  test_metric("all_lookup_nodes", lookup_probes)
+  i = 0 as u32
+  while i < 1024 as u32 {
+    let key = i * stride
+    test_check(map.get(key) == (i + 1 as u32) as u8 var*, "lookup after rehash")
+    test_check(!map.insert(key, 99 as u8 var*), "duplicate insert rejected")
+    test_check(map.get(key) == (i + 1 as u32) as u8 var*, "duplicate preserves value")
+    i += 1 as u32
+  }
+  test_check(map.size == 1024 as usize && map.table.size == buckets,
+             "duplicates preserve size and capacity")
+  // An odd multiplier permutes all 1024 keys, removing middle nodes too.
+  i = 0 as u32
+  while i < 1024 as u32 {
+    let key = ((i * 37 as u32) % 1024 as u32) * stride
+    test_check(map.remove(key), "remove each key")
+    test_check(map.get(key) == null as u8 var*, "removed key absent")
+    test_check(!map.remove(key), "repeated remove rejected")
+    i += 1 as u32
+  }
+  test_check(map.empty() && map.table.occupied == 0 as usize, "all buckets emptied")
+  map.del()
+  test_check(longest <= 32 as u32, "collision chains bounded by entry-based growth")
+}
+
+extern def test_main(): i32 {
+  initHeapMem()
+  exercise(1 as u32)
+  exercise(32 as u32)
+  0
+}

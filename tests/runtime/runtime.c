@@ -20,6 +20,20 @@ void test_check(bool condition, const char *message) {
   }
 }
 
+void test_metric(const char *label, unsigned value) {
+  char digits[11];
+  char *cursor = digits + sizeof(digits);
+  *--cursor = '\0';
+  do {
+    *--cursor = (char)('0' + value % 10);
+    value /= 10;
+  } while (value);
+  print(label);
+  print("=");
+  print(cursor);
+  print("\n");
+}
+
 int runtime_run(void) {
   int result = test_main();
   if (!result) print("PASS\n");

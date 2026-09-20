@@ -23,6 +23,7 @@ CASES = {
     'kernel-heap': ('src', ['kernel_heap.yu', 'heap_cases.yu'], KERNEL_MODULES),
     'user-memcmp': ('usr', ['memcmp.c'], ['lib/c/string.yu']),
     'kernel-memcmp': ('src', ['memcmp.c'], ['lib/c/string.yu']),
+    'hashmap': ('src', ['hashmap.yu'], KERNEL_MODULES + ['lib/hashmap.yu']),
 }
 
 
