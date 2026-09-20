@@ -63,6 +63,7 @@ extern declare setMscratch: (usize)
 extern declare getScause: (): usize
 extern declare getStval: (): usize
 extern declare runSfence: (usize, usize)
+extern declare runSfencePage: (usize)
 extern declare initPmp: ()
 
 inline def runSfence() {

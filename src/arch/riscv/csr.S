@@ -135,6 +135,12 @@ runSfence:
   sfence.vma a0, a1
   ret
 
+  # Flush one virtual page across all ASIDs, including global mappings.
+  .globl  runSfencePage
+runSfencePage:
+  sfence.vma a0, zero
+  ret
+
   # Allow all RV32 physical addresses through a read/write/execute TOR entry.
   .globl initPmp
 initPmp:

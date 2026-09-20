@@ -29,7 +29,7 @@ public def newPageEntry(pte: PageTableEntry var*, page: Page): PageEntry {
 
 public def update(this: PageEntry var&) {
   let pa = this.page.getAddr()
-  runSfence(0 as usize, pa.getAddr())
+  runSfencePage(pa.getAddr())
 }
 
 public def isAccessed(this: PageEntry&): bool {

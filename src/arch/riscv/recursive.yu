@@ -17,7 +17,7 @@ def newMapperFlush(page: Page): MapperFlush {
 // flush current page
 inline def flush(this: MapperFlush) {
   let addr = this.page.getAddr()
-  runSfence(0 as usize, addr.getAddr())
+  runSfencePage(addr.getAddr())
 }
 
 // helper struct for `RecursivePageTable`
@@ -37,7 +37,7 @@ def newTempMap(index: usize): TempMap {
 
 def map(this: TempMap var&, frame: Frame): PageTable var* {
   (*this.entry).set(frame, PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W)
-  runSfence(0 as usize, this.pt_addr.getAddr())
+  runSfencePage(this.pt_addr.getAddr())
   this.pt_addr.getAddr() as PageTable var*
 }
 
