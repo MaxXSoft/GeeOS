@@ -68,11 +68,11 @@ The test records output in `build/fuxi-sim-smoke.log`; `--timeout` controls the 
 The `memset` regression compiles the actual YuLang implementation at O0 and O2 and runs 4,864 guarded cases per build, covering unaligned destinations, zero and boundary lengths, page-sized fills, and conversion of `int` to byte:
 
 ```sh
-python3 tests/runtime/memset_test.py --yuc /path/to/YuLang/build/yuc \
+python3 tests/runtime/run.py --case memset --yuc /path/to/YuLang/build/yuc \
   --clang /path/to/llvm/bin/clang --lld /path/to/ld.lld
 ```
 
-This uses QEMU virt by default. Add `--simulator /path/to/fuxi_sim` to run the same checks on Fuxi. Test images and logs are saved in `build/memset-test/`.
+This uses QEMU virt by default. Add `--simulator /path/to/fuxi_sim` to run the same checks on Fuxi. Test images and logs are saved in `build/runtime-tests/`.
 
 ## Details
 

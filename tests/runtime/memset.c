@@ -26,7 +26,7 @@ static int check(size_t offset, size_t count, int value) {
   return 0;
 }
 
-int test_memset(void) {
+int test_main(void) {
   static const int values[] = {0, 1, 5, 0x80, 0xff, 0x123, -1, -128};
   static const size_t lengths[] = {95, 127, 128, 129, 255, 256, 257,
                                    4095, 4096, 4097};

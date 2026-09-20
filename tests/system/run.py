@@ -51,6 +51,16 @@ def exercise(command, cases, log, timeout):
             for case in cases:
                 proc.stdin.write(case.encode() + b'\r')
                 proc.stdin.flush()
+                if case == 'elf_permissions':
+                    for region in ('text', 'data'):
+                        expect(f'CHECK: readonly {region} store'.encode())
+                        expect(b'scause  = 15')
+                        expect(b'ERROR: user thread memory access violation')
+                elif case == 'user_faults':
+                    for name, cause in (('illegal instruction', 2), ('breakpoint', 3)):
+                        expect(f'CHECK: user {name}'.encode())
+                        expect(f'scause  = {cause}'.encode())
+                        expect(b'ERROR: user thread exception')
                 expect(f'PASS: {case}'.encode())
                 expect(b'$ ')
                 print(f'PASS: {case}', flush=True)

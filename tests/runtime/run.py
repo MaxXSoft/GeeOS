@@ -22,6 +22,7 @@ MEMORY_MODULES = KERNEL_MODULES + [
     'mem/pm.yu', 'arch/riscv/recursive.yu',
 ]
 CASES = {
+    'memset': ('src', ['memset.c'], ['lib/c/string.yu']),
     'stack': ('usr', ['stack.yu'], USER_MODULES),
     'user-heap': ('usr', ['user_heap.yu', 'heap_cases.yu'], USER_MODULES),
     'kernel-heap': ('src', ['kernel_heap.yu', 'heap_cases.yu'], KERNEL_MODULES),
