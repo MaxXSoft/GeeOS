@@ -1,0 +1,35 @@
+import mem.paging
+
+extern declare test_check: (bool, u8*)
+
+def checkRange(start: usize, end: usize, first_page: usize, count: usize) {
+  var range = newPageRange(start, end)
+  var i = 0 as usize
+  while i < count {
+    test_check(!range.last(), "page range has expected page")
+    test_check(range.next() == first_page + i * PAGE_SIZE as usize,
+               "page range yields consecutive aligned addresses")
+    i += 1 as usize
+  }
+  test_check(range.last(), "page range ends at expected boundary")
+}
+
+extern def test_main(): i32 {
+  let page = PAGE_SIZE as usize
+  checkRange(0 as usize, 0 as usize, 0 as usize, 0 as usize)
+  checkRange(1 as usize, 1 as usize, 0 as usize, 0 as usize)
+  checkRange(page, page, 0 as usize, 0 as usize)
+  checkRange(0xffffffff as usize, 0xffffffff as usize, 0 as usize, 0 as usize)
+  checkRange(page * 2 as usize, page, 0 as usize, 0 as usize)
+  checkRange(0xffffffff as usize, 0 as usize, 0 as usize, 0 as usize)
+  checkRange(0 as usize, 1 as usize, 0 as usize, 1 as usize)
+  checkRange(1 as usize, page, 0 as usize, 1 as usize)
+  checkRange(page, page + 1 as usize, page, 1 as usize)
+  checkRange(page, page * 2 as usize, page, 1 as usize)
+  checkRange(page - 1 as usize, page + 1 as usize, 0 as usize, 2 as usize)
+  checkRange(page, page * 2 as usize + 1 as usize, page, 2 as usize)
+  checkRange(0 as usize, page * 3 as usize, 0 as usize, 3 as usize)
+  checkRange(0xffffe001 as usize, 0xffffffff as usize,
+              0xffffe000 as usize, 2 as usize)
+  0
+}

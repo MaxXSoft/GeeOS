@@ -30,6 +30,7 @@ CASES = {
     'hashmap': ('src', ['hashmap.yu'], KERNEL_MODULES + ['lib/hashmap.yu']),
     'area-overlap': ('src', ['area_overlap.yu'], MEMORY_MODULES),
     'page-flags': ('src', ['page_flags.yu'], MEMORY_MODULES),
+    'page-range': ('src', ['page_range.yu'], MEMORY_MODULES),
 }
 
 

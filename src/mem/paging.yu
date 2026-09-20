@@ -331,6 +331,9 @@ public struct PageRange {
 }
 
 public def newPageRange(start_addr: usize, end_addr: usize): PageRange {
+  if start_addr >= end_addr {
+    return [PageRange] {0 as usize, 0 as usize}
+  }
   [PageRange] {
     start_addr / PAGE_SIZE as usize,
     (end_addr - 1 as usize) / PAGE_SIZE as usize + 1 as usize,
