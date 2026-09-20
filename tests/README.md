@@ -86,3 +86,23 @@ These runs validate RTL simulation, not FPGA hardware. ELF validation covers for
 file bounds and mapping conflicts; general process resource-exhaustion recovery is
 not implemented. The host filesystem tests cover capacity failures, not transactional
 recovery from failing storage devices.
+
+## HashMap upstream synchronization
+
+`src/lib/hashmap.yu` follows YuLang's `lib/hashmap.yu` at the compiler revision pinned
+in `.github/workflows/build-test.yml`. Internal names, default hash function and all
+container behavior match upstream. The only adaptations are module imports and calls
+to the kernel allocator/deallocator. `tests/runtime/hashmap_behavior.yu` mirrors the
+upstream behavior fixture with its import path adapted; the kernel runner also retains
+its own collision-work measurements.
+
+After updating either copy, run:
+
+```sh
+python3 tests/host/check_hashmap_sync.py --yulang ../YuLang
+python3 tests/runtime/run.py --case hashmap --clang /path/to/clang --lld /path/to/ld.lld
+```
+
+The first command checks both sources against the selected YuLang checkout; CI uses
+its pinned checkout. Synchronize upstream fixes and behavior tests together, keeping
+only the explicit adaptations encoded in the checker.

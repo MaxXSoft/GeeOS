@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 env:
-  # Includes boolean widening, constant folding and LLVM integer-width fixes.
-  YULANG_COMMIT: 109324bf45269c1527202a8623b141b8d41fac42
+  # Compiler fixes and upstream HashMap sources used by the regression suites.
+  YULANG_COMMIT: 9197a269e727153d9eef5196a6e82c3fe369c641
   LLVM_VERSION: 23
 
 jobs:
@@ -40,6 +40,9 @@ jobs:
           sudo apt-get install -y "llvm-$LLVM_VERSION-dev" "lld-$LLVM_VERSION" \
             qemu-system-misc cmake ninja-build build-essential python3
           echo "$(llvm-config-$LLVM_VERSION --bindir)" >> "$GITHUB_PATH"
+
+      - name: Verify HashMap synchronization
+        run: python3 tests/host/check_hashmap_sync.py --yulang build/yulang
 
       - name: Build YuLang
         run: |

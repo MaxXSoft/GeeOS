@@ -1,6 +1,8 @@
 import lib.hashmap
 import mem.heap
 
+extern declare check_hashmap: (): i32
+
 extern declare test_check: (bool, u8*)
 extern declare test_metric: (u8*, u32)
 
@@ -11,22 +13,22 @@ def exercise(stride: u32) {
   while i < 1024 as u32 {
     let key = i * stride
     // Count nodes examined by insert's duplicate search before any rehash.
-    let index = (map.hash_func)(map, key) % map.table.size
-    var cur = map.table.table[index]
-    while cur != null as KeyValue var* {
+    let index = (map.__hash_func)(map, key) % map.__table.size
+    var cur = map.__table.table[index]
+    while cur != null as __KeyValue var* {
       insert_probes += 1 as u32
       cur = (*cur).next
     }
     test_check(map.insert(key, (i + 1 as u32) as u8 var*), "unique insert succeeds")
     i += 1 as u32
   }
-  test_check(map.size == 1024 as usize, "map size after inserts")
-  let buckets = map.table.size
-  test_check(buckets <= (2 as usize) * map.size, "growth stays proportional to entries")
+  test_check(map.size() == 1024 as usize, "map size after inserts")
+  let buckets = map.__table.size
+  test_check(buckets <= (2 as usize) * map.size(), "growth stays proportional to entries")
   var index = 0 as usize, longest = 0 as u32, lookup_probes = 0 as u32
-  while index < map.table.size {
-    var length = 0 as u32, cur = map.table.table[index]
-    while cur != null as KeyValue var* {
+  while index < map.__table.size {
+    var length = 0 as u32, cur = map.__table.table[index]
+    while cur != null as __KeyValue var* {
       length += 1 as u32
       // Looking up every key visits each chain's depths 1 through length.
       lookup_probes += length
@@ -48,7 +50,7 @@ def exercise(stride: u32) {
     test_check(map.get(key) == (i + 1 as u32) as u8 var*, "duplicate preserves value")
     i += 1 as u32
   }
-  test_check(map.size == 1024 as usize && map.table.size == buckets,
+  test_check(map.size() == 1024 as usize && map.__table.size == buckets,
              "duplicates preserve size and capacity")
   // An odd multiplier permutes all 1024 keys, removing middle nodes too.
   i = 0 as u32
@@ -59,13 +61,14 @@ def exercise(stride: u32) {
     test_check(!map.remove(key), "repeated remove rejected")
     i += 1 as u32
   }
-  test_check(map.empty() && map.table.occupied == 0 as usize, "all buckets emptied")
+  test_check(map.empty() && map.__table.occupied == 0 as usize, "all buckets emptied")
   map.del()
   test_check(longest <= 32 as u32, "collision chains bounded by entry-based growth")
 }
 
 extern def test_main(): i32 {
   initHeapMem()
+  test_check(check_hashmap() == 0, "upstream HashMap behavior and null values")
   exercise(1 as u32)
   exercise(32 as u32)
   0
