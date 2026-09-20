@@ -1,0 +1,24 @@
+import lib.io
+import lib.sys.syscall
+
+extern def main(argc: i32, argv: u8**): i32 {
+  let fd = open("/big", 2)
+  if fd < 0 { io <<< "FAIL: open big\n"; return 1 }
+  lseek(fd, 123 as usize, 0)
+  if write(fd, "X", 1 as usize) != -1 || lseek(fd, 0 as usize, 1) != 123 as usize {
+    io <<< "FAIL: failed I/O changed offset\n"; return 1
+  }
+  var buf: u8[2]
+  if read(fd, buf as u8 var*, 2 as usize) != 2 ||
+     lseek(fd, 0 as usize, 1) != 125 as usize {
+    io <<< "FAIL: successful I/O offset\n"; return 1
+  }
+  lseek(fd, 53009 as usize, 0)
+  if read(fd, buf as u8 var*, 2 as usize) != 0 ||
+     lseek(fd, 0 as usize, 1) != 53009 as usize {
+    io <<< "FAIL: EOF changed offset\n"; return 1
+  }
+  close(fd)
+  io <<< "PASS: io_error\n"
+  0
+}

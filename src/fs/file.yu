@@ -104,7 +104,7 @@ public def seek(this: File var&, offset: usize, whence: i32): usize {
 public def read(this: File var&, buf: u8 var*, len: usize): i32 {
   if this.isOpened() && this.readable {
     let s = this.inode.read(buf, len, this.offset)
-    this.offset += s as usize
+    if s > 0 { this.offset += s as usize }
     s
   }
   else {
@@ -115,7 +115,7 @@ public def read(this: File var&, buf: u8 var*, len: usize): i32 {
 public def write(this: File var&, buf: u8*, len: usize): i32 {
   if this.isOpened() && this.writable {
     let s = this.inode.write(buf, len, this.offset)
-    this.offset += s as usize
+    if s > 0 { this.offset += s as usize }
     s
   }
   else {
