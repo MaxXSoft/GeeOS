@@ -15,16 +15,16 @@ def main():
                         help='run on Fuxi instead of QEMU virt')
     parser.add_argument('--output', type=Path, default=Path('build/memset-test'))
     args = parser.parse_args()
-    root = Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[2]
     target = 'fuxi_sim' if args.simulator else 'virt'
     output = args.output.resolve() / target
     output.mkdir(parents=True, exist_ok=True)
     cc = [args.clang, '--target=riscv32-unknown-elf', '-march=rv32ima',
           '-mabi=ilp32', '-msmall-data-limit=0', '-O2', '-fno-builtin', '-c']
-    subprocess.run(cc + [str(root / 'tests/memset.c'), '-o', str(output / 'test.o')],
+    subprocess.run(cc + [str(root / 'tests/runtime/memset.c'), '-o', str(output / 'test.o')],
                    check=True)
     definitions = ['-DFUXI_SIM'] if args.simulator else []
-    subprocess.run(cc + definitions + [str(root / 'tests/memset_start.S'),
+    subprocess.run(cc + definitions + [str(root / 'tests/runtime/memset_start.S'),
                    '-o', str(output / 'start.o')], check=True)
     if args.simulator:
         subprocess.run(cc + [str(root / 'src/boot/fuxi_sim.S'),
@@ -40,7 +40,7 @@ def main():
                         '-tt', 'riscv32-unknown-elf', '-tc', 'generic-rv32',
                         '-tf', '+m,+a', '-O', str(optimization),
                         '-o', str(obj), str(root / 'src/lib/c/string.yu')], check=True)
-        subprocess.run([args.lld, '-melf32lriscv', '-T', str(root / 'tests/memset.ld'),
+        subprocess.run([args.lld, '-melf32lriscv', '-T', str(root / 'tests/runtime/memset.ld'),
                         str(output / 'start.o'), str(output / 'test.o'), str(obj),
                         '-o', str(elf)], check=True)
         if args.simulator:

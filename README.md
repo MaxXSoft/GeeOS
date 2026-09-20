@@ -34,7 +34,7 @@ $ qemu-system-riscv32 -nographic -machine virt -bios none -m 128m -kernel build/
 
 Run this command from the repository root. `-bios none` is required because GeeOS starts in machine mode at `0x80000000` and provides its own initialization; QEMU's default OpenSBI firmware occupies the same address range. The default CPU can be used with PMP enabled. Tested with QEMU 11.1.1.
 
-After the shell appears, try `hello`, `alloc`, or `notepad`. Press Ctrl-A, then X to quit QEMU. Run `python3 tests/qemu_smoke.py` for an automated smoke test covering shell commands, heap allocation and repeated UART input.
+After the shell appears, try `hello`, `alloc`, or `notepad`. Press Ctrl-A, then X to quit QEMU. Run `python3 tests/smoke/qemu_smoke.py` for an automated smoke test covering shell commands, heap allocation and repeated UART input.
 
 The default target is `virt`. For Fuxi, run `make -j TARGET=fuxi`; use `make -j TARGET=virt` to switch back. Changing `TARGET` automatically rebuilds the library, bootloader and kernel YuLang objects with `-D GEEOS_TARGET=$(TARGET)`. Run `make clean` when changing toolchain paths or optimization settings; object files are shared between configurations. The QEMU ELF cannot be used unchanged on Fuxi because the peripheral maps differ.
 
@@ -57,7 +57,7 @@ Configure and build the simulator with its `fuxi` preset, then run from GeeOS:
 The simulation target uses the first 4 MiB of RAM and reserves 128 KiB for the kernel heap. The `virt` and FPGA `fuxi` targets continue to use 128 MiB. Free pages are still filled with debug values during initialization. An interactive smoke test uses the same shell, allocation, process and repeated UART-input checks as the QEMU test:
 
 ```sh
-python3 tests/fuxi_sim_smoke.py \
+python3 tests/smoke/fuxi_sim_smoke.py \
   --simulator /path/to/verilator-axi-testbench/build/fuxi/examples/fuxi/fuxi_sim
 ```
 
@@ -68,7 +68,7 @@ The test records output in `build/fuxi-sim-smoke.log`; `--timeout` controls the 
 The `memset` regression compiles the actual YuLang implementation at O0 and O2 and runs 4,864 guarded cases per build, covering unaligned destinations, zero and boundary lengths, page-sized fills, and conversion of `int` to byte:
 
 ```sh
-python3 tests/memset_test.py --yuc /path/to/YuLang/build/yuc \
+python3 tests/runtime/memset_test.py --yuc /path/to/YuLang/build/yuc \
   --clang /path/to/llvm/bin/clang --lld /path/to/ld.lld
 ```
 
@@ -89,3 +89,5 @@ GeeOS is heavily influenced by [rCore](https://github.com/rcore-os/rCore) and [x
 ## License
 
 Copyright (C) 2020-2026 MaxXing. License GPLv3.
+
+See [tests/README.md](tests/README.md) for test suites and build requirements.

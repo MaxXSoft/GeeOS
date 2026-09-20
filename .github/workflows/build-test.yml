@@ -59,10 +59,10 @@ jobs:
       - name: QEMU smoke test
         timeout-minutes: 5
         run: |
-          python3 tests/qemu_smoke.py
+          python3 tests/smoke/qemu_smoke.py
           cat build/qemu-smoke.log
 
       - name: Memory primitive regression
         run: |
-          python3 tests/memset_test.py --yuc build/yulang/build/yuc \
+          python3 tests/runtime/memset_test.py --yuc build/yulang/build/yuc \
             --clang "clang-$LLVM_VERSION" --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld"
