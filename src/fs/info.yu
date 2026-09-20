@@ -74,6 +74,15 @@ public def allocFd(this: FileInfo var&, fd: i32 var&): bool {
   false
 }
 
+// reserve the specified unused descriptor
+public def allocFdAt(this: FileInfo var&, fd: i32): bool {
+  if fd < 0 || fd >= FILE_COUNT || !this.files[fd].isNone() {
+    return false
+  }
+  this.files[fd].setAllocated()
+  true
+}
+
 // initialize standard input/output file descriptor
 public def initStdFds(this: FileInfo var&) {
   var fd: i32, i = 0

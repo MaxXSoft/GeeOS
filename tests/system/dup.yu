@@ -1,0 +1,26 @@
+import lib.io
+import lib.sys.syscall
+
+def check(ok: bool, message: u8*) {
+  if !ok { io <<< "FAIL: " <<< message <<< '\n'; exit(1 as usize) }
+}
+
+extern def main(argc: i32, argv: u8**): i32 {
+  check(dup3(1, 1, 0) == -1, "same descriptor")
+  check(dup3(1, -1, 0) == -1, "negative target")
+  check(dup3(1, 16, 0) == -1, "target outside descriptor table")
+  check(dup3(-1, 1, 0) == -1, "invalid source preserves stdout")
+  check(dup3(1, 10, 1) == -1, "unsupported flags")
+  check(dup3(1, 10, 0) == 10, "exact free target")
+  check(write(10, "duplicate stdout\n", 17 as usize) == 17, "new target usable")
+  check(close(10) == 0, "close new target")
+  let fd = open("/big", 0)
+  check(fd == 3, "earlier free slots preserved")
+  check(dup3(1, fd, 0) == fd, "replace existing descriptor")
+  check(write(fd, "replaced stdout\n", 16 as usize) == 16, "replaced target usable")
+  close(fd)
+  check(dup3(1, 15, 0) == 15, "last valid target")
+  close(15)
+  io <<< "PASS: dup\n"
+  0
+}

@@ -36,6 +36,10 @@ def convToStat(this: Metadata&): Stat {
 
 // NOTE: current implementation will not sync offset between two fds
 public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
+  // Close-on-exec flags are not implemented by the current descriptor table.
+  if oldfd == newfd || newfd < 0 || newfd >= FILE_COUNT || flags != 0 {
+    return -1 as isize
+  }
   let fds: FileInfo var& = getCurrentThread().getFds()
   fds.lock()
   // get file1
@@ -45,14 +49,14 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
     return -1 as isize
   }
   // initialize file2
-  var fd2 = newfd, file2 = fds.getFile(newfd)
+  var file2 = fds.getFile(newfd)
   if file2 == null as File var* {
     // allocate new file
-    if !fds.allocFd(fd2) {
+    if !fds.allocFdAt(newfd) {
       fds.unlock()
       return -1 as isize
     }
-    file2 = fds.getFile(fd2)
+    file2 = fds.getFile(newfd)
   }
   else if (*file2).isOpened() {
     // close file2 if it is opened
@@ -61,7 +65,7 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
   // duplicate
   (*file2).replaceWith(*file1)
   fds.unlock()
-  fd2 as isize
+  newfd as isize
 }
 
 public def sysChdir(path: u8*): isize {
