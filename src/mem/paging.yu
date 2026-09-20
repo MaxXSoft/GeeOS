@@ -45,7 +45,7 @@ public def isDirty(this: PageEntry&): bool {
 }
 
 public def clearDirty(this: PageEntry var&) {
-  (*this.pte).clearFlag(PTE_FLAG_A)
+  (*this.pte).clearFlag(PTE_FLAG_D)
 }
 
 public def isWritable(this: PageEntry&): bool {

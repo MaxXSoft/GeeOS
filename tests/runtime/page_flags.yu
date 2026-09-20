@@ -1,0 +1,30 @@
+import mem.paging
+
+extern declare test_check: (bool, u8*)
+
+extern def test_main(): i32 {
+  // Cover every A/D state together with every combination of other flags.
+  var flags = 0 as usize
+  while flags < 256 as usize {
+    let original = (0x12345b00 as usize) | flags
+    var pte = [PageTableEntry] {original}
+    var entry = newPageEntry(&pte, newPage(newVirtAddr(0x8000 as usize)))
+    test_check(entry.isDirty() == ((flags & PTE_FLAG_D) != 0 as usize),
+               "dirty query reflects PTE")
+    test_check(entry.isAccessed() == ((flags & PTE_FLAG_A) != 0 as usize),
+               "accessed query reflects PTE")
+    entry.clearDirty()
+    test_check(!entry.isDirty(), "clearDirty clears D")
+    test_check(pte.data == (original & ~PTE_FLAG_D),
+               "clearDirty preserves A, permissions and physical address")
+    entry.clearDirty()
+    test_check(pte.data == (original & ~PTE_FLAG_D), "clearDirty is idempotent")
+    pte.data = original
+    entry.clearAccessed()
+    test_check(!entry.isAccessed(), "clearAccessed clears A")
+    test_check(pte.data == (original & ~PTE_FLAG_A),
+               "clearAccessed preserves D, permissions and physical address")
+    flags += 1 as usize
+  }
+  0
+}
