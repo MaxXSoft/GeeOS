@@ -37,7 +37,7 @@ std::optional<std::uint32_t> GeeFS::AllocDataBlock() {
     // read free map header
     auto offset = super_block_.block_size * (1 + i);
     FreeMapBlockHeader hdr;
-    auto ret = dev_.ReadAssert(sizeof(hdr), hdr, offset);
+    [[maybe_unused]] auto ret = dev_.ReadAssert(sizeof(hdr), hdr, offset);
     assert(ret);
     // check for free blocks
     if (hdr.unused_num) {
@@ -90,7 +90,7 @@ std::optional<std::uint32_t> GeeFS::AllocINode() {
     if (hdr.unused_num) {
       // update header
       --hdr.unused_num;
-      auto ret = dev_.WriteAssert(sizeof(hdr), hdr, offset);
+      [[maybe_unused]] auto ret = dev_.WriteAssert(sizeof(hdr), hdr, offset);
       assert(ret);
       // read inodes to buffer
       std::vector<std::uint8_t> buf;
@@ -119,7 +119,7 @@ void GeeFS::InitDirBlock(std::uint32_t blk_ofs, std::uint32_t cur_id,
   // write entry '.'
   ent.inode_id = cur_id;
   std::strcpy(reinterpret_cast<char *>(ent.filename), ".");
-  auto ret = dev_.WriteAssert(sizeof(ent), ent, offset);
+  [[maybe_unused]] auto ret = dev_.WriteAssert(sizeof(ent), ent, offset);
   assert(ret);
   // write entry '..'
   ent.inode_id = parent_id;
