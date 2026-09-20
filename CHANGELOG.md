@@ -13,6 +13,7 @@ All notable changes to the Gee OS will be documented in this file.
 
 - Generate object file and Makefile dependencies directly with new YuLang compiler.
 - Switch target platform of GeeOS by specifying `make TARGET=xxx`.
+- Optimize `memset` to reduce boot time on Fuxi simulator.
 
 ### Fixed
 
