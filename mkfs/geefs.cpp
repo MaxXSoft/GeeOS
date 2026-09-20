@@ -514,21 +514,32 @@ std::int32_t GeeFS::Read(std::string_view file_name, std::ostream &os,
   // get inode
   INode inode;
   if (!ReadINode(inode, file_name)) return -1;
+  if (offset >= inode.size || !len) return 0;
   // read file
   std::int32_t data_len = 0;
-  auto end_len = std::min<std::size_t>(offset + len, inode.size);
-  for (int i = offset; i < end_len; ++i, ++data_len) {
+  auto remaining = std::min<std::size_t>(len, inode.size - offset);
+  remaining = std::min<std::size_t>(remaining,
+                                    std::numeric_limits<std::int32_t>::max());
+  std::vector<std::uint8_t> buffer(super_block_.block_size);
+  while (remaining) {
     // get block offset
+    auto i = offset + data_len;
     auto n = i / super_block_.block_size;
     if (n >= inode.block_num) break;
     auto blk_ofs = GetBlockOffset(inode, n);
+    if (!blk_ofs) break;
     // get offset
+    auto in_block = i % super_block_.block_size;
     auto ofs = *blk_ofs * super_block_.block_size;
-    ofs += i % super_block_.block_size;
-    // read to stream
-    std::uint8_t byte;
-    if (!dev_.ReadAssert(1, byte, ofs)) break;
-    os.write(reinterpret_cast<const char *>(&byte), 1);
+    ofs += in_block;
+    // Read once per block, including partial blocks at either end.
+    auto count = std::min<std::size_t>(remaining,
+                                      super_block_.block_size - in_block);
+    if (!dev_.ReadAssert(count, buffer.data(), count, ofs)) break;
+    os.write(reinterpret_cast<const char *>(buffer.data()), count);
+    if (!os) break;
+    data_len += count;
+    remaining -= count;
   }
   return data_len;
 }

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -232,6 +233,30 @@ void PartialWrites() {
   }
 }
 
+void BlockReads() {
+  MemoryDevice device;
+  GeeFS fs(device);
+  Check(fs.Create(256, 1, 2), "create image failed");
+  Check(fs.CreateFile("file"), "create file failed");
+  const auto data = Pattern(16384);
+  std::istringstream input(data);
+  Check(fs.Write("file", input, 0, data.size()) == data.size(),
+        "read performance fixture failed");
+  device.reads = 0;
+  CheckRead(fs, data, 0, data.size());
+  std::cout << "16 KiB sequential read: " << device.reads << " device reads\n";
+  // Each data block needs at most one index lookup in this fixture; allow
+  // a small constant overhead for directory and inode reads.
+  Check(device.reads <= 2 * (data.size() / 256) + 8,
+        "sequential read performs more than block-proportional device I/O");
+  CheckRead(fs, data, 19, std::numeric_limits<std::size_t>::max());
+  CheckRead(fs, data, data.size(), 10);
+  std::ostringstream beyond;
+  Check(fs.Read("file", beyond, std::numeric_limits<std::size_t>::max(), 10) == 0,
+        "read beyond EOF did not return zero");
+  Check(beyond.str().empty(), "read beyond EOF produced data");
+}
+
 }  // namespace
 
 int main() {
@@ -243,6 +268,7 @@ int main() {
     IndexExhaustion();
     ShortInput();
     PartialWrites();
+    BlockReads();
     std::cout << "PASS: GeeFS host regressions\n";
   }
   catch (const std::exception &error) {
