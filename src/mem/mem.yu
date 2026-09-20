@@ -25,6 +25,8 @@ def initTempTable(): PageTable var* {
   // set recursive mapping
   let root_frame = newFrame(newPhysAddr(root_table as usize))
   root_table.setRecursive(RECURSIVE_INDEX, root_frame)
+  // Publish page-table stores before the first translated instruction fetch.
+  runSfence()
   // activate root page table
   setSatp(root_frame.getPpn() | SATP_SV32)
   runSfence()

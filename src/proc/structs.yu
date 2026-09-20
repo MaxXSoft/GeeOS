@@ -132,6 +132,8 @@ def makeMemorySet(this: ElfFile&): MemorySet {
       memset(target + data_len, 0, (mem_size - data_len) as usize)
     }
   }
+  // Newly copied executable bytes must be visible to instruction fetch.
+  asm { "fence.i" }
   ms
 }
 
