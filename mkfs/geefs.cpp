@@ -217,7 +217,7 @@ bool GeeFS::AppendBlock(INode &inode, std::uint32_t blk_ofs) {
     }
     auto offset = inode.indirect2 * super_block_.block_size;
     offset += (n / kOfsPerBlock) * kBlockOfsSize;
-    if (n % kOfsPerBlock) {
+    if (n % kOfsPerBlock == 0) {
       // initialize 2nd indirect block
       auto blk_ofs = AllocDataBlock();
       if (!blk_ofs) return false;
