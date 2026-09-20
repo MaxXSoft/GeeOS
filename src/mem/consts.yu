@@ -18,5 +18,7 @@ extern declare _stack_end: ()
 inline let KERNEL_BASE    = MEM_ADDR
 inline let KERNEL_VM_BASE = 0x80000000
 inline let PHY_STOP       = KERNEL_BASE + MEM_SIZE_MIB * 1024 * 1024
-inline let HEAP_SIZE      = MEM_SIZE_MIB * 1024
+// Process/page-table metadata still needs a usable heap on small RAM targets.
+inline let HEAP_SIZE      = if MEM_SIZE_MIB < 128 { 128 * 1024 }
+                            else { MEM_SIZE_MIB * 1024 }
 inline let HEAP_BASE      = PHY_STOP - HEAP_SIZE
