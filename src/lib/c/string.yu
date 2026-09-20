@@ -1,10 +1,34 @@
 public import arch.arch
 
 extern def memset(dst: u8 var*, c: i32, n: usize): u8 var* {
-  var d = dst, i = 0 as usize
-  while i < n {
-    d[i] = c as u8
-    i += 1 as usize
+  var d = dst, remaining = n
+  let byte = c as u8
+  // Only issue aligned word stores: Fuxi does not support unaligned accesses.
+  while remaining != 0 as usize && ((d as usize) & (3 as usize)) != 0 as usize {
+    *d = byte
+    d += 1
+    remaining -= 1 as usize
+  }
+  let word = (byte as u32) * (0x01010101 as u32)
+  var words = d as u32 var*
+  while remaining >= 16 as usize {
+    words[0] = word
+    words[1] = word
+    words[2] = word
+    words[3] = word
+    words += 4
+    remaining -= 16 as usize
+  }
+  while remaining >= 4 as usize {
+    *words = word
+    words += 1
+    remaining -= 4 as usize
+  }
+  d = words as u8 var*
+  while remaining != 0 as usize {
+    *d = byte
+    d += 1
+    remaining -= 1 as usize
   }
   dst
 }

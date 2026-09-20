@@ -54,7 +54,7 @@ Configure and build the simulator with its `fuxi` preset, then run from GeeOS:
   --load 0x200=build/boot.bin --elf build/geeos.elf --max-cycles 2000000000
 ```
 
-Memory initialization fills almost all 128 MiB before printing the next message; RTL simulation takes substantially longer than QEMU. The default simulator cycle budget is too small. An interactive smoke test uses the same shell, allocation, process and repeated UART-input checks as the QEMU test:
+The simulation target uses the first 4 MiB of RAM and reserves 128 KiB for the kernel heap. The `virt` and FPGA `fuxi` targets continue to use 128 MiB. Free pages are still filled with debug values during initialization. An interactive smoke test uses the same shell, allocation, process and repeated UART-input checks as the QEMU test:
 
 ```sh
 python3 tests/fuxi_sim_smoke.py \
@@ -62,6 +62,17 @@ python3 tests/fuxi_sim_smoke.py \
 ```
 
 The test records output in `build/fuxi-sim-smoke.log`; `--timeout` controls the wall-clock timeout per expected response, and `--max-cycles` controls the simulated cycle budget. Use `--stall-probability 0.35` to add AXI backpressure. The test terminates the simulator after the checks; the shell normally runs until the host stops it.
+
+## Memory primitive regression
+
+The `memset` regression compiles the actual YuLang implementation at O0 and O2 and runs 4,864 guarded cases per build, covering unaligned destinations, zero and boundary lengths, page-sized fills, and conversion of `int` to byte:
+
+```sh
+python3 tests/memset_test.py --yuc /path/to/YuLang/build/yuc \
+  --clang /path/to/llvm/bin/clang --lld /path/to/ld.lld
+```
+
+This uses QEMU virt by default. Add `--simulator /path/to/fuxi_sim` to run the same checks on Fuxi. Test images and logs are saved in `build/memset-test/`.
 
 ## Details
 
