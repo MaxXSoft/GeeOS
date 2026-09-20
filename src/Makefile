@@ -13,6 +13,10 @@ LIB_TARGET := $(BUILD_DIR)/libgee.a
 # sources & targets of bootloader
 BOOT_SRC := $(call rwildcard, $(BOOT_DIR), *.yu)
 BOOT_SRC += $(call rwildcard, $(BOOT_DIR), *.S)
+BOOT_SRC := $(filter-out $(BOOT_DIR)/fuxi_sim.S, $(BOOT_SRC))
+ifeq ($(TARGET),fuxi_sim)
+BOOT_SRC := $(BOOT_DIR)/fuxi_sim.S
+endif
 $(call make_obj, BOOT, $(BOOT_SRC))
 BOOT_LDS := $(BOOT_DIR)/linker.ld
 BOOT_TARGET := $(BUILD_DIR)/boot.bin
@@ -21,7 +25,7 @@ BOOT_TARGET := $(BUILD_DIR)/boot.bin
 KERNEL_SRC := $(call rwildcard, $(SRC_DIR), *.yu)
 KERNEL_SRC += $(call rwildcard, $(SRC_DIR), *.c)
 KERNEL_SRC += $(call rwildcard, $(SRC_DIR), *.S)
-KERNEL_SRC := $(filter-out $(LIB_SRC) $(BOOT_SRC), $(KERNEL_SRC))
+KERNEL_SRC := $(filter-out $(LIB_SRC) $(call rwildcard, $(BOOT_DIR), *.*), $(KERNEL_SRC))
 KERNEL_SRC := $(filter-out $(call rwildcard, $(ARCH_DIR), *.*), $(KERNEL_SRC))
 $(call make_obj, KERNEL, $(KERNEL_SRC))
 KERNEL_INIT := $(SRC_DIR)/init.S
@@ -84,7 +88,7 @@ $(BOOT_TARGET): $(BOOT_TARGET).elf
 	# create coe file
 	$(PYTHON) $(UTILS_DIR)/bin2coe.py $@
 
-$(BOOT_TARGET).elf: $(BOOT_OBJ) $(BOOT_LDS) $(LIB_TARGET)
+$(BOOT_TARGET).elf: $(BOOT_OBJ) $(BOOT_LDS) $(LIB_TARGET) $(TARGET_CONFIG)
 	$(LD) -T$(BOOT_LDS) -L$(BUILD_DIR) -lgee -o $@ $(BOOT_OBJ)
 
 $(KERNEL_TARGET): $(KERNEL_OBJ) $(KERNEL_LDS) $(LIB_TARGET)

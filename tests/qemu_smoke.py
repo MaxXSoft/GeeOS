@@ -13,19 +13,25 @@ def main():
     parser.add_argument('--qemu', default='qemu-system-riscv32')
     parser.add_argument('--log', type=Path, default=Path('build/qemu-smoke.log'))
     args = parser.parse_args()
+    run_smoke(
+        [args.qemu, '-nographic', '-machine', 'virt', '-bios', 'none',
+         '-m', '128m', '-kernel', str(args.kernel.resolve())], args.log)
+    print(f'QEMU smoke test passed; log: {args.log}')
+
+
+def run_smoke(command, log, timeout=30):
     output = bytearray()
     consumed = 0
-    args.log.parent.mkdir(parents=True, exist_ok=True)
+    log.parent.mkdir(parents=True, exist_ok=True)
     with subprocess.Popen(
-        [args.qemu, '-nographic', '-machine', 'virt', '-bios', 'none',
-         '-m', '128m', '-kernel', str(args.kernel.resolve())],
+        command,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-    ) as proc, selectors.DefaultSelector() as selector:
+    ) as proc, selectors.DefaultSelector() as selector, log.open('wb') as log_file:
         selector.register(proc.stdout, selectors.EVENT_READ)
 
         def expect(marker):
             nonlocal consumed
-            deadline = time.monotonic() + 30
+            deadline = time.monotonic() + timeout
             while True:
                 found = output.find(marker, consumed)
                 if found >= 0:
@@ -36,8 +42,11 @@ def main():
                 for key, _ in selector.select(0.2):
                     data = key.fileobj.read1(65536)
                     if not data:
-                        raise RuntimeError('QEMU exited before the test completed')
+                        raise RuntimeError(
+                            f'simulator exited before the test completed ({proc.poll()})')
                     output.extend(data)
+                    log_file.write(data)
+                    log_file.flush()
 
         def send(data):
             proc.stdin.write(data)
@@ -68,8 +77,6 @@ def main():
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
-            args.log.write_bytes(output)
-    print(f'QEMU smoke test passed; log: {args.log}')
 
 
 if __name__ == '__main__':
