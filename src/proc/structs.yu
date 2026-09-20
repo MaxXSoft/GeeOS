@@ -97,6 +97,88 @@ public struct Thread {
   wait: Tid,
 }
 
+// The loader supports ELF32 little-endian RISC-V executables with distinct
+// load pages. Validate every range before creating mappings or reading data.
+def validUserElf(data: u8*, size: usize): bool {
+  if size < sizeof Elf32Ehdr { return false }
+  let ehdr = data as Elf32Ehdr*
+  if !ehdr.isValid() || ehdr.getType() != ElfEtype.Executable ||
+     ((*ehdr).e_ident[1] & 0xffffff as u32) != 0x010101 as u32 ||
+     (*ehdr).e_version != 1 as u32 ||
+     (*ehdr).e_ehsize as usize != sizeof Elf32Ehdr ||
+     (*ehdr).e_phentsize as usize != sizeof Elf32Phdr {
+    return false
+  }
+  let phoff = (*ehdr).e_phoff as usize
+  let count = (*ehdr).e_phnum as usize
+  if phoff % 4 as usize != 0 as usize || phoff > size ||
+     count > (size - phoff) / sizeof Elf32Phdr {
+    return false
+  }
+  let headers = ehdr.getPhdr()
+  var entry_found = false, i = 0 as usize
+  while i < count {
+    let ph = headers + i
+    if ph.getType() == ElfPtype.Load {
+      let offset = ph.getOffset() as usize
+      let file_size = ph.getFileSize() as usize
+      let mem_size = ph.getMemSize() as usize
+      let start = ph.getVaddr() as usize
+      if offset > size || file_size > size - offset || file_size > mem_size {
+        return false
+      }
+      if mem_size != 0 as usize {
+        // The fixed user stack and kernel mappings must remain untouched.
+        if start >= USER_STACK_OFFSET as usize ||
+           mem_size > USER_STACK_OFFSET as usize - start {
+          return false
+        }
+        let end = start + mem_size
+        // mapKernel reserves whole megapages for its device mappings,
+        // including the megapage containing each inclusive end address.
+        let first = start / MEGAPAGE_SIZE as usize
+        let last = (end - 1 as usize) / MEGAPAGE_SIZE as usize
+        if (first <= UART_END as usize / MEGAPAGE_SIZE as usize &&
+            last >= UART_ADDR as usize / MEGAPAGE_SIZE as usize) ||
+           (first <= PLIC_END as usize / MEGAPAGE_SIZE as usize &&
+            last >= PLIC_ADDR as usize / MEGAPAGE_SIZE as usize) {
+          return false
+        }
+        var j = 0 as usize
+        while j < i {
+          let other = headers + j
+          if other.getType() == ElfPtype.Load &&
+             other.getMemSize() != 0 as u32 {
+            let other_start = other.getVaddr() as usize
+            let other_end = other_start + other.getMemSize() as usize
+            if start / PAGE_SIZE as usize <=
+                 (other_end - 1 as usize) / PAGE_SIZE as usize &&
+               other_start / PAGE_SIZE as usize <=
+                 (end - 1 as usize) / PAGE_SIZE as usize {
+              return false
+            }
+          }
+          j += 1 as usize
+        }
+        let entry = ehdr.getEntry() as usize
+        if ph.isExecute() && entry >= start && entry < end &&
+           entry % 4 as usize == 0 as usize {
+          entry_found = true
+        }
+      }
+    }
+    i += 1 as usize
+  }
+  entry_found
+}
+
+// Use pointer arithmetic after widening e_phnum, rather than multiplying
+// the two 16-bit header fields in ElfFile.getPhdrIter().
+def getLoadPhdrIter(this: ElfFile&): ElfPhdrIter {
+  let ehdr = this.getEhdr(), first = ehdr.getPhdr()
+  [ElfPhdrIter] {first, first + (*ehdr).e_phnum as usize}
+}
+
 // create memory attribute by ELF program header
 def toAttr(this: Elf32Phdr*): MemoryAttr {
   var attr = newMemoryAttr().setUser()
@@ -112,8 +194,8 @@ def makeMemorySet(this: ElfFile&): MemorySet {
   var ms = newMemorySet()
   // traverse program headers in ELF file
   let handler = newFrameHandler()
-  for ph in this.getPhdrIter() {
-    if ph.getType() != ElfPtype.Load {
+  for ph in this.getLoadPhdrIter() {
+    if ph.getType() != ElfPtype.Load || ph.getMemSize() == 0 as u32 {
       continue
     }
     // get address info
@@ -163,12 +245,13 @@ public def newKernelThread(entry: usize): Thread var* {
 }
 
 // create new user thread
-public def newUserThread(data: u8*, wait_thread: Tid): Thread var* {
-  let elf = newElfFile(data), ehdr = elf.getEhdr()
-  if !ehdr.isValid() || ehdr.getType() != ElfEtype.Executable {
+public def newUserThread(data: u8*, size: usize,
+                          wait_thread: Tid): Thread var* {
+  if !validUserElf(data, size) {
     return null as Thread var*
   }
   // get entry point
+  let elf = newElfFile(data), ehdr = elf.getEhdr()
   let entry = ehdr.getEntry()
   // create page table & user stack
   var ms = elf.makeMemorySet()

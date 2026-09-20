@@ -6,6 +6,8 @@ import selectors
 import subprocess
 import time
 
+from elf_fixtures import generate_elf_fixtures
+
 
 def run(command):
     subprocess.run([str(arg) for arg in command], check=True)
@@ -86,18 +88,22 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     cases = args.case or sorted(p.stem for p in sources.glob('*.yu'))
     binaries = []
-    for case in cases:
-        obj, binary = out / f'{case}.o', out / case
+    programs = [sources / f'{case}.yu' for case in cases]
+    programs += sorted((sources / 'fixtures').glob('*.yu'))
+    for source in programs:
+        obj, binary = out / f'{source.stem}.o', out / source.stem
         run([args.yuc.resolve(), '-I', root / 'usr', '-ot', 'obj',
              '-tt', 'riscv32-unknown-elf', '-tc', 'generic-rv32', '-tf', '+m,+a',
-             '-O', args.optimization, '-o', obj, sources / f'{case}.yu'])
+             '-O', args.optimization, '-o', obj, source])
         run([args.lld, '-nostdlib', '-melf32lriscv', '-L' + str(base), '-lgrt',
              '-o', binary, obj])
         run([args.llvm_bin / 'llvm-strip', '--strip-unneeded', '--strip-sections', binary])
         binaries.append(binary)
+    if 'elf_reject' in cases:
+        binaries += generate_elf_fixtures(out / 'elf_reject', out)
     # Exercise direct/single/double addressing and a second-level table switch.
     (out / 'big').write_bytes(bytes((i * 37 + i // 256) % 251 for i in range(53009)))
-    run([base / 'mkfs', out / 'user.img', '-c', '256', '1', '8', '-a',
+    run([base / 'mkfs', out / 'user.img', '-c', '256', '1', str(max(8, (len(binaries) + 5) // 3)), '-a',
          base / 'usr/shell', *binaries, out / 'big'])
     run([args.llvm_bin / 'clang', '--target=riscv32-unknown-elf', '-march=rv32ima',
          '-mabi=ilp32', '-fno-builtin', '-fno-pic', '-c', '-I' + str(out),
