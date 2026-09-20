@@ -1,0 +1,14 @@
+import lib.io
+import lib.sys.syscall
+
+extern def main(argc: i32, argv: u8**): i32 {
+  if chdir("/missing") != -1 || chdir("/big") != -1 || chdir("/") != 0 ||
+     chdir(".") != 0 || chdir("..") != 0 {
+    io <<< "FAIL: chdir return value\n"; return 1
+  }
+  let fd = open("big", 0)
+  if fd < 0 { io <<< "FAIL: cwd changed on error\n"; return 1 }
+  close(fd)
+  io <<< "PASS: chdir\n"
+  0
+}

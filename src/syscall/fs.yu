@@ -71,11 +71,13 @@ public def sysChdir(path: u8*): isize {
   // get target inode
   let path = newStrView(path)
   let inode = fds.getCwd().lookup(path)
-  let meta = inode.getMetadata()
-  if inode != null as INode var* && meta.itype == INodeType.Dir {
-    // set inode as cwd
-    fds.setCwd(inode)
-    ret = 0
+  if inode != null as INode var* {
+    let meta = inode.getMetadata()
+    if meta.itype == INodeType.Dir {
+      // set inode as cwd
+      fds.setCwd(inode)
+      ret = 0
+    }
   }
   fds.unlock()
   ret as isize
