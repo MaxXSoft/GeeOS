@@ -40,15 +40,7 @@ The default target is `virt`. For Fuxi, run `make -j TARGET=fuxi`; use `make -j 
 
 ## Fuxi simulation
 
-Use `TARGET=fuxi_sim` for the Fuxi example in
-[verilator-axi-testbench](https://github.com/MaxXSoft/verilator-axi-testbench).
-It uses 128 MiB RAM at `0x80000000`, byte-addressed ns16550a UART at
-`0x10000000` (PLIC IRQ 10), CLINT at `0x11000000`, PLIC at `0x12000000`
-(S-mode context 1), and the simulator exit register at `0x10001000`.
-The FPGA `fuxi` target retains its existing peripheral layout.
-
-Build an optimized image for practical simulation speed. Clean when changing
-`DEBUG` or compiler options; switching `TARGET` alone needs no clean:
+Use `TARGET=fuxi_sim` for the Fuxi example in [verilator-axi-testbench](https://github.com/MaxXSoft/verilator-axi-testbench). Build an optimized image for practical simulation speed. Clean when changing `DEBUG` or compiler options; switching `TARGET` alone needs no clean:
 
 ```sh
 make clean
@@ -58,31 +50,18 @@ make -j TARGET=fuxi_sim DEBUG=0 LLVM_BIN=/path/to/llvm/bin LLD=/path/to/ld.lld
 Configure and build the simulator with its `fuxi` preset, then run from GeeOS:
 
 ```sh
-../verilator-axi-testbench/build/fuxi/examples/fuxi/fuxi_sim \
+/path/to/verilator-axi-testbench/build/fuxi/examples/fuxi/fuxi_sim \
   --load 0x200=build/boot.bin --elf build/geeos.elf --max-cycles 2000000000
 ```
 
-For this target, `boot.bin` is an eight-byte ROM stub linked at Fuxi's reset
-PC `0x200`. The simulator preloads the kernel ELF (including its user filesystem)
-into RAM, and the stub jumps to `0x80000000`. Do not load this stub at ROM address
-zero or use the FPGA flash/UART bootloader. GeeOS begins in M-mode, configures
-its own timer handler, then enters S-mode without SBI firmware.
-
-Memory initialization fills almost all 128 MiB before printing the next
-message; RTL simulation takes substantially longer than QEMU. The default
-simulator cycle budget is too small. An interactive smoke test uses the same
-shell, allocation, process and repeated UART-input checks as the QEMU test:
+Memory initialization fills almost all 128 MiB before printing the next message; RTL simulation takes substantially longer than QEMU. The default simulator cycle budget is too small. An interactive smoke test uses the same shell, allocation, process and repeated UART-input checks as the QEMU test:
 
 ```sh
 python3 tests/fuxi_sim_smoke.py \
-  --simulator ../verilator-axi-testbench/build/fuxi/examples/fuxi/fuxi_sim
+  --simulator /path/to/verilator-axi-testbench/build/fuxi/examples/fuxi/fuxi_sim
 ```
 
-The test records output in `build/fuxi-sim-smoke.log`; `--timeout` controls the
-wall-clock timeout per expected response, and `--max-cycles` controls the
-simulated cycle budget. Use `--stall-probability 0.35` to add AXI backpressure.
-The test terminates the simulator after the checks; the shell normally runs
-until the host stops it.
+The test records output in `build/fuxi-sim-smoke.log`; `--timeout` controls the wall-clock timeout per expected response, and `--max-cycles` controls the simulated cycle budget. Use `--stall-probability 0.35` to add AXI backpressure. The test terminates the simulator after the checks; the shell normally runs until the host stops it.
 
 ## Details
 

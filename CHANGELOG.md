@@ -7,6 +7,7 @@ All notable changes to the Gee OS will be documented in this file.
 ### Added
 
 - CI for building and testing GeeOS.
+- New target `fuxi_sim` for the verilator simulator of Fuxi.
 
 ### Changed
 
@@ -16,5 +17,6 @@ All notable changes to the Gee OS will be documented in this file.
 ### Fixed
 
 - PMP, PTE A/D bit, PLIC issues on the newest riscv32 QEMU.
+- Missing fences after task switching and page table updates.
 
 ## 0.0.1 - 2021-06-28
