@@ -134,6 +134,7 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
                         offset as usize)
   }
   else if n - DIRECT_BLOCK_NUM - ofs_per_blk < ofs_per_blk * ofs_per_blk {
+    let n = n - DIRECT_BLOCK_NUM - ofs_per_blk
     var offset = inode.indirect2 * this.super_block.block_size +
                  (n / ofs_per_blk) * BLOCK_OFS_SIZE
     if !this.dev.readAssert(BLOCK_OFS_SIZE as usize, &offset as u8 var*,
@@ -141,7 +142,7 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
       return false
     }
     offset *= this.super_block.block_size
-    offset += (n % ofs_per_blk) & BLOCK_OFS_SIZE
+    offset += (n % ofs_per_blk) * BLOCK_OFS_SIZE
     this.dev.readAssert(BLOCK_OFS_SIZE as usize, &ofs as u8 var*,
                         offset as usize)
   }
