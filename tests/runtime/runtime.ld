@@ -9,4 +9,5 @@ SECTIONS {
   . = ALIGN(16);
   . += 0x10000;
   __stack_top = .;
+  _geeos_end = .;
 }

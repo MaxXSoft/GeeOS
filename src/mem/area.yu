@@ -41,11 +41,12 @@ public def unmap(this: MemoryArea&, page_table: ActivePageTable var&) {
 
 // check if overlaps with specific address range
 public def isOverlap(this: MemoryArea&, start: usize, end: usize): bool {
+  if this.start >= this.end || start >= end { return false }
   let p1 = this.start / PAGE_SIZE as usize
-  let p2 = (this.end - 1 as usize) / (PAGE_SIZE + 1) as usize
+  let p2 = (this.end - 1 as usize) / PAGE_SIZE as usize
   let p3 = start / PAGE_SIZE as usize
-  let p4 = (end - 1 as usize) / (PAGE_SIZE + 1) as usize
-  !(p1 >= p4 || p2 <= p3)
+  let p4 = (end - 1 as usize) / PAGE_SIZE as usize
+  p1 <= p4 && p3 <= p2
 }
 
 

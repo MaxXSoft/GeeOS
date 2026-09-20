@@ -17,6 +17,10 @@ KERNEL_MODULES = [
     'lib/except.yu', 'lib/io.yu', 'lib/c/string.yu',
     'arch/riscv/csr.S', 'sync/slimpl.c',
 ]
+MEMORY_MODULES = KERNEL_MODULES + [
+    'mem/area.yu', 'mem/handler.yu', 'mem/attr.yu', 'mem/paging.yu',
+    'mem/pm.yu', 'arch/riscv/recursive.yu',
+]
 CASES = {
     'stack': ('usr', ['stack.yu'], USER_MODULES),
     'user-heap': ('usr', ['user_heap.yu', 'heap_cases.yu'], USER_MODULES),
@@ -24,6 +28,7 @@ CASES = {
     'user-memcmp': ('usr', ['memcmp.c'], ['lib/c/string.yu']),
     'kernel-memcmp': ('src', ['memcmp.c'], ['lib/c/string.yu']),
     'hashmap': ('src', ['hashmap.yu'], KERNEL_MODULES + ['lib/hashmap.yu']),
+    'area-overlap': ('src', ['area_overlap.yu'], MEMORY_MODULES),
 }
 
 

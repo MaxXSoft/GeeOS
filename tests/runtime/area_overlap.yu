@@ -1,0 +1,43 @@
+import mem.area
+
+extern declare test_check: (bool, u8*)
+
+def checkRange(start: usize, end: usize, other_start: usize,
+               other_end: usize, expected: bool) {
+  let area = [MemoryArea] {start, end, null as MemoryHandler var*, newMemoryAttr()}
+  let other = [MemoryArea] {other_start, other_end,
+                           null as MemoryHandler var*, newMemoryAttr()}
+  test_check(area.isOverlap(other_start, other_end) == expected,
+             "page overlap result")
+  test_check(other.isOverlap(start, end) == expected, "overlap is symmetric")
+}
+
+extern def test_main(): i32 {
+  let page = PAGE_SIZE as usize
+  checkRange(0 as usize, 0 as usize, page, page * 2 as usize, false)
+  checkRange(page, page, page, page + 1 as usize, false)
+  checkRange(page, page, page, page, false)
+  checkRange(page, page * 2 as usize, page, page * 2 as usize, true)
+  checkRange(page, page * 2 as usize, page * 2 as usize, page * 3 as usize, false)
+  checkRange(page, page * 4 as usize, page * 2 as usize, page * 3 as usize, true)
+  checkRange(0 as usize, page, page - 1 as usize, page, true)
+  checkRange(page - 1 as usize, page + 1 as usize, page, page + 1 as usize, true)
+  checkRange(page - 1 as usize, page, page, page + 1 as usize, false)
+  checkRange(page * 2 as usize, page, 0 as usize, page * 4 as usize, false)
+  // Disjoint byte ranges still overlap when they occupy the same page.
+  var first = 0 as usize
+  while first < 16 as usize {
+    var second = 0 as usize
+    while second < 16 as usize {
+      checkRange(page + first, page + first + 1 as usize,
+                  page + second, page + second + 1 as usize, true)
+      second += 1 as usize
+    }
+    first += 1 as usize
+  }
+  checkRange(0xfffff000 as usize, 0xffffffff as usize,
+              0xfffffffe as usize, 0xffffffff as usize, true)
+  checkRange(0xffffe000 as usize, 0xfffff000 as usize,
+              0xfffff000 as usize, 0xffffffff as usize, false)
+  0
+}
