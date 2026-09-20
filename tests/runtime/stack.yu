@@ -1,0 +1,40 @@
+import lib.alloc
+import lib.stack
+
+extern declare test_check: (bool, u8*)
+
+extern def test_main(): i32 {
+  initUserHeap()
+  // Repeat construction/destruction to catch lost frames as well as order.
+  var round = 0
+  while round < 80 {
+    var stack = newStack()
+    test_check(stack.empty(), "new stack is empty")
+    var i = 1
+    while i <= 129 {
+      stack.push(i as u8 var*)
+      test_check(!stack.empty(), "pushed stack is nonempty")
+      test_check(stack.top() == i as u8 var*, "top after push")
+      i += 1
+    }
+    while i > 1 {
+      i -= 1
+      test_check(stack.top() == i as u8 var*, "top before pop")
+      test_check(stack.pop() == i as u8 var*, "LIFO across frames")
+    }
+    test_check(stack.empty(), "popped stack is empty")
+    // Clear several full frames, then reuse the surviving frame.
+    i = 1
+    while i <= 96 {
+      stack.push(i as u8 var*)
+      i += 1
+    }
+    stack.clear()
+    test_check(stack.empty(), "cleared stack is empty")
+    stack.push(7 as u8 var*)
+    test_check(stack.pop() == 7 as u8 var*, "reuse after clear")
+    stack.del()
+    round += 1
+  }
+  0
+}
