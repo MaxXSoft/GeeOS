@@ -20,6 +20,26 @@ def main():
         "-o", str(binary),
     ], check=True)
     subprocess.run([str(binary)], check=True)
+    mkfs = args.output.resolve() / "mkfs"
+    subprocess.run([
+        args.cxx, "-std=c++17", "-O2", "-DNDEBUG", "-I", str(root / "mkfs"),
+        str(root / "mkfs/main.cpp"), str(root / "mkfs/geefs.cpp"),
+        str(root / "mkfs/iosdev.cpp"), "-o", str(mkfs),
+    ], check=True)
+    for name, data, success in [
+        ("empty", b"", True),
+        ("too-large", b"X" * (600 * 1024), False),
+    ]:
+        source = args.output.resolve() / name
+        source.write_bytes(data)
+        image = args.output.resolve() / (name + ".img")
+        result = subprocess.run([
+            str(mkfs), str(image), "-c", "256", "1", "2", "-a", str(source),
+        ], capture_output=True, text=True)
+        if (result.returncode == 0) != success:
+            raise RuntimeError(f"mkfs {name}: unexpected status {result.returncode}: "
+                               f"{result.stderr.strip()}")
+    print("PASS: mkfs reports empty files and image exhaustion correctly")
 
 
 if __name__ == "__main__":

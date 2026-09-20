@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <cstring>
 #include <cassert>
+#include <limits>
 
 namespace {
 
@@ -223,50 +224,69 @@ std::optional<std::uint32_t> GeeFS::GetBlockOffset(const INode &inode,
 
 bool GeeFS::AppendBlock(INode &inode, std::uint32_t blk_ofs) {
   const auto kOfsPerBlock = super_block_.block_size / kBlockOfsSize;
-  auto n = inode.block_num++;
+  auto n = inode.block_num;
   if (n < kDirectBlockNum) {
     inode.direct[n] = blk_ofs;
+    ++inode.block_num;
     return true;
   }
   else if (n - kDirectBlockNum < kOfsPerBlock) {
+    auto indirect = inode.indirect;
     if (n == kDirectBlockNum) {
       // allocate indirect block
       auto blk_ofs = AllocDataBlock();
       if (!blk_ofs) return false;
-      inode.indirect = *blk_ofs;
+      indirect = *blk_ofs;
     }
-    auto offset = inode.indirect * super_block_.block_size;
+    auto offset = indirect * super_block_.block_size;
     offset += (n - kDirectBlockNum) * kBlockOfsSize;
-    return dev_.WriteAssert(kBlockOfsSize, blk_ofs, offset);
+    if (!dev_.WriteAssert(kBlockOfsSize, blk_ofs, offset)) {
+      if (n == kDirectBlockNum) FreeDataBlock(indirect);
+      return false;
+    }
+    inode.indirect = indirect;
   }
   else if (n - kDirectBlockNum - kOfsPerBlock <
            kOfsPerBlock * kOfsPerBlock) {
     n -= kDirectBlockNum + kOfsPerBlock;
+    auto indirect2 = inode.indirect2;
     if (!n) {
       // allocate 2nd indirect block
       auto blk_ofs = AllocDataBlock();
       if (!blk_ofs) return false;
-      inode.indirect2 = *blk_ofs;
+      indirect2 = *blk_ofs;
     }
-    auto offset = inode.indirect2 * super_block_.block_size;
+    auto offset = indirect2 * super_block_.block_size;
     offset += (n / kOfsPerBlock) * kBlockOfsSize;
+    std::uint32_t indirect;
     if (n % kOfsPerBlock == 0) {
-      // initialize 2nd indirect block
+      // Allocate the subtable before publishing either new index block.
       auto blk_ofs = AllocDataBlock();
-      if (!blk_ofs) return false;
-      if (!dev_.WriteAssert(kBlockOfsSize, *blk_ofs, offset)) return false;
-      offset = *blk_ofs;
+      if (!blk_ofs) {
+        if (!n) FreeDataBlock(indirect2);
+        return false;
+      }
+      indirect = *blk_ofs;
     }
     else {
-      if (!dev_.ReadAssert(kBlockOfsSize, offset, offset)) return false;
+      if (!dev_.ReadAssert(kBlockOfsSize, indirect, offset)) return false;
     }
-    offset *= super_block_.block_size;
-    offset += (n % kOfsPerBlock) * kBlockOfsSize;
-    return dev_.WriteAssert(kBlockOfsSize, blk_ofs, offset);
+    auto entry_offset = indirect * super_block_.block_size;
+    entry_offset += (n % kOfsPerBlock) * kBlockOfsSize;
+    if (!dev_.WriteAssert(kBlockOfsSize, blk_ofs, entry_offset) ||
+        (n % kOfsPerBlock == 0 &&
+         !dev_.WriteAssert(kBlockOfsSize, indirect, offset))) {
+      if (n % kOfsPerBlock == 0) FreeDataBlock(indirect);
+      if (!n) FreeDataBlock(indirect2);
+      return false;
+    }
+    inode.indirect2 = indirect2;
   }
   else {
     return false;
   }
+  ++inode.block_num;
+  return true;
 }
 
 bool GeeFS::WalkEntry(std::function<bool(const Entry &)> callback) {
@@ -314,7 +334,11 @@ bool GeeFS::AddEntry(std::uint32_t inode_id, std::string_view file_name) {
   else {
     // allocate new block
     auto blk_ofs = AllocDataBlock();
-    if (!blk_ofs || !AppendBlock(cwd_, *blk_ofs)) return false;
+    if (!blk_ofs) return false;
+    if (!AppendBlock(cwd_, *blk_ofs)) {
+      FreeDataBlock(*blk_ofs);
+      return false;
+    }
     offset = *blk_ofs * super_block_.block_size;
   }
   // insert entry
@@ -515,49 +539,90 @@ std::int32_t GeeFS::Write(std::string_view file_name, std::istream &is,
   INode inode;
   auto id = ReadINode(inode, file_name);
   if (!id) return -1;
+  if (!len || is.peek() == std::istream::traits_type::eof()) return 0;
+  const auto block_size = super_block_.block_size;
+  const auto ofs_per_block = block_size / kBlockOfsSize;
+  const auto max_blocks = kDirectBlockNum + ofs_per_block +
+                          ofs_per_block * ofs_per_block;
+  if (offset / block_size >= max_blocks) return -1;
   // expand file size if necessary
   if (offset > inode.size) {
+    // A hole is only committed together with input data. Check capacity for
+    // the gap and its first byte before changing any allocation metadata.
+    auto allocated_blocks = [ofs_per_block](std::size_t data_blocks) {
+      auto count = data_blocks;
+      if (data_blocks > kDirectBlockNum) ++count;
+      if (data_blocks > kDirectBlockNum + ofs_per_block) {
+        auto indirect_data = data_blocks - kDirectBlockNum - ofs_per_block;
+        count += 1 + (indirect_data + ofs_per_block - 1) / ofs_per_block;
+      }
+      return count;
+    };
+    auto required = allocated_blocks(offset / block_size + 1) -
+                    allocated_blocks(inode.block_num);
+    std::size_t available = 0;
+    for (std::size_t i = 0; i < super_block_.free_map_num; ++i) {
+      FreeMapBlockHeader hdr;
+      if (!dev_.ReadAssert(sizeof(hdr), hdr, block_size * (1 + i))) return -1;
+      available += hdr.unused_num;
+    }
+    if (required > available) return -1;
     std::vector<std::uint8_t> buffer;
-    buffer.resize(super_block_.block_size, 0);
+    buffer.resize(block_size, 0);
+    if (inode.size % block_size) {
+      auto blk_ofs = GetBlockOffset(inode, inode.size / block_size);
+      if (!blk_ofs) return -1;
+      auto count = std::min<std::size_t>(offset - inode.size,
+                                         block_size - inode.size % block_size);
+      auto ofs = *blk_ofs * block_size + inode.size % block_size;
+      if (!dev_.WriteAssert(count, buffer.data(), count, ofs)) return -1;
+    }
     // allocate empty data blocks
-    auto blk_num = (offset + (super_block_.block_size - 1)) /
-                   super_block_.block_size;
-    for (int i = inode.block_num + 1; i < blk_num; ++i) {
+    auto blk_num = offset / block_size + (offset % block_size != 0);
+    for (auto i = inode.block_num; i < blk_num; ++i) {
       auto blk_ofs = AllocDataBlock();
-      if (!blk_ofs || !AppendBlock(inode, *blk_ofs) ||
-          !dev_.WriteAssert(buffer.size(), buffer,
-                            *blk_ofs * super_block_.block_size)) {
+      if (!blk_ofs) return -1;
+      if (!AppendBlock(inode, *blk_ofs)) {
+        FreeDataBlock(*blk_ofs);
+        return -1;
+      }
+      if (!dev_.WriteAssert(buffer.size(), buffer, *blk_ofs * block_size)) {
+        UpdateINode(inode, *id);
         return -1;
       }
     }
-    // update file size
-    inode.size = offset;
   }
   // write to file
   std::int32_t data_len = 0;
-  for (int i = offset; i < offset + len; ++i, ++data_len) {
+  auto limit = std::min<std::size_t>(len, std::numeric_limits<std::int32_t>::max());
+  for (; data_len < limit; ++data_len) {
+    auto i = offset + data_len;
+    if (i / block_size >= max_blocks) break;
+    char byte;
+    if (!is.get(byte)) break;
     // get block offset
     auto n = i / super_block_.block_size;
     std::optional<std::uint32_t> blk_ofs;
     if (n < inode.block_num) {
       blk_ofs = GetBlockOffset(inode, n);
-      if (!blk_ofs) return -1;
+      if (!blk_ofs) break;
     }
     else {
       // allocate a new data block
       blk_ofs = AllocDataBlock();
       if (!blk_ofs) break;
-      if (!AppendBlock(inode, *blk_ofs)) return -1;
+      if (!AppendBlock(inode, *blk_ofs)) {
+        FreeDataBlock(*blk_ofs);
+        break;
+      }
     }
     // write to block
     auto ofs = *blk_ofs * super_block_.block_size;
     ofs += i % super_block_.block_size;
-    std::uint8_t byte;
-    is.read(reinterpret_cast<char *>(&byte), 1);
     if (!dev_.WriteAssert(1, byte, ofs)) break;
   }
   // update inode
-  if (offset + data_len > inode.size) inode.size = offset + data_len;
+  if (data_len && offset + data_len > inode.size) inode.size = offset + data_len;
   UpdateINode(inode, *id);
   return data_len;
 }

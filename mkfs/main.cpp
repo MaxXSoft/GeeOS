@@ -159,9 +159,11 @@ int main(int argc, const char *argv[]) {
               return LogError("can not create file in image");
             }
             // create file stream
-            ifstream ifs(argv[i]);
+            ifstream ifs(argv[i], ios::binary);
             auto size = GetStreamSize(ifs);
-            if (!ifs || !geefs.Write(file, ifs, 0, size)) {
+            if (!ifs) return LogError("can not read input file");
+            auto written = geefs.Write(file, ifs, 0, size);
+            if (written < 0 || static_cast<size_t>(written) != size) {
               return LogError("can not write file in image");
             }
             ++i;

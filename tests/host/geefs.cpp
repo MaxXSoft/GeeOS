@@ -118,6 +118,120 @@ void DirectoryExhaustion() {
   CheckRead(fs, data, 0, data.size());
 }
 
+std::uint32_t FreeBlocks(const MemoryDevice &device) {
+  FreeMapBlockHeader header;
+  std::memcpy(&header, device.bytes.data() + 256, sizeof(header));
+  return header.unused_num;
+}
+
+void SparseWrites() {
+  for (auto offset : {1, 255, 256, 257, 512, 12 * 256, 76 * 256, 140 * 256}) {
+    MemoryDevice device;
+    GeeFS fs(device);
+    Check(fs.Create(256, 1, 2), "create image failed");
+    Check(fs.CreateFile("file"), "create file failed");
+    std::istringstream input("Z");
+    Check(fs.Write("file", input, offset, 1) == 1, "sparse write failed");
+    auto expected = std::string(offset, '\0') + "Z";
+    CheckRead(fs, expected, 0, expected.size());
+    GeeFS reopened(device);
+    Check(reopened.Open(), "reopen image failed");
+    CheckRead(reopened, expected, 0, expected.size());
+  }
+  MemoryDevice device;
+  GeeFS fs(device);
+  Check(fs.Create(256, 1, 2), "create image failed");
+  Check(fs.CreateFile("file"), "create file failed");
+  std::istringstream first("abc"), second("Z"), empty;
+  Check(fs.Write("file", first, 0, 3) == 3, "initial write failed");
+  Check(fs.Write("file", second, 513, 1) == 1, "nonempty sparse write failed");
+  const auto expected = "abc" + std::string(510, '\0') + "Z";
+  CheckRead(fs, expected, 0, expected.size());
+  const auto before = device.bytes;
+  Check(fs.Write("file", empty, 1024, 0) == 0, "zero-length write failed");
+  Check(device.bytes == before, "zero-length write changed file");
+}
+
+void IndexExhaustion() {
+  // Leave too few blocks for the data block and a new indirect table.
+  for (auto block_count : {12, 76, 140}) {
+    MemoryDevice device;
+    GeeFS fs(device);
+    Check(fs.Create(256, 1, 2), "create image failed");
+    Check(fs.CreateFile("file"), "create file failed");
+    const auto data = Pattern(block_count * 256);
+    std::istringstream input(data);
+    Check(fs.Write("file", input, 0, data.size()) == data.size(),
+          "initial boundary write failed");
+    Check(fs.CreateFile("filler"), "create filler failed");
+    const auto spare = block_count == 76 ? 2 : 1;
+    auto blocks = FreeBlocks(device) - spare;
+    std::size_t fill_blocks = 0;
+    for (std::size_t n = 1; n <= blocks; ++n) {
+      auto used = n + (n > 12) + (n > 76 ? 1 + (n - 76 + 63) / 64 : 0);
+      if (used <= blocks) fill_blocks = n;
+    }
+    std::istringstream filler(std::string(fill_blocks * 256, 'F'));
+    Check(fs.Write("filler", filler, 0, fill_blocks * 256) == fill_blocks * 256,
+          "filler write failed");
+    Check(FreeBlocks(device) == spare, "incorrect exhaustion fixture");
+    for (int attempt = 0; attempt < 3; ++attempt) {
+      std::istringstream extra("X");
+      Check(fs.Write("file", extra, data.size(), 1) == 0,
+            "index exhaustion did not return a short write");
+      Check(FreeBlocks(device) == spare, "failed append leaked blocks");
+      CheckRead(fs, data, 0, data.size() + 1);
+    }
+    std::istringstream distant("Y");
+    Check(fs.Write("file", distant, data.size() + 4096, 1) == -1,
+          "impossible sparse write was not rejected");
+    Check(FreeBlocks(device) == spare, "failed sparse write leaked blocks");
+    CheckRead(fs, data, 0, data.size() + 1);
+    // The released block must still be usable by an ordinary direct block.
+    Check(fs.CreateFile("small"), "create after index exhaustion failed");
+    std::istringstream small("S");
+    Check(fs.Write("small", small, 0, 1) == 1, "released data block was lost");
+  }
+}
+
+void ShortInput() {
+  MemoryDevice device;
+  GeeFS fs(device);
+  Check(fs.Create(256, 1, 2), "create image failed");
+  Check(fs.CreateFile("file"), "create file failed");
+  std::istringstream input("abc");
+  Check(fs.Write("file", input, 0, 512) == 3, "short input was not reported");
+  CheckRead(fs, "abc", 0, 512);
+  const auto before = device.bytes;
+  std::istringstream empty;
+  Check(fs.Write("file", empty, 512, 1) == 0, "empty input was not reported");
+  Check(device.bytes == before, "empty input allocated or extended file");
+}
+
+void PartialWrites() {
+  for (auto block_size : {128, 256}) {
+    MemoryDevice device;
+    GeeFS fs(device);
+    // 128-byte blocks hit the format's maximum file size; 256-byte blocks
+    // exhaust the image first. Both must preserve the successfully written prefix.
+    Check(fs.Create(block_size, block_size == 128 ? 2 : 1, 2),
+          "create image failed");
+    Check(fs.CreateFile("file"), "create file failed");
+    const auto length = block_size == 128 ? (12 + 32 + 32 * 32) * 128 : 1983 * 256;
+    const auto data = Pattern(length + 1024);
+    std::istringstream input(data);
+    Check(fs.Write("file", input, 0, data.size()) == length,
+          "partial write length was lost");
+    GeeFS reopened(device);
+    Check(reopened.Open(), "reopen image failed");
+    CheckRead(reopened, data.substr(0, length), 0, data.size());
+    const auto before = device.bytes;
+    std::istringstream extra("X");
+    Check(fs.Write("file", extra, length, 1) <= 0, "full file kept growing");
+    Check(device.bytes == before, "failed extension changed image");
+  }
+}
+
 }  // namespace
 
 int main() {
@@ -125,6 +239,10 @@ int main() {
     IndirectBlocks();
     FailedCreation();
     DirectoryExhaustion();
+    SparseWrites();
+    IndexExhaustion();
+    ShortInput();
+    PartialWrites();
     std::cout << "PASS: GeeFS host regressions\n";
   }
   catch (const std::exception &error) {
