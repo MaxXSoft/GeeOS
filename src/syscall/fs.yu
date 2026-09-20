@@ -1,5 +1,7 @@
 import proc.proc
 import fs.fs
+import syscall.user
+import lib.c.string
 
 // file type
 public enum FileType {
@@ -69,6 +71,7 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
 }
 
 public def sysChdir(path: u8*): isize {
+  if !userString(path) { return -1 as isize }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -88,6 +91,7 @@ public def sysChdir(path: u8*): isize {
 }
 
 public def sysOpen(path: u8*, flags: i32): isize {
+  if !userString(path) { return -1 as isize }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var fd = -1
   fds.lock()
@@ -132,6 +136,7 @@ public def sysLseek(fd: i32, offset: usize, whence: i32): usize {
 }
 
 public def sysRead(fd: i32, buf: u8 var*, len: usize): isize {
+  if !userRange(buf as usize, len, true) { return -1 as isize }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -146,6 +151,7 @@ public def sysRead(fd: i32, buf: u8 var*, len: usize): isize {
 }
 
 public def sysWrite(fd: i32, buf: u8*, len: usize): isize {
+  if !userRange(buf as usize, len, false) { return -1 as isize }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -160,6 +166,7 @@ public def sysWrite(fd: i32, buf: u8*, len: usize): isize {
 }
 
 public def sysFstat(fd: i32, buf: Stat var*): isize {
+  if !userRange(buf as usize, sizeof Stat, true) { return -1 as isize }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
@@ -170,7 +177,8 @@ public def sysFstat(fd: i32, buf: Stat var*): isize {
     var meta: Metadata
     if (*file).getMetadata(meta) {
       // fill file status info
-      (*buf) = meta.convToStat()
+      let stat = meta.convToStat()
+      memcpy(buf as u8 var*, &stat as u8*, sizeof Stat)
       ret = 0
     }
   }

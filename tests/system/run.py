@@ -27,8 +27,10 @@ def exercise(command, cases, log, timeout):
             deadline = time.monotonic() + timeout
             while True:
                 pending = output[consumed:]
-                if b'FAIL:' in pending or b'kernel panic' in pending or b'panic!' in pending:
-                    raise RuntimeError(f'kernel/test failure; see {log}')
+                for failure in (b'FAIL:', b'message:'):
+                    start = pending.find(failure)
+                    if start >= 0 and b'\n' in pending[start:]:
+                        raise RuntimeError(f'kernel/test failure; see {log}')
                 index = output.find(marker, consumed)
                 if index >= 0:
                     consumed = index + len(marker)

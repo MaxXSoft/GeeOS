@@ -1,0 +1,36 @@
+import proc.proc
+
+// User mappings are eager and remain fixed for the lifetime of a process.
+// Check their tracked permissions before accessing memory in supervisor mode.
+public def userRange(address: usize, len: usize, writable: bool): bool {
+  if len == 0 as usize { return true }
+  if address == 0 as usize || len > (-1 as usize) - address { return false }
+  let process = (*getCurrentThread()).proc
+  let end = address + len
+  var current = address
+  while current < end {
+    var node = (*process).vm.areas.next
+    var next = current
+    while node != null as MemAreaList var* {
+      let area: MemoryArea& = (*node).area
+      if area.attr.user && (!writable || !area.attr.readonly) &&
+         area.start <= current && current < area.end {
+        next = if area.end < end { area.end } else { end }
+        break
+      }
+      node = (*node).next
+    }
+    if next == current { return false }
+    current = next
+  }
+  true
+}
+
+public def userString(path: u8*): bool {
+  var address = path as usize
+  while userRange(address, 1 as usize, false) {
+    if *(address as u8*) == '\0' { return true }
+    address += 1 as usize
+  }
+  false
+}

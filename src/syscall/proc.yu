@@ -1,5 +1,6 @@
 import proc.proc
 import lib.io
+import syscall.user
 
 public def sysExit(code: usize): isize {
   exit(code)
@@ -12,6 +13,7 @@ public def sysYield(): isize {
 }
 
 public def sysExecve(path: u8*, argv: u8**, envp: u8**): isize {
+  if !userString(path) { return -1 as isize }
   if execute(path, getCurrentTid()) {
     sleep()
     0 as isize
