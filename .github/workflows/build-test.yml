@@ -11,8 +11,7 @@ permissions:
   contents: read
 
 env:
-  # Compiler fixes and upstream HashMap sources used by the regression suites.
-  YULANG_COMMIT: 9197a269e727153d9eef5196a6e82c3fe369c641
+  YULANG_COMMIT: f5352645b0a99628ac673da32e2ee62010940039
   LLVM_VERSION: 23
 
 jobs:
