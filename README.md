@@ -19,7 +19,7 @@ $ cd GeeOS
 $ make -j
 ```
 
-`YU_BIN` defaults to the sibling `../YuLang/build` directory; `LLVM_BIN` is detected from `llvm-config` on `PATH`. Override these paths as needed. If LLD is installed separately, set `LLD` to the path of `ld.lld`. For example, with Homebrew LLVM and LLD installed:
+`YU_BIN` defaults to the `build` directory of YuLang repository; `LLVM_BIN` is detected from `llvm-config` on `PATH`. Override these paths as needed. If LLD is installed separately, set `LLD` to the path of `ld.lld`. For example, with Homebrew LLVM and LLD installed:
 
 ```sh
 make -j LLVM_BIN="$(brew --prefix llvm)/bin" \
@@ -34,7 +34,7 @@ $ qemu-system-riscv32 -nographic -machine virt -bios none -m 128m -kernel build/
 
 Run this command from the repository root. `-bios none` is required because GeeOS starts in machine mode at `0x80000000` and provides its own initialization; QEMU's default OpenSBI firmware occupies the same address range. The default CPU can be used with PMP enabled. Tested with QEMU 11.1.1.
 
-After the shell appears, try `hello`, `alloc`, or `notepad`. Press Ctrl-A, then X to quit QEMU. Run `python3 tests/smoke/qemu_smoke.py` for an automated smoke test covering shell commands, heap allocation and repeated UART input.
+After the shell appears, try `hello`, `alloc`, or `notepad`. Press Ctrl-A, then X to quit QEMU. Run `python3 tests/smoke/qemu_smoke.py` for an automated smoke test covering shell commands, heap allocation and repeated UART input. See [tests/README.md](tests/README.md) for test suites and build requirements.
 
 The default target is `virt`. For Fuxi, run `make -j TARGET=fuxi`; use `make -j TARGET=virt` to switch back. Changing `TARGET` automatically rebuilds the library, bootloader and kernel YuLang objects with `-D GEEOS_TARGET=$(TARGET)`. Run `make clean` when changing toolchain paths or optimization settings; object files are shared between configurations. The QEMU ELF cannot be used unchanged on Fuxi because the peripheral maps differ.
 
@@ -74,10 +74,6 @@ python3 tests/runtime/run.py --case memset --yuc /path/to/YuLang/build/yuc \
 
 This uses QEMU virt by default. Add `--simulator /path/to/fuxi_sim` to run the same checks on Fuxi. Test images and logs are saved in `build/runtime-tests/`.
 
-## Details
-
-> UNDER CONSTRUCTION...
-
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md)
@@ -89,5 +85,3 @@ GeeOS is heavily influenced by [rCore](https://github.com/rcore-os/rCore) and [x
 ## License
 
 Copyright (C) 2020-2026 MaxXing. License GPLv3.
-
-See [tests/README.md](tests/README.md) for test suites and build requirements.

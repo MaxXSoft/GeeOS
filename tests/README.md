@@ -15,7 +15,7 @@ paths. Images, objects and logs are written under `build/`.
 
 ```sh
 python3 tests/host/run.py --cxx clang++
-python3 tests/runtime/run.py --yuc ../YuLang/build/yuc --clang clang --lld ld.lld
+python3 tests/runtime/run.py --yuc /path/to/YuLang/build/yuc --clang clang --lld ld.lld
 ```
 
 The runtime runner builds the real product modules independently at both O0 and
@@ -62,11 +62,10 @@ To build a simulator from a local Fuxi checkout (including local commits), use t
 external source override in verilator-axi-testbench:
 
 ```sh
-cd ../verilator-axi-testbench
-cmake --preset fuxi -B build/geeos-local \
-  -DAXI_TB_FUXI_SOURCE_DIR="$(cd ../Fuxi && pwd)"
+cd /path/to/verilator-axi-testbench
+cmake --preset fuxi -B build/geeos-local -DAXI_TB_FUXI_SOURCE_DIR=/path/to/Fuxi
 cmake --build build/geeos-local --target fuxi_sim -j8
-cd ../GeeOS
+cd /path/to/GeeOS
 ```
 
 Build GeeOS with `TARGET=fuxi_sim` in a separate directory and use that simulator:
@@ -99,7 +98,7 @@ its own collision-work measurements.
 After updating either copy, run:
 
 ```sh
-python3 tests/host/check_hashmap_sync.py --yulang ../YuLang
+python3 tests/host/check_hashmap_sync.py --yulang /path/to/YuLang
 python3 tests/runtime/run.py --case hashmap --clang /path/to/clang --lld /path/to/ld.lld
 ```
 
