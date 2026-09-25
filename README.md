@@ -1,5 +1,7 @@
 # GeeOS
 
+[<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/MaxXSoft/GeeOS/build-test.yml?branch=master&style=for-the-badge&label=ci">](https://github.com/MaxXSoft/GeeOS/actions?query=branch%3Amaster)
+
 GeeOS (寂) is a lightweight, UNIX like operating system, written in [YuLang](https://github.com/MaxXSoft/YuLang), developed for [Fuxi](https://github.com/MaxXSoft/Fuxi) processor.
 
 ## Getting Started
