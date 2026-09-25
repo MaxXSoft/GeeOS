@@ -36,8 +36,8 @@ extern def test_main(): i32 {
     first += 1 as usize
   }
   checkRange(0xfffff000 as usize, 0xffffffff as usize,
-              0xfffffffe as usize, 0xffffffff as usize, true)
+             0xfffffffe as usize, 0xffffffff as usize, true)
   checkRange(0xffffe000 as usize, 0xfffff000 as usize,
-              0xfffff000 as usize, 0xffffffff as usize, false)
+             0xfffff000 as usize, 0xffffffff as usize, false)
   0
 }

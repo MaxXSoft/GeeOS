@@ -254,7 +254,7 @@ public def newKernelThread(entry: usize): Thread var* {
 
 // create new user thread
 public def newUserThread(data: u8*, size: usize,
-                          wait_thread: Tid): Thread var* {
+                         wait_thread: Tid): Thread var* {
   if !validUserElf(data, size) {
     return null as Thread var*
   }

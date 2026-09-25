@@ -14,7 +14,7 @@ void Check(bool condition, const char *message) {
   if (!condition) throw std::runtime_error(message);
 }
 
-class MemoryDevice : public Device {
+class MemoryDevice : public DeviceBase {
  public:
   std::vector<std::uint8_t> bytes;
   std::size_t reads = 0;

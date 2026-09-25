@@ -114,9 +114,10 @@ std::optional<std::uint32_t> GeeFS::AllocINode() {
 }
 
 void GeeFS::FreeDataBlock(std::uint32_t blk_ofs) {
-  auto n = blk_ofs - (1 + super_block_.free_map_num +
-                     super_block_.inode_blk_num);
-  auto bits_per_map = (super_block_.block_size - sizeof(FreeMapBlockHeader)) * 8;
+  auto n =
+      blk_ofs - (1 + super_block_.free_map_num + super_block_.inode_blk_num);
+  auto bits_per_map =
+      (super_block_.block_size - sizeof(FreeMapBlockHeader)) * 8;
   auto offset = (1 + n / bits_per_map) * super_block_.block_size;
   FreeMapBlockHeader hdr;
   [[maybe_unused]] auto ret = dev_.ReadAssert(sizeof(hdr), hdr, offset);
@@ -134,8 +135,8 @@ void GeeFS::FreeDataBlock(std::uint32_t blk_ofs) {
 }
 
 void GeeFS::FreeINode(std::uint32_t id) {
-  auto in_per_blk = (super_block_.block_size - sizeof(INodeBlockHeader)) /
-                    sizeof(INode);
+  auto in_per_blk =
+      (super_block_.block_size - sizeof(INodeBlockHeader)) / sizeof(INode);
   auto offset = (1 + super_block_.free_map_num + id / in_per_blk) *
                 super_block_.block_size;
   INodeBlockHeader hdr;
