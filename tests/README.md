@@ -86,6 +86,30 @@ file bounds and mapping conflicts; general process resource-exhaustion recovery 
 not implemented. The host filesystem tests cover capacity failures, not transactional
 recovery from failing storage devices.
 
+## CI and timing
+
+`.github/workflows/build-test.yml` runs QEMU and Fuxi in parallel matrix jobs on
+separate runners, with independent `build/virt` and `build/fuxi_sim` directories.
+Both run all runtime cases at O0/O2, all system cases with a DEBUG=1 kernel and O0
+user programs, and smoke. Fuxi system and smoke use `--stall-probability 0.35`.
+The workflow pins YuLang, verilator-axi-testbench (including its Fuxi submodule),
+and Verilator. Only `fuxi_sim` and its required dependencies are built; the external
+testbench's own test suites are not run here.
+
+Host filesystem, HashMap synchronization and image dependency checks run once in
+the QEMU job. Neither simulator job waits for or cancels the other. Each job runs
+its suites sequentially; this avoids competing for the same runner's CPU during
+RTL simulation. When running both platforms locally, also use separate kernel
+build directories and system outputs. Runtime outputs already include the target
+name, and smoke logs must have distinct paths.
+
+Runtime output reports build and execution wall time for each case/optimization.
+System output reports test-image build time, boot time, and execution time for
+each case; smoke reports its total wall time. CI saves runtime/system timing
+output and simulator logs as separate platform artifacts, including on failure.
+Local timings depend on the host and do not include building YuLang or the
+simulator; use the CI step durations to measure that setup cost on hosted runners.
+
 ## HashMap upstream synchronization
 
 `src/lib/hashmap.yu` follows YuLang's `lib/hashmap.yu` at the compiler revision pinned

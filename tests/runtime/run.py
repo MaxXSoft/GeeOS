@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 import subprocess
+import time
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -68,6 +69,7 @@ def main():
     for case in args.case or CASES:
         folder, tests, modules = CASES[case]
         for optimization in (0, 2):
+            started = time.monotonic()
             work = output / f'{case}-O{optimization}'
             work.mkdir(exist_ok=True)
             objects = [output / 'start.o', output / 'runtime.o']
@@ -93,12 +95,15 @@ def main():
                 command = [args.qemu, '-nographic', '-machine', 'virt', '-bios',
                            'none', '-m', '128m', '-kernel', str(elf)]
             log_path = work / 'run.log'
+            built = time.monotonic()
             with log_path.open('w') as log:
                 result = subprocess.run(command, stdin=subprocess.DEVNULL, stdout=log,
                                         stderr=subprocess.STDOUT, timeout=args.timeout)
             passed = result.returncode == 0 and 'PASS\n' in log_path.read_text()
             print(f'{case} O{optimization} on {target}: '
-                  f'{"passed" if passed else "FAILED"} ({log_path})', flush=True)
+                  f'{"passed" if passed else "FAILED"} '
+                  f'(build {built - started:.2f}s, run {time.monotonic() - built:.2f}s; '
+                  f'{log_path})', flush=True)
             if not passed:
                 failures.append(f'{case}-O{optimization}')
     if failures:

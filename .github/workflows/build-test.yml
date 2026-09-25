@@ -1,4 +1,4 @@
-name: Build and QEMU Test
+name: Build and Simulator Tests
 
 on:
   push:
@@ -10,15 +10,33 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 env:
   YULANG_COMMIT: f5352645b0a99628ac673da32e2ee62010940039
+  AXI_TESTBENCH_COMMIT: 5dd76c28f2e3c46cf8f8502f390d99d46004f2cd
   LLVM_VERSION: 23
+  VERILATOR_VERSION: "5.050"
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
     if: "!contains(github.event.head_commit.message, 'skip-ci')"
-    timeout-minutes: 30
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: QEMU
+            target: virt
+          - name: Fuxi simulator
+            target: fuxi_sim
+    env:
+      BUILD_DIR: ${{ github.workspace }}/build/${{ matrix.target }}
+      FUXI_SIM: ${{ github.workspace }}/build/axi-testbench/build/fuxi/examples/fuxi/fuxi_sim
 
     steps:
       - name: Checkout GeeOS
@@ -32,15 +50,51 @@ jobs:
           submodules: recursive
           path: build/yulang
 
-      - name: Install LLVM ${{ env.LLVM_VERSION }} and QEMU
+      - name: Checkout Fuxi simulator and pinned submodules
+        if: matrix.target == 'fuxi_sim'
+        uses: actions/checkout@v4
+        with:
+          repository: MaxXSoft/verilator-axi-testbench
+          ref: ${{ env.AXI_TESTBENCH_COMMIT }}
+          submodules: recursive
+          path: build/axi-testbench
+
+      - name: Install LLVM ${{ env.LLVM_VERSION }} and build tools
         run: |
           wget -q https://apt.llvm.org/llvm.sh -O "$RUNNER_TEMP/llvm.sh"
           sudo bash "$RUNNER_TEMP/llvm.sh" "$LLVM_VERSION"
           sudo apt-get install -y "llvm-$LLVM_VERSION-dev" "lld-$LLVM_VERSION" \
-            qemu-system-misc cmake ninja-build build-essential python3
+            cmake ninja-build build-essential python3
           echo "$(llvm-config-$LLVM_VERSION --bindir)" >> "$GITHUB_PATH"
 
+      - name: Install QEMU
+        if: matrix.target == 'virt'
+        run: sudo apt-get install -y qemu-system-misc
+
+      - name: Setup JDK for Fuxi
+        if: matrix.target == 'fuxi_sim'
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: sbt
+          cache-dependency-path: |
+            build/axi-testbench/third_party/Fuxi/build.sbt
+            build/axi-testbench/third_party/Fuxi/project/build.properties
+            build/axi-testbench/third_party/Fuxi/project/plugins.sbt
+
+      - name: Setup sbt
+        if: matrix.target == 'fuxi_sim'
+        uses: sbt/setup-sbt@39f26889a4cc78f90accf5a5cec155445888d8ba # v1
+
+      - name: Install Verilator
+        if: matrix.target == 'fuxi_sim'
+        uses: veryl-lang/setup-verilator@b155747595eb4b817473a83045ba1da581c4084b
+        with:
+          version: ${{ env.VERILATOR_VERSION }}
+
       - name: Verify HashMap synchronization
+        if: matrix.target == 'virt'
         run: python3 tests/host/check_hashmap_sync.py --yulang build/yulang
 
       - name: Build YuLang
@@ -52,35 +106,83 @@ jobs:
             -DLLVM_DIR="$(llvm-config-$LLVM_VERSION --cmakedir)"
           cmake --build build/yulang/build --target yuc --parallel 2
 
+      - name: Build Fuxi simulator
+        if: matrix.target == 'fuxi_sim'
+        working-directory: build/axi-testbench
+        run: |
+          cmake --preset fuxi \
+            -DCMAKE_CXX_COMPILER="clang++-$LLVM_VERSION" \
+            -DBUILD_TESTING=OFF -DAXI_TB_BUILD_TESTS=OFF \
+            -DAXI_TB_FUXI_WITH_RISCV_TESTS=OFF \
+            -DAXI_TB_RISCV_CLANG="$(llvm-config-$LLVM_VERSION --bindir)/clang" \
+            -DAXI_TB_RISCV_LLD="$(llvm-config-$LLVM_VERSION --bindir)/ld.lld"
+          cmake --build build/fuxi --target fuxi_sim --parallel 2
+
       - name: Build GeeOS
         run: |
-          make -j2 LLVM_BIN="$(llvm-config-$LLVM_VERSION --bindir)" \
+          make -j2 TARGET="${{ matrix.target }}" DEBUG=1 BUILD_DIR="$BUILD_DIR" \
+            LLVM_BIN="$(llvm-config-$LLVM_VERSION --bindir)" \
             LLD="$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
             YU_BIN="$GITHUB_WORKSPACE/build/yulang/build"
 
       - name: QEMU smoke test
+        if: matrix.target == 'virt'
         timeout-minutes: 5
         run: |
-          python3 tests/smoke/qemu_smoke.py
-          cat build/qemu-smoke.log
+          python3 tests/smoke/qemu_smoke.py --kernel "$BUILD_DIR/geeos.elf" \
+            --log "$BUILD_DIR/smoke.log"
+          cat "$BUILD_DIR/smoke.log"
+
+      - name: Fuxi smoke test with AXI stalls
+        if: matrix.target == 'fuxi_sim'
+        timeout-minutes: 10
+        run: |
+          python3 tests/smoke/fuxi_sim_smoke.py --simulator "$FUXI_SIM" \
+            --kernel "$BUILD_DIR/geeos.elf" --boot "$BUILD_DIR/boot.bin" \
+            --log "$BUILD_DIR/smoke.log" --stall-probability 0.35 --timeout 300
+          cat "$BUILD_DIR/smoke.log"
 
       - name: Host filesystem regressions
+        if: matrix.target == 'virt'
         run: python3 tests/host/run.py --cxx "clang++-$LLVM_VERSION"
 
-      - name: Runtime regressions
+      - name: Runtime regressions at O0 and O2
+        timeout-minutes: 20
         run: |
+          simulator_args=()
+          if [[ "${{ matrix.target }}" == fuxi_sim ]]; then
+            simulator_args=(--simulator "$FUXI_SIM")
+          fi
           python3 tests/runtime/run.py --yuc build/yulang/build/yuc \
-            --clang "clang-$LLVM_VERSION" --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld"
+            --clang "clang-$LLVM_VERSION" --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
+            --output "$BUILD_DIR/runtime-tests" --timeout 300 "${simulator_args[@]}" \
+            2>&1 | tee "$BUILD_DIR/runtime.log"
 
       - name: Kernel syscall and ELF regressions
+        timeout-minutes: 15
         run: |
-          python3 tests/system/run.py --build build --optimization 0 \
+          simulator_args=()
+          if [[ "${{ matrix.target }}" == fuxi_sim ]]; then
+            simulator_args=(--simulator "$FUXI_SIM" --stall-probability 0.35)
+          fi
+          python3 tests/system/run.py --build "$BUILD_DIR" --optimization 0 \
             --yuc build/yulang/build/yuc --llvm-bin "$(llvm-config-$LLVM_VERSION --bindir)" \
-            --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld"
+            --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
+            --timeout 300 "${simulator_args[@]}" 2>&1 | tee "$BUILD_DIR/system.log"
 
       - name: Image dependency regression
+        if: matrix.target == 'virt'
         run: |
-          python3 tests/incremental/run.py --build build \
+          python3 tests/incremental/run.py --build "$BUILD_DIR" \
+            --make-arg TARGET=virt --make-arg DEBUG=1 \
             --make-arg "LLVM_BIN=$(llvm-config-$LLVM_VERSION --bindir)" \
             --make-arg "LLD=$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
             --make-arg "YU_BIN=$GITHUB_WORKSPACE/build/yulang/build"
+
+      - name: Upload simulator logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.target }}
+          path: build/${{ matrix.target }}/**/*.log
+          if-no-files-found: ignore

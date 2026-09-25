@@ -46,9 +46,12 @@ def exercise(command, cases, log, timeout):
                     stream.flush()
 
         try:
+            started = time.monotonic()
             expect(b'Welcome to GeeOS shell!')
             expect(b'$ ')
+            print(f'Boot: {time.monotonic() - started:.2f}s', flush=True)
             for case in cases:
+                started = time.monotonic()
                 proc.stdin.write(case.encode() + b'\r')
                 proc.stdin.flush()
                 if case == 'elf_permissions':
@@ -63,7 +66,7 @@ def exercise(command, cases, log, timeout):
                         expect(b'ERROR: user thread exception')
                 expect(f'PASS: {case}'.encode())
                 expect(b'$ ')
-                print(f'PASS: {case}', flush=True)
+                print(f'PASS: {case} ({time.monotonic() - started:.2f}s)', flush=True)
         finally:
             proc.terminate()
             try:
@@ -99,6 +102,7 @@ def main():
     out = (args.output or base / 'system-tests').resolve()
     out.mkdir(parents=True, exist_ok=True)
     cases = args.case or sorted(p.stem for p in sources.glob('*.yu'))
+    started = time.monotonic()
     binaries = []
     programs = [sources / f'{case}.yu' for case in cases]
     programs += sorted((sources / 'fixtures').glob('*.yu'))
@@ -125,6 +129,7 @@ def main():
                and obj.name != 'init.S.o']
     run([args.lld, '-nostdlib', '-melf32lriscv', '-T' + str(root / 'src/linker.ld'),
          '-L' + str(base), '-lgee', '-o', out / 'geeos.elf', out / 'init.o', *objects])
+    print(f'Build system tests: {time.monotonic() - started:.2f}s', flush=True)
     if args.simulator:
         command = [str(args.simulator.resolve()), '--load', f'0x200={base}/boot.bin',
                    '--elf', str(out / 'geeos.elf'), '--max-cycles', '2000000000',

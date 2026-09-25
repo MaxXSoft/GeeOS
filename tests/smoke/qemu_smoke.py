@@ -20,6 +20,7 @@ def main():
 
 
 def run_smoke(command, log, timeout=30):
+    started = time.monotonic()
     output = bytearray()
     consumed = 0
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -77,6 +78,7 @@ def run_smoke(command, log, timeout=30):
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
+    print(f'Smoke: {time.monotonic() - started:.2f}s', flush=True)
 
 
 if __name__ == '__main__':

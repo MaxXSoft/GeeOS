@@ -2,12 +2,12 @@
 
 All notable changes to the Gee OS will be documented in this file.
 
-## Unreleased
+## 0.0.2 - 2026-09-25
 
 ### Added
 
-- CI for building and testing GeeOS.
 - New target `fuxi_sim` for the verilator simulator of Fuxi.
+- CI for building and testing GeeOS on both QEMU and Fuxi simulator.
 - Host GeeFS/mkfs, RV32 runtime, kernel syscall/ELF, smoke, and incremental-build regression suites, with dedicated test documentation.
 - A CI guard that keeps the kernel HashMap implementation and behavior fixtures synchronized with YuLang upstream.
 
