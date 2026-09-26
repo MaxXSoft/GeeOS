@@ -16,7 +16,7 @@ defaults:
 
 env:
   YULANG_COMMIT: 5dbd80744530c77eba2a7121f87dc1787ec4b4fe
-  AXI_TESTBENCH_COMMIT: 5dd76c28f2e3c46cf8f8502f390d99d46004f2cd
+  AXI_TESTBENCH_COMMIT: 06f403e892d3a12078f5ad0428739cc23640b3fd
   LLVM_VERSION: 23
   VERILATOR_VERSION: "5.050"
 
@@ -125,6 +125,15 @@ jobs:
             LLD="$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
             YU_BIN="$GITHUB_WORKSPACE/build/yulang/build"
 
+      - name: Verify initial stack alignment
+        run: |
+          stack_args=(--kernel "$BUILD_DIR/geeos.elf")
+          if [[ "${{ matrix.target }}" == virt ]]; then
+            stack_args+=(--boot "$BUILD_DIR/boot.bin.elf")
+          fi
+          python3 tests/host/check_stack_alignment.py \
+            --llvm-nm "$(llvm-config-$LLVM_VERSION --bindir)/llvm-nm" "${stack_args[@]}"
+
       - name: QEMU smoke test
         if: matrix.target == 'virt'
         timeout-minutes: 5
@@ -138,6 +147,7 @@ jobs:
         timeout-minutes: 10
         run: |
           python3 tests/smoke/fuxi_sim_smoke.py --simulator "$FUXI_SIM" \
+            --simulator-stats \
             --kernel "$BUILD_DIR/geeos.elf" --boot "$BUILD_DIR/boot.bin" \
             --log "$BUILD_DIR/smoke.log" --stall-probability 0.35 --timeout 300
           cat "$BUILD_DIR/smoke.log"
@@ -151,7 +161,7 @@ jobs:
         run: |
           simulator_args=()
           if [[ "${{ matrix.target }}" == fuxi_sim ]]; then
-            simulator_args=(--simulator "$FUXI_SIM")
+            simulator_args=(--simulator "$FUXI_SIM" --simulator-stats)
           fi
           python3 tests/runtime/run.py --yuc build/yulang/build/yuc \
             --clang "clang-$LLVM_VERSION" --lld "$(llvm-config-$LLVM_VERSION --bindir)/ld.lld" \
@@ -163,7 +173,7 @@ jobs:
         run: |
           simulator_args=()
           if [[ "${{ matrix.target }}" == fuxi_sim ]]; then
-            simulator_args=(--simulator "$FUXI_SIM" --stall-probability 0.35)
+            simulator_args=(--simulator "$FUXI_SIM" --simulator-stats --stall-probability 0.35)
           fi
           python3 tests/system/run.py --build "$BUILD_DIR" --optimization 0 \
             --yuc build/yulang/build/yuc --llvm-bin "$(llvm-config-$LLVM_VERSION --bindir)" \

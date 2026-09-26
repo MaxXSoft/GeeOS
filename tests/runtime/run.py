@@ -48,6 +48,9 @@ def main():
     parser.add_argument('--lld', default='ld.lld')
     parser.add_argument('--qemu', default='qemu-system-riscv32')
     parser.add_argument('--simulator', type=Path, help='run Fuxi instead of QEMU')
+    parser.add_argument('--simulator-stats', action='store_true',
+                        help='ask Fuxi to report simulation cycles and AXI traffic')
+    parser.add_argument('--march', choices=('rv32ima', 'rv32imac'), default='rv32imac')
     parser.add_argument('--output', type=Path, default=ROOT / 'build/runtime-tests')
     parser.add_argument('--case', action='append', choices=CASES,
                         help='test only selected cases (repeatable)')
@@ -56,7 +59,7 @@ def main():
     target = 'fuxi_sim' if args.simulator else 'virt'
     output = args.output.resolve() / target
     output.mkdir(parents=True, exist_ok=True)
-    cc = [args.clang, '--target=riscv32-unknown-elf', '-march=rv32ima',
+    cc = [args.clang, '--target=riscv32-unknown-elf', f'-march={args.march}',
           '-mabi=ilp32', '-msmall-data-limit=0', '-fno-builtin', '-c']
     definitions = ['-DFUXI_SIM'] if args.simulator else []
     run(cc + definitions + [HERE / 'start.S', '-o', output / 'start.o'])
@@ -76,7 +79,8 @@ def main():
             yu = [args.yuc.resolve(), '-I', ROOT / folder, '-I', HERE,
                   '-D', f'GEEOS_TARGET={target}', '-ot', 'obj',
                   '-tt', 'riscv32-unknown-elf', '-tc', 'generic-rv32',
-                  '-tf', '+m,+a', '-O', str(optimization)]
+                  '-tf', '+m,+a,+c' if args.march == 'rv32imac' else '+m,+a',
+                  '-O', str(optimization)]
             sources = [HERE / test for test in tests]
             sources += [ROOT / folder / item for item in modules]
             for index, source in enumerate(sources):
@@ -91,6 +95,8 @@ def main():
                 command = [str(args.simulator.resolve()), '--load',
                            f'0x200={output}/boot.bin', '--elf', str(elf),
                            '--max-cycles', '200000000']
+                if args.simulator_stats:
+                    command.append('--stats')
             else:
                 command = [args.qemu, '-nographic', '-machine', 'virt', '-bios',
                            'none', '-m', '128m', '-kernel', str(elf)]

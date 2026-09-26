@@ -6,7 +6,7 @@ import selectors
 import subprocess
 import time
 
-from elf_fixtures import generate_elf_fixtures
+from elf_fixtures import generate_elf_fixtures, generate_odd_entry_fixture
 
 
 def run(command):
@@ -64,6 +64,8 @@ def exercise(command, cases, log, timeout):
                         expect(f'CHECK: user {name}'.encode())
                         expect(f'scause  = {cause}'.encode())
                         expect(b'ERROR: user thread exception')
+                elif case == 'elf_alignment':
+                    expect(b'CHECK: halfword entry ran')
                 expect(f'PASS: {case}'.encode())
                 expect(b'$ ')
                 print(f'PASS: {case} ({time.monotonic() - started:.2f}s)', flush=True)
@@ -74,6 +76,8 @@ def exercise(command, cases, log, timeout):
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
+            # Fuxi can print final counters while handling termination.
+            stream.write(proc.stdout.read())
 
 
 def main():
@@ -89,6 +93,10 @@ def main():
     parser.add_argument('--lld', default='ld.lld')
     parser.add_argument('--qemu', default='qemu-system-riscv32')
     parser.add_argument('--simulator', type=Path)
+    parser.add_argument('--simulator-stats', action='store_true',
+                        help='ask Fuxi to report simulation cycles and AXI traffic')
+    parser.add_argument('--march', choices=('rv32ima', 'rv32imac'), default='rv32imac',
+                        help='test instruction set; match the kernel build')
     parser.add_argument('--optimization', type=int, choices=(0, 2), default=2,
                         help='optimization of test user programs; match the kernel build')
     parser.add_argument('--case', nargs='+', choices=sorted(p.stem for p in sources.glob('*.yu')))
@@ -102,6 +110,10 @@ def main():
     out = (args.output or base / 'system-tests').resolve()
     out.mkdir(parents=True, exist_ok=True)
     cases = args.case or sorted(p.stem for p in sources.glob('*.yu'))
+    if args.march == 'rv32ima':
+        if args.case and 'elf_alignment' in cases:
+            parser.error('elf_alignment requires --march rv32imac')
+        cases = [case for case in cases if case != 'elf_alignment']
     started = time.monotonic()
     binaries = []
     programs = [sources / f'{case}.yu' for case in cases]
@@ -109,19 +121,26 @@ def main():
     for source in programs:
         obj, binary = out / f'{source.stem}.o', out / source.stem
         run([args.yuc.resolve(), '-I', root / 'usr', '-ot', 'obj',
-             '-tt', 'riscv32-unknown-elf', '-tc', 'generic-rv32', '-tf', '+m,+a',
+             '-tt', 'riscv32-unknown-elf', '-tc', 'generic-rv32', '-tf',
+             '+m,+a,+c' if args.march == 'rv32imac' else '+m,+a',
              '-O', args.optimization, '-o', obj, source])
         run([args.lld, '-nostdlib', '-melf32lriscv', '-L' + str(base), '-lgrt',
              '-o', binary, obj])
         run([args.llvm_bin / 'llvm-strip', '--strip-unneeded', '--strip-sections', binary])
         binaries.append(binary)
+    if 'elf_alignment' in cases:
+        obj, binary = out / 'entry_halfword.o', out / 'entry_halfword'
+        run([args.llvm_bin / 'clang', '--target=riscv32-unknown-elf', '-march=rv32imac',
+             '-mabi=ilp32', '-c', sources / 'fixtures/entry_halfword.S', '-o', obj])
+        run([args.lld, '-nostdlib', '-melf32lriscv', '-o', binary, obj])
+        binaries += [binary, generate_odd_entry_fixture(binary, out)]
     if 'elf_reject' in cases:
         binaries += generate_elf_fixtures(out / 'elf_reject', out)
     # Exercise direct/single/double addressing and a second-level table switch.
     (out / 'big').write_bytes(bytes((i * 37 + i // 256) % 251 for i in range(53009)))
     run([base / 'mkfs', out / 'user.img', '-c', '256', '1', str(max(8, (len(binaries) + 5) // 3)), '-a',
          base / 'usr/shell', *binaries, out / 'big'])
-    run([args.llvm_bin / 'clang', '--target=riscv32-unknown-elf', '-march=rv32ima',
+    run([args.llvm_bin / 'clang', '--target=riscv32-unknown-elf', f'-march={args.march}',
          '-mabi=ilp32', '-fno-builtin', '-fno-pic', '-c', '-I' + str(out),
          '-o', out / 'init.o', root / 'src/init.S'])
     objects = [obj for obj in sorted((base / 'obj/src').rglob('*.o'))
@@ -134,6 +153,8 @@ def main():
         command = [str(args.simulator.resolve()), '--load', f'0x200={base}/boot.bin',
                    '--elf', str(out / 'geeos.elf'), '--max-cycles', '2000000000',
                    '--stall-probability', str(args.stall_probability)]
+        if args.simulator_stats:
+            command.append('--stats')
     else:
         command = [args.qemu, '-nographic', '-machine', 'virt', '-bios', 'none',
                    '-m', '128m', '-kernel', str(out / 'geeos.elf')]

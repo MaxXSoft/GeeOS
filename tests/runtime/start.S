@@ -6,6 +6,7 @@ _start:
   csrw mtvec, t0
   call runtime_run
   j runtime_exit
+  .balign 4
 trap:
   li a0, 3
   .globl runtime_exit

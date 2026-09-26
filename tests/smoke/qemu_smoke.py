@@ -78,6 +78,7 @@ def run_smoke(command, log, timeout=30):
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
+            log_file.write(proc.stdout.read())
     print(f'Smoke: {time.monotonic() - started:.2f}s', flush=True)
 
 

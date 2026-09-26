@@ -1,0 +1,15 @@
+import lib.io
+import lib.sys.syscall
+
+extern def main(argc: i32, argv: u8**): i32 {
+  if execve("entry_halfword", null, null) != 0 {
+    io <<< "FAIL: halfword-aligned entry rejected\n"
+    return 1
+  }
+  if execve("entry_odd", null, null) >= 0 {
+    io <<< "FAIL: odd entry accepted\n"
+    return 1
+  }
+  io <<< "PASS: elf_alignment\n"
+  0
+}

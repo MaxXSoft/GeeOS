@@ -162,7 +162,7 @@ def validUserElf(data: u8*, size: usize): bool {
         }
         let entry = ehdr.getEntry() as usize
         if ph.isExecute() && entry >= start && entry < end &&
-           entry % 4 == 0 {
+           entry % 2 == 0 {
           entry_found = true
         }
       }

@@ -14,6 +14,7 @@ _start:
 
   # trap handler
   .globl    _handleTrap
+  .balign   4
 _handleTrap:
   # read value of important CSRs
   csrr  a0, mepc
@@ -32,7 +33,7 @@ jumpToAddr:
 
   # bootloader stack
   .section  .data
-  .align    2
+  .balign   16
   .zero     512
   .globl    _stack
 _stack:

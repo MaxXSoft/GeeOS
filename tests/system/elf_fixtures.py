@@ -3,6 +3,17 @@ from pathlib import Path
 import struct
 
 
+def generate_odd_entry_fixture(source: Path, output: Path) -> Path:
+    image = bytearray(source.read_bytes())
+    entry = struct.unpack_from('<I', image, 24)[0]
+    if entry % 4 != 2:
+        raise ValueError('halfword entry fixture must start at address 4n+2')
+    struct.pack_into('<I', image, 24, entry | 1)
+    path = output / 'entry_odd'
+    path.write_bytes(image)
+    return path
+
+
 def generate_elf_fixtures(source: Path, output: Path) -> list[Path]:
     image = source.read_bytes()
     phoff = struct.unpack_from('<I', image, 28)[0]

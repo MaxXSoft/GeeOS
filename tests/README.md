@@ -27,12 +27,24 @@ tests check growth, lookups, removal and reuse.
 
 ## Kernel integration
 
-Use separate build directories when changing DEBUG or compiler. The system runner
-uses the supplied build's objects and libraries; run make first to update them.
+The default instruction set is RV32IMAC for the kernel, user programs, bootloader,
+and standalone runtime tests. YuLang receives `+m,+a,+c`; Clang receives
+`-march=rv32imac`. Trap vectors remain four-byte aligned even when their preceding
+instructions are compressed. ECALL remains a four-byte instruction.
+The kernel and full bootloader also maintain the ABI's 16-byte initial stack
+alignment, checked by `host/check_stack_alignment.py` after the CI build.
+
+Use separate build directories when changing DEBUG, instruction set, or compiler.
+The system runner uses the supplied build's objects and libraries; run make first
+to update them.
 Use the YuLang revision pinned in `.github/workflows/build-test.yml` or a newer
 compatible revision; older compilers miscompile these boundary cases.
 Its `--optimization` controls test user programs and should match the kernel:
 `2` for `DEBUG=0`, `0` for `DEBUG=1`.
+For an RV32IMA comparison build, pass `RISCV_ARCH=rv32ima` to make and
+`--march rv32ima` to both runtime and system runners. Keep its output directory
+separate from the RV32IMAC run; the system runner's instruction set must match
+the supplied kernel and libraries.
 
 ```sh
 mkdir -p build
@@ -49,7 +61,9 @@ python3 tests/incremental/run.py --build build/test-virt \
 The system runner packages its own user image without modifying `usr/bin` or the
 normal kernel image. It reads a generated 53,009-byte pattern across direct,
 indirect and double-indirect blocks, runs 19 malformed ELF fixtures, checks actual
-exception causes, and requires the shell to return after each test. Use
+exception causes, and requires the shell to return after each test. RV32IMAC also
+runs `elf_alignment`, which executes a forced halfword-aligned ELF entry and
+rejects the same ELF with an odd entry address. RV32IMA skips this case. Use
 `--case fs_read dup` to run a subset. Faulting child programs live in `system/fixtures/`
 and are launched by the parent tests.
 
@@ -109,6 +123,14 @@ each case; smoke reports its total wall time. CI saves runtime/system timing
 output and simulator logs as separate platform artifacts, including on failure.
 Local timings depend on the host and do not include building YuLang or the
 simulator; use the CI step durations to measure that setup cost on hosted runners.
+
+Pass `--simulator-stats` to the Fuxi runtime, system, or smoke runner to retain
+the simulator's final cycle and AXI traffic counters in its log, including when
+the interactive tests stop it after success. Use the same statistics setting,
+simulator build type, stall probability, and compiler for ISA comparisons.
+Host wall time also depends on the generated Verilator model and host load;
+compare guest cycles and instruction-port reads before attributing a change to
+instruction fetch.
 
 ## HashMap upstream synchronization
 

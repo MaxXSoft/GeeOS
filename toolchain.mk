@@ -18,15 +18,23 @@ LLVM_BIN ?= $(shell command -v llvm-config | sed 's,/[^/]*$$,,')
 YU_BIN ?= $(abspath ../YuLang/build)
 LLD ?= $(LLVM_BIN)/ld.lld
 
+# Keep RV32IMA available for simulator comparisons in separate build directories.
+RISCV_ARCH ?= rv32imac
+RISCV_FEATURES_rv32ima := +m,+a
+RISCV_FEATURES_rv32imac := +m,+a,+c
+ifeq ($(RISCV_FEATURES_$(RISCV_ARCH)),)
+$(error unsupported RISCV_ARCH '$(RISCV_ARCH)'; expected rv32ima or rv32imac)
+endif
+
 # cross Yu compiler
 YUFLAGS := -Werror $(YU_OPT_ARG)
-YUFLAGS += -tt riscv32-unknown-elf -tc generic-rv32 -tf +m,+a
+YUFLAGS += -tt riscv32-unknown-elf -tc generic-rv32 -tf $(RISCV_FEATURES_$(RISCV_ARCH))
 export YUC := $(YU_BIN)/yuc $(YUFLAGS)
 
 # cross C compiler
 CFLAGS := -Wall -Werror -c -static $(C_DEBUG_ARG) $(C_OPT_ARG)
 CFLAGS += -fno-builtin -fno-pic
-CFLAGS += -target riscv32-unknown-elf -march=rv32ima -mabi=ilp32
+CFLAGS += -target riscv32-unknown-elf -march=$(RISCV_ARCH) -mabi=ilp32
 export CC := $(LLVM_BIN)/clang $(CFLAGS)
 
 # native C++ compiler

@@ -33,7 +33,7 @@ SECTIONS
     _bss_end = .;
   }
   _stack_start = .;
-  . = ALIGN(4) + 0x1000;
+  . = ALIGN(16) + 0x1000;
   _stack_top = .;
   _stack_end = .;
   _geeos_end = .;

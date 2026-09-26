@@ -140,6 +140,7 @@ _retTrap:
 
   # M-mode timer interrupt handler
   .globl    _handleTimer
+  .balign   4
 _handleTimer:
   # the memory that mscratch points to has been defined in 'entry.yu'
   # scratch[0, 4, 8]: register save area
