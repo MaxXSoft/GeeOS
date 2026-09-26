@@ -132,6 +132,10 @@ Host wall time also depends on the generated Verilator model and host load;
 compare guest cycles and instruction-port reads before attributing a change to
 instruction fetch.
 
+The [RV32IMAC comparison](results/rv32imac-2026-09-26.md) records the matched
+old/new RTL runs, all case timings, guest cycles, instruction-side traffic, and
+the associated correctness regressions. Its JSON companion preserves the data.
+
 ## HashMap upstream synchronization
 
 `src/lib/hashmap.yu` follows YuLang's `lib/hashmap.yu` at the compiler revision pinned

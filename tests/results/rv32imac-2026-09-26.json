@@ -1,0 +1,1797 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-26",
+  "geeos_source_commit": "2b88d4bc18eb0b31dabfeab5df375492e475b4e5",
+  "yulang_commit": "5dbd80744530c77eba2a7121f87dc1787ec4b4fe",
+  "yuc_sha256": "4be787f731173bb9eba97428e1d97cb30b78287a11db4c4c671c7adeb4560119",
+  "testbench_commit": "85a522cede3c1ce3944adf9abb845c582c0524f3",
+  "host": "Apple M2 Pro, 12 CPU cores, 16 GiB RAM, Darwin 27",
+  "host_compiler": "Apple clang 21.0.0, Release -O3 -DNDEBUG",
+  "guest_toolchain": "LLVM 23.1.1, LLD 22.1.6",
+  "verilator": "5.050",
+  "configuration": {
+    "kernel_debug": 1,
+    "runtime_optimizations": [
+      0,
+      2
+    ],
+    "runtime_stall_probability": 0,
+    "system_smoke_stall_probability": 0.35,
+    "seed": 1,
+    "ram_mib": 4,
+    "statistics": true
+  },
+  "variants": {
+    "old_ima": {
+      "fuxi_commit": "3417591f7c66cfee4ac85bd97a9d7921df362d53",
+      "isa": "rv32ima",
+      "simulator_sha256": "0e9513dbd187608c23e67784c3dc59e96dcd7ad060a6cd2f7a3c66f1576dbbe6",
+      "kernel_sha256": "e5978b2bf2672eb2cb6ea3a4e398d932dcc83dc7ef12713881930191b547a83b",
+      "runtime": {
+        "totals": {
+          "wall": 118.41000000000001,
+          "cycles": 176272348,
+          "reads": 377720
+        },
+        "cases": [
+          {
+            "case": "memset",
+            "optimization": 0,
+            "wall_seconds": 54.34,
+            "cycles": 80682424,
+            "axi": {
+              "0": {
+                "read_requests": 26,
+                "read_bytes_requested": 1664,
+                "read_beats_received": 416
+              },
+              "1": {
+                "read_requests": 81091,
+                "read_bytes_requested": 5189824,
+                "read_beats_received": 1297456
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "36dfc6718d043afd0fb18c865f91e61cd1fe7140bfa2e166ba94c3a2bb2af309"
+          },
+          {
+            "case": "memset",
+            "optimization": 2,
+            "wall_seconds": 12.95,
+            "cycles": 20009443,
+            "axi": {
+              "0": {
+                "read_requests": 17,
+                "read_bytes_requested": 1088,
+                "read_beats_received": 272
+              },
+              "1": {
+                "read_requests": 453,
+                "read_bytes_requested": 28992,
+                "read_beats_received": 7248
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "69d1d38659ca1ed3b90a6307a47cfe0e00878053de8f3c62cfb5f48e0595714d"
+          },
+          {
+            "case": "stack",
+            "optimization": 0,
+            "wall_seconds": 4.01,
+            "cycles": 5792688,
+            "axi": {
+              "0": {
+                "read_requests": 13555,
+                "read_bytes_requested": 867520,
+                "read_beats_received": 216880
+              },
+              "1": {
+                "read_requests": 2267,
+                "read_bytes_requested": 145088,
+                "read_beats_received": 36272
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "82f01bb25830eaa954e3d4800793052dcd34465455b4fc69e5b0bfd62a8a5e2f"
+          },
+          {
+            "case": "stack",
+            "optimization": 2,
+            "wall_seconds": 1.15,
+            "cycles": 1572629,
+            "axi": {
+              "0": {
+                "read_requests": 3075,
+                "read_bytes_requested": 196800,
+                "read_beats_received": 49200
+              },
+              "1": {
+                "read_requests": 24,
+                "read_bytes_requested": 1536,
+                "read_beats_received": 384
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "b0d523033113dee678bc263ac06afe4cfd236b3ad29d6d8d9d0d7c447ce4ab4e"
+          },
+          {
+            "case": "user-heap",
+            "optimization": 0,
+            "wall_seconds": 0.62,
+            "cycles": 777520,
+            "axi": {
+              "0": {
+                "read_requests": 4221,
+                "read_bytes_requested": 270144,
+                "read_beats_received": 67536
+              },
+              "1": {
+                "read_requests": 529,
+                "read_bytes_requested": 33856,
+                "read_beats_received": 8464
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "475e29cc3a822021443b3ab7ed491ecd0b3b43a855b21247663371ef7039eb3a"
+          },
+          {
+            "case": "user-heap",
+            "optimization": 2,
+            "wall_seconds": 0.18,
+            "cycles": 198142,
+            "axi": {
+              "0": {
+                "read_requests": 177,
+                "read_bytes_requested": 11328,
+                "read_beats_received": 2832
+              },
+              "1": {
+                "read_requests": 195,
+                "read_bytes_requested": 12480,
+                "read_beats_received": 3120
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "e3231ce108fd7acdc3e118c1a5e8a1d53c31dd69b18b011c85d0f8b6143fb672"
+          },
+          {
+            "case": "kernel-heap",
+            "optimization": 0,
+            "wall_seconds": 0.95,
+            "cycles": 1317361,
+            "axi": {
+              "0": {
+                "read_requests": 6954,
+                "read_bytes_requested": 445056,
+                "read_beats_received": 111264
+              },
+              "1": {
+                "read_requests": 1653,
+                "read_bytes_requested": 105792,
+                "read_beats_received": 26448
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "ff5f01522c0eb3223f180884d28b05e92b852acabbe3688799c2d1464dc2e7f8"
+          },
+          {
+            "case": "kernel-heap",
+            "optimization": 2,
+            "wall_seconds": 0.34,
+            "cycles": 383909,
+            "axi": {
+              "0": {
+                "read_requests": 306,
+                "read_bytes_requested": 19584,
+                "read_beats_received": 4896
+              },
+              "1": {
+                "read_requests": 184,
+                "read_bytes_requested": 11776,
+                "read_beats_received": 2944
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "277f259b06af2f18677e966fe4e5dbb17d1bf796d78bc13197967253567d5332"
+          },
+          {
+            "case": "user-memcmp",
+            "optimization": 0,
+            "wall_seconds": 5.05,
+            "cycles": 7721016,
+            "axi": {
+              "0": {
+                "read_requests": 20,
+                "read_bytes_requested": 1280,
+                "read_beats_received": 320
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "826a47ae3f7d6f627bcf3dc08a896d52e15ba636a3cef9e746af6455f0576020"
+          },
+          {
+            "case": "user-memcmp",
+            "optimization": 2,
+            "wall_seconds": 1.25,
+            "cycles": 1871744,
+            "axi": {
+              "0": {
+                "read_requests": 14,
+                "read_bytes_requested": 896,
+                "read_beats_received": 224
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "10f55037b4fd6acc2c85e915d52c7850c6ff62f8bc051170a5fd17d7b2e7fb07"
+          },
+          {
+            "case": "kernel-memcmp",
+            "optimization": 0,
+            "wall_seconds": 4.96,
+            "cycles": 7525565,
+            "axi": {
+              "0": {
+                "read_requests": 22,
+                "read_bytes_requested": 1408,
+                "read_beats_received": 352
+              },
+              "1": {
+                "read_requests": 4,
+                "read_bytes_requested": 256,
+                "read_beats_received": 64
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "e44da4eb8ecbc0091a32f95d7d3eae659c3e6accc5df91dec6c8fbd3ff60cc96"
+          },
+          {
+            "case": "kernel-memcmp",
+            "optimization": 2,
+            "wall_seconds": 1.29,
+            "cycles": 1904761,
+            "axi": {
+              "0": {
+                "read_requests": 15,
+                "read_bytes_requested": 960,
+                "read_beats_received": 240
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "4b80766f6e2e67c94b400c04f0f8374f4c88197ec5b12b81b6fff916632c619c"
+          },
+          {
+            "case": "hashmap",
+            "optimization": 0,
+            "wall_seconds": 22.3,
+            "cycles": 33394649,
+            "axi": {
+              "0": {
+                "read_requests": 261907,
+                "read_bytes_requested": 16762048,
+                "read_beats_received": 4190512
+              },
+              "1": {
+                "read_requests": 204237,
+                "read_bytes_requested": 13071168,
+                "read_beats_received": 3267792
+              },
+              "2": {
+                "read_requests": 176,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              }
+            },
+            "elf_sha256": "0d52979a77c85155872abed591e609c6adf51c37e1ae2bf6281960206b449a8e"
+          },
+          {
+            "case": "hashmap",
+            "optimization": 2,
+            "wall_seconds": 8.29,
+            "cycles": 12545477,
+            "axi": {
+              "0": {
+                "read_requests": 80588,
+                "read_bytes_requested": 5157632,
+                "read_beats_received": 1289408
+              },
+              "1": {
+                "read_requests": 167880,
+                "read_bytes_requested": 10744320,
+                "read_beats_received": 2686080
+              },
+              "2": {
+                "read_requests": 176,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              }
+            },
+            "elf_sha256": "e89d758a21a6c6efd71c38dd0dbcb96f6c51b824ebcd4547f08778493b91898f"
+          },
+          {
+            "case": "area-overlap",
+            "optimization": 0,
+            "wall_seconds": 0.13,
+            "cycles": 110671,
+            "axi": {
+              "0": {
+                "read_requests": 30,
+                "read_bytes_requested": 1920,
+                "read_beats_received": 480
+              },
+              "1": {
+                "read_requests": 5,
+                "read_bytes_requested": 320,
+                "read_beats_received": 80
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "d64a978f35a918714c18693c146406d53d985f36fb680ccf0aad112bd4d0ffda"
+          },
+          {
+            "case": "area-overlap",
+            "optimization": 2,
+            "wall_seconds": 0.07,
+            "cycles": 28668,
+            "axi": {
+              "0": {
+                "read_requests": 51,
+                "read_bytes_requested": 3264,
+                "read_beats_received": 816
+              },
+              "1": {
+                "read_requests": 6,
+                "read_bytes_requested": 384,
+                "read_beats_received": 96
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "70f95802392061e6806499e7f88beb79ffcf1ddaada687cb16e3099ed701d9d3"
+          },
+          {
+            "case": "page-flags",
+            "optimization": 0,
+            "wall_seconds": 0.35,
+            "cycles": 386228,
+            "axi": {
+              "0": {
+                "read_requests": 6682,
+                "read_bytes_requested": 427648,
+                "read_beats_received": 106912
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "80a81d7264ffdc5d92af6e62b0c20cace6350f1fa07a16bcda798741a200330a"
+          },
+          {
+            "case": "page-flags",
+            "optimization": 2,
+            "wall_seconds": 0.07,
+            "cycles": 44011,
+            "axi": {
+              "0": {
+                "read_requests": 15,
+                "read_bytes_requested": 960,
+                "read_beats_received": 240
+              },
+              "1": {
+                "read_requests": 2,
+                "read_bytes_requested": 128,
+                "read_beats_received": 32
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "e269e9bdf807ea0474673f853a88a79d90692b35104a0afadc1b8f61c051230a"
+          },
+          {
+            "case": "page-range",
+            "optimization": 0,
+            "wall_seconds": 0.04,
+            "cycles": 3616,
+            "axi": {
+              "0": {
+                "read_requests": 23,
+                "read_bytes_requested": 1472,
+                "read_beats_received": 368
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "179e4dfff3388146f89bcfb3ce5f05d02e83f4a211a7634db3a76493e4feed69"
+          },
+          {
+            "case": "page-range",
+            "optimization": 2,
+            "wall_seconds": 0.07,
+            "cycles": 1826,
+            "axi": {
+              "0": {
+                "read_requests": 22,
+                "read_bytes_requested": 1408,
+                "read_beats_received": 352
+              },
+              "1": {
+                "read_requests": 2,
+                "read_bytes_requested": 128,
+                "read_beats_received": 32
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "836f8728861121aac3bf55ecba79cdaf705345b5ccab444fae12a8e62803bf52"
+          }
+        ]
+      },
+      "system": {
+        "wall_seconds": 64.08,
+        "boot_seconds": 11.49,
+        "cycles": 93975283,
+        "axi": {
+          "0": {
+            "read_requests": 1087097,
+            "read_bytes_requested": 69574208,
+            "read_beats_received": 17393545
+          },
+          "1": {
+            "read_requests": 225701,
+            "read_bytes_requested": 14444864,
+            "read_beats_received": 3611216
+          },
+          "2": {
+            "read_requests": 1721,
+            "read_bytes_requested": 6884,
+            "read_beats_received": 1721
+          }
+        },
+        "cases": [
+          {
+            "case": "chdir",
+            "wall_seconds": 3.13
+          },
+          {
+            "case": "dup",
+            "wall_seconds": 2.75
+          },
+          {
+            "case": "elf_permissions",
+            "wall_seconds": 7.64
+          },
+          {
+            "case": "elf_reject",
+            "wall_seconds": 17.58
+          },
+          {
+            "case": "fs_read",
+            "wall_seconds": 8.27
+          },
+          {
+            "case": "io_error",
+            "wall_seconds": 2.82
+          },
+          {
+            "case": "user_buffers",
+            "wall_seconds": 3.03
+          },
+          {
+            "case": "user_faults",
+            "wall_seconds": 7.37
+          }
+        ]
+      },
+      "smoke": {
+        "wall_seconds": 24.720252125000115,
+        "cycles": 36364562,
+        "axi": {
+          "0": {
+            "read_requests": 400413,
+            "read_bytes_requested": 25626432,
+            "read_beats_received": 6406602
+          },
+          "1": {
+            "read_requests": 112989,
+            "read_bytes_requested": 7231296,
+            "read_beats_received": 1807824
+          },
+          "2": {
+            "read_requests": 834,
+            "read_bytes_requested": 3336,
+            "read_beats_received": 834
+          }
+        }
+      }
+    },
+    "new_ima": {
+      "fuxi_commit": "ee0441166b8686dc826f77f006958162312fea92",
+      "isa": "rv32ima",
+      "simulator_sha256": "7f1ca0ad1dccbc2bfaf86e951aac8675e15fd12541f3b5c70c2ba6487fb6ceb1",
+      "kernel_sha256": "e5978b2bf2672eb2cb6ea3a4e398d932dcc83dc7ef12713881930191b547a83b",
+      "runtime": {
+        "totals": {
+          "wall": 118.90130629495252,
+          "cycles": 172520795,
+          "reads": 375592
+        },
+        "cases": [
+          {
+            "case": "memset",
+            "optimization": 0,
+            "wall_seconds": 54.63325904199155,
+            "cycles": 80480687,
+            "axi": {
+              "0": {
+                "read_requests": 26,
+                "read_bytes_requested": 1664,
+                "read_beats_received": 416
+              },
+              "1": {
+                "read_requests": 81091,
+                "read_bytes_requested": 5189824,
+                "read_beats_received": 1297456
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "36dfc6718d043afd0fb18c865f91e61cd1fe7140bfa2e166ba94c3a2bb2af309"
+          },
+          {
+            "case": "memset",
+            "optimization": 2,
+            "wall_seconds": 13.305591250013094,
+            "cycles": 19946592,
+            "axi": {
+              "0": {
+                "read_requests": 17,
+                "read_bytes_requested": 1088,
+                "read_beats_received": 272
+              },
+              "1": {
+                "read_requests": 453,
+                "read_bytes_requested": 28992,
+                "read_beats_received": 7248
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "69d1d38659ca1ed3b90a6307a47cfe0e00878053de8f3c62cfb5f48e0595714d"
+          },
+          {
+            "case": "stack",
+            "optimization": 0,
+            "wall_seconds": 3.9691044169594534,
+            "cycles": 5389642,
+            "axi": {
+              "0": {
+                "read_requests": 13714,
+                "read_bytes_requested": 877696,
+                "read_beats_received": 219424
+              },
+              "1": {
+                "read_requests": 2267,
+                "read_bytes_requested": 145088,
+                "read_beats_received": 36272
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "82f01bb25830eaa954e3d4800793052dcd34465455b4fc69e5b0bfd62a8a5e2f"
+          },
+          {
+            "case": "stack",
+            "optimization": 2,
+            "wall_seconds": 1.2323130830191076,
+            "cycles": 1498537,
+            "axi": {
+              "0": {
+                "read_requests": 2915,
+                "read_bytes_requested": 186560,
+                "read_beats_received": 46640
+              },
+              "1": {
+                "read_requests": 24,
+                "read_bytes_requested": 1536,
+                "read_beats_received": 384
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "b0d523033113dee678bc263ac06afe4cfd236b3ad29d6d8d9d0d7c447ce4ab4e"
+          },
+          {
+            "case": "user-heap",
+            "optimization": 0,
+            "wall_seconds": 0.5976410000002943,
+            "cycles": 740652,
+            "axi": {
+              "0": {
+                "read_requests": 4222,
+                "read_bytes_requested": 270208,
+                "read_beats_received": 67552
+              },
+              "1": {
+                "read_requests": 529,
+                "read_bytes_requested": 33856,
+                "read_beats_received": 8464
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "475e29cc3a822021443b3ab7ed491ecd0b3b43a855b21247663371ef7039eb3a"
+          },
+          {
+            "case": "user-heap",
+            "optimization": 2,
+            "wall_seconds": 0.1968182499986142,
+            "cycles": 193000,
+            "axi": {
+              "0": {
+                "read_requests": 177,
+                "read_bytes_requested": 11328,
+                "read_beats_received": 2832
+              },
+              "1": {
+                "read_requests": 195,
+                "read_bytes_requested": 12480,
+                "read_beats_received": 3120
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "e3231ce108fd7acdc3e118c1a5e8a1d53c31dd69b18b011c85d0f8b6143fb672"
+          },
+          {
+            "case": "kernel-heap",
+            "optimization": 0,
+            "wall_seconds": 0.9321514170151204,
+            "cycles": 1218643,
+            "axi": {
+              "0": {
+                "read_requests": 7086,
+                "read_bytes_requested": 453504,
+                "read_beats_received": 113376
+              },
+              "1": {
+                "read_requests": 1653,
+                "read_bytes_requested": 105792,
+                "read_beats_received": 26448
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "ff5f01522c0eb3223f180884d28b05e92b852acabbe3688799c2d1464dc2e7f8"
+          },
+          {
+            "case": "kernel-heap",
+            "optimization": 2,
+            "wall_seconds": 0.3235875000245869,
+            "cycles": 347938,
+            "axi": {
+              "0": {
+                "read_requests": 319,
+                "read_bytes_requested": 20416,
+                "read_beats_received": 5104
+              },
+              "1": {
+                "read_requests": 184,
+                "read_bytes_requested": 11776,
+                "read_beats_received": 2944
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "277f259b06af2f18677e966fe4e5dbb17d1bf796d78bc13197967253567d5332"
+          },
+          {
+            "case": "user-memcmp",
+            "optimization": 0,
+            "wall_seconds": 5.032318124955054,
+            "cycles": 7456474,
+            "axi": {
+              "0": {
+                "read_requests": 21,
+                "read_bytes_requested": 1344,
+                "read_beats_received": 336
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "826a47ae3f7d6f627bcf3dc08a896d52e15ba636a3cef9e746af6455f0576020"
+          },
+          {
+            "case": "user-memcmp",
+            "optimization": 2,
+            "wall_seconds": 1.344660541974008,
+            "cycles": 1869691,
+            "axi": {
+              "0": {
+                "read_requests": 14,
+                "read_bytes_requested": 896,
+                "read_beats_received": 224
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "10f55037b4fd6acc2c85e915d52c7850c6ff62f8bc051170a5fd17d7b2e7fb07"
+          },
+          {
+            "case": "kernel-memcmp",
+            "optimization": 0,
+            "wall_seconds": 5.132154165999964,
+            "cycles": 7456511,
+            "axi": {
+              "0": {
+                "read_requests": 22,
+                "read_bytes_requested": 1408,
+                "read_beats_received": 352
+              },
+              "1": {
+                "read_requests": 4,
+                "read_bytes_requested": 256,
+                "read_beats_received": 64
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "e44da4eb8ecbc0091a32f95d7d3eae659c3e6accc5df91dec6c8fbd3ff60cc96"
+          },
+          {
+            "case": "kernel-memcmp",
+            "optimization": 2,
+            "wall_seconds": 1.3370745420106687,
+            "cycles": 1869708,
+            "axi": {
+              "0": {
+                "read_requests": 15,
+                "read_bytes_requested": 960,
+                "read_beats_received": 240
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "4b80766f6e2e67c94b400c04f0f8374f4c88197ec5b12b81b6fff916632c619c"
+          },
+          {
+            "case": "hashmap",
+            "optimization": 0,
+            "wall_seconds": 21.732952583988663,
+            "cycles": 31435747,
+            "axi": {
+              "0": {
+                "read_requests": 258586,
+                "read_bytes_requested": 16549504,
+                "read_beats_received": 4137376
+              },
+              "1": {
+                "read_requests": 204237,
+                "read_bytes_requested": 13071168,
+                "read_beats_received": 3267792
+              },
+              "2": {
+                "read_requests": 176,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              }
+            },
+            "elf_sha256": "0d52979a77c85155872abed591e609c6adf51c37e1ae2bf6281960206b449a8e"
+          },
+          {
+            "case": "hashmap",
+            "optimization": 2,
+            "wall_seconds": 8.360886459005997,
+            "cycles": 12082306,
+            "axi": {
+              "0": {
+                "read_requests": 81632,
+                "read_bytes_requested": 5224448,
+                "read_beats_received": 1306112
+              },
+              "1": {
+                "read_requests": 167880,
+                "read_bytes_requested": 10744320,
+                "read_beats_received": 2686080
+              },
+              "2": {
+                "read_requests": 176,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              }
+            },
+            "elf_sha256": "e89d758a21a6c6efd71c38dd0dbcb96f6c51b824ebcd4547f08778493b91898f"
+          },
+          {
+            "case": "area-overlap",
+            "optimization": 0,
+            "wall_seconds": 0.1313300829497166,
+            "cycles": 107085,
+            "axi": {
+              "0": {
+                "read_requests": 31,
+                "read_bytes_requested": 1984,
+                "read_beats_received": 496
+              },
+              "1": {
+                "read_requests": 5,
+                "read_bytes_requested": 320,
+                "read_beats_received": 80
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "d64a978f35a918714c18693c146406d53d985f36fb680ccf0aad112bd4d0ffda"
+          },
+          {
+            "case": "area-overlap",
+            "optimization": 2,
+            "wall_seconds": 0.08120204199803993,
+            "cycles": 26918,
+            "axi": {
+              "0": {
+                "read_requests": 51,
+                "read_bytes_requested": 3264,
+                "read_beats_received": 816
+              },
+              "1": {
+                "read_requests": 6,
+                "read_bytes_requested": 384,
+                "read_beats_received": 96
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "70f95802392061e6806499e7f88beb79ffcf1ddaada687cb16e3099ed701d9d3"
+          },
+          {
+            "case": "page-flags",
+            "optimization": 0,
+            "wall_seconds": 0.3231860420200974,
+            "cycles": 355982,
+            "axi": {
+              "0": {
+                "read_requests": 6683,
+                "read_bytes_requested": 427712,
+                "read_beats_received": 106928
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "80a81d7264ffdc5d92af6e62b0c20cace6350f1fa07a16bcda798741a200330a"
+          },
+          {
+            "case": "page-flags",
+            "optimization": 2,
+            "wall_seconds": 0.14840904204174876,
+            "cycles": 39614,
+            "axi": {
+              "0": {
+                "read_requests": 15,
+                "read_bytes_requested": 960,
+                "read_beats_received": 240
+              },
+              "1": {
+                "read_requests": 2,
+                "read_bytes_requested": 128,
+                "read_beats_received": 32
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "e269e9bdf807ea0474673f853a88a79d90692b35104a0afadc1b8f61c051230a"
+          },
+          {
+            "case": "page-range",
+            "optimization": 0,
+            "wall_seconds": 0.0418036250048317,
+            "cycles": 3381,
+            "axi": {
+              "0": {
+                "read_requests": 24,
+                "read_bytes_requested": 1536,
+                "read_beats_received": 384
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "179e4dfff3388146f89bcfb3ce5f05d02e83f4a211a7634db3a76493e4feed69"
+          },
+          {
+            "case": "page-range",
+            "optimization": 2,
+            "wall_seconds": 0.04486308398190886,
+            "cycles": 1687,
+            "axi": {
+              "0": {
+                "read_requests": 22,
+                "read_bytes_requested": 1408,
+                "read_beats_received": 352
+              },
+              "1": {
+                "read_requests": 2,
+                "read_bytes_requested": 128,
+                "read_beats_received": 32
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "836f8728861121aac3bf55ecba79cdaf705345b5ccab444fae12a8e62803bf52"
+          }
+        ]
+      },
+      "system": {
+        "wall_seconds": 62.557506040961016,
+        "boot_seconds": 11.31,
+        "cycles": 91418822,
+        "axi": {
+          "0": {
+            "read_requests": 1091791,
+            "read_bytes_requested": 69874624,
+            "read_beats_received": 17468656
+          },
+          "1": {
+            "read_requests": 225619,
+            "read_bytes_requested": 14439616,
+            "read_beats_received": 3609904
+          },
+          "2": {
+            "read_requests": 1717,
+            "read_bytes_requested": 6868,
+            "read_beats_received": 1717
+          }
+        },
+        "cases": [
+          {
+            "case": "chdir",
+            "wall_seconds": 3.02
+          },
+          {
+            "case": "dup",
+            "wall_seconds": 2.68
+          },
+          {
+            "case": "elf_permissions",
+            "wall_seconds": 7.43
+          },
+          {
+            "case": "elf_reject",
+            "wall_seconds": 17.03
+          },
+          {
+            "case": "fs_read",
+            "wall_seconds": 8
+          },
+          {
+            "case": "io_error",
+            "wall_seconds": 2.76
+          },
+          {
+            "case": "user_buffers",
+            "wall_seconds": 2.93
+          },
+          {
+            "case": "user_faults",
+            "wall_seconds": 7.39
+          }
+        ]
+      },
+      "smoke": {
+        "wall_seconds": 24.2318179999711,
+        "cycles": 35337205,
+        "axi": {
+          "0": {
+            "read_requests": 393472,
+            "read_bytes_requested": 25182208,
+            "read_beats_received": 6295541
+          },
+          "1": {
+            "read_requests": 112978,
+            "read_bytes_requested": 7230592,
+            "read_beats_received": 1807648
+          },
+          "2": {
+            "read_requests": 832,
+            "read_bytes_requested": 3328,
+            "read_beats_received": 832
+          }
+        }
+      }
+    },
+    "new_imac": {
+      "fuxi_commit": "ee0441166b8686dc826f77f006958162312fea92",
+      "isa": "rv32imac",
+      "simulator_sha256": "7f1ca0ad1dccbc2bfaf86e951aac8675e15fd12541f3b5c70c2ba6487fb6ceb1",
+      "kernel_sha256": "6ded95547e6481fbb86cfb60444fc1899d69720a357c2a28a0664f6cd0efb086",
+      "runtime": {
+        "totals": {
+          "wall": 110.71,
+          "cycles": 168945100,
+          "reads": 106877
+        },
+        "cases": [
+          {
+            "case": "memset",
+            "optimization": 0,
+            "wall_seconds": 52.08,
+            "cycles": 80481817,
+            "axi": {
+              "0": {
+                "read_requests": 17,
+                "read_bytes_requested": 1088,
+                "read_beats_received": 272
+              },
+              "1": {
+                "read_requests": 81091,
+                "read_bytes_requested": 5189824,
+                "read_beats_received": 1297456
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "1aa066d79fb1a26f38628cfd431d3d72743ec1757612dc18594cee93469a8757"
+          },
+          {
+            "case": "memset",
+            "optimization": 2,
+            "wall_seconds": 13.61,
+            "cycles": 21293056,
+            "axi": {
+              "0": {
+                "read_requests": 13,
+                "read_bytes_requested": 832,
+                "read_beats_received": 208
+              },
+              "1": {
+                "read_requests": 453,
+                "read_bytes_requested": 28992,
+                "read_beats_received": 7248
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "34480871e0beb3ae55319a3ec25fa39693ebb5e3673270b53c1cfef7a599d504"
+          },
+          {
+            "case": "stack",
+            "optimization": 0,
+            "wall_seconds": 3.48,
+            "cycles": 5187179,
+            "axi": {
+              "0": {
+                "read_requests": 2607,
+                "read_bytes_requested": 166848,
+                "read_beats_received": 41712
+              },
+              "1": {
+                "read_requests": 2268,
+                "read_bytes_requested": 145152,
+                "read_beats_received": 36288
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "539ec733c7eb630210571a7abb0220b51d4f887047bd641b17ed5865a01e4d44"
+          },
+          {
+            "case": "stack",
+            "optimization": 2,
+            "wall_seconds": 1.07,
+            "cycles": 1470349,
+            "axi": {
+              "0": {
+                "read_requests": 31,
+                "read_bytes_requested": 1984,
+                "read_beats_received": 496
+              },
+              "1": {
+                "read_requests": 23,
+                "read_bytes_requested": 1472,
+                "read_beats_received": 368
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "68440a0bb2583ce7d744fbbe9001c8e238b77723c4df5886fc06653d45e9d3c6"
+          },
+          {
+            "case": "user-heap",
+            "optimization": 0,
+            "wall_seconds": 0.5,
+            "cycles": 743287,
+            "axi": {
+              "0": {
+                "read_requests": 1073,
+                "read_bytes_requested": 68672,
+                "read_beats_received": 17168
+              },
+              "1": {
+                "read_requests": 2048,
+                "read_bytes_requested": 131072,
+                "read_beats_received": 32768
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "9d18b231e46a7980f83047dfcf888c26a63acd6a948ef5b902f223d0a255d0c5"
+          },
+          {
+            "case": "user-heap",
+            "optimization": 2,
+            "wall_seconds": 0.2,
+            "cycles": 217273,
+            "axi": {
+              "0": {
+                "read_requests": 1065,
+                "read_bytes_requested": 68160,
+                "read_beats_received": 17040
+              },
+              "1": {
+                "read_requests": 194,
+                "read_bytes_requested": 12416,
+                "read_beats_received": 3104
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "c4b2b98d0c261bc091906507657f57136c0eceb538a36f4727a791556755aa47"
+          },
+          {
+            "case": "kernel-heap",
+            "optimization": 0,
+            "wall_seconds": 0.92,
+            "cycles": 1318441,
+            "axi": {
+              "0": {
+                "read_requests": 10684,
+                "read_bytes_requested": 683776,
+                "read_beats_received": 170944
+              },
+              "1": {
+                "read_requests": 2186,
+                "read_bytes_requested": 139904,
+                "read_beats_received": 34976
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "63b74ee65f7d18d18280031f17f95da8c85e05adf43491d1e52acfbe91d00ced"
+          },
+          {
+            "case": "kernel-heap",
+            "optimization": 2,
+            "wall_seconds": 0.26,
+            "cycles": 374261,
+            "axi": {
+              "0": {
+                "read_requests": 1337,
+                "read_bytes_requested": 85568,
+                "read_beats_received": 21392
+              },
+              "1": {
+                "read_requests": 149,
+                "read_bytes_requested": 9536,
+                "read_beats_received": 2384
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "f87765d4187dbd2e265637dd5c17d069a420e240acdaf7aff4d825361175c9a0"
+          },
+          {
+            "case": "user-memcmp",
+            "optimization": 0,
+            "wall_seconds": 4.85,
+            "cycles": 7456484,
+            "axi": {
+              "0": {
+                "read_requests": 14,
+                "read_bytes_requested": 896,
+                "read_beats_received": 224
+              },
+              "1": {
+                "read_requests": 4,
+                "read_bytes_requested": 256,
+                "read_beats_received": 64
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "4cf52105b8dec46d934786c44a8356f3311de7fa88791a719961e82bde55f58b"
+          },
+          {
+            "case": "user-memcmp",
+            "optimization": 2,
+            "wall_seconds": 1.27,
+            "cycles": 1937647,
+            "axi": {
+              "0": {
+                "read_requests": 11,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "c697b5fc381702f54f0dd19ce109d7a345c934126b3de0c9c1b62221a8f5fa7d"
+          },
+          {
+            "case": "kernel-memcmp",
+            "optimization": 0,
+            "wall_seconds": 4.84,
+            "cycles": 7456483,
+            "axi": {
+              "0": {
+                "read_requests": 15,
+                "read_bytes_requested": 960,
+                "read_beats_received": 240
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "0fdd382b35e222df27cdefd7d53c2d9cd2475ee58382d365164c5cb5bb83781d"
+          },
+          {
+            "case": "kernel-memcmp",
+            "optimization": 2,
+            "wall_seconds": 1.21,
+            "cycles": 1871746,
+            "axi": {
+              "0": {
+                "read_requests": 11,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "426eb65746c75b4323a72cc5c1c3ac6f2a887411b3a38ecfe919057aa477fc0f"
+          },
+          {
+            "case": "hashmap",
+            "optimization": 0,
+            "wall_seconds": 19.07,
+            "cycles": 28324440,
+            "axi": {
+              "0": {
+                "read_requests": 88629,
+                "read_bytes_requested": 5672256,
+                "read_beats_received": 1418064
+              },
+              "1": {
+                "read_requests": 193775,
+                "read_bytes_requested": 12401600,
+                "read_beats_received": 3100400
+              },
+              "2": {
+                "read_requests": 176,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              }
+            },
+            "elf_sha256": "3c84864f1bdb8ae27d50c19860672b53dc16be0edc484836154a98c7a33952d6"
+          },
+          {
+            "case": "hashmap",
+            "optimization": 2,
+            "wall_seconds": 6.92,
+            "cycles": 10375978,
+            "axi": {
+              "0": {
+                "read_requests": 190,
+                "read_bytes_requested": 12160,
+                "read_beats_received": 3040
+              },
+              "1": {
+                "read_requests": 157889,
+                "read_bytes_requested": 10104896,
+                "read_beats_received": 2526224
+              },
+              "2": {
+                "read_requests": 176,
+                "read_bytes_requested": 704,
+                "read_beats_received": 176
+              }
+            },
+            "elf_sha256": "03ec035e43abcd82e7fb57b22917d87b9cd1d42c6f5e2242d43f666e89302e51"
+          },
+          {
+            "case": "area-overlap",
+            "optimization": 0,
+            "wall_seconds": 0.14,
+            "cycles": 117067,
+            "axi": {
+              "0": {
+                "read_requests": 540,
+                "read_bytes_requested": 34560,
+                "read_beats_received": 8640
+              },
+              "1": {
+                "read_requests": 5,
+                "read_bytes_requested": 320,
+                "read_beats_received": 80
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "81d8e78b9557e2a8c7e70d6b57d57303120f1afb54daa3a30c7f45d0644b798c"
+          },
+          {
+            "case": "area-overlap",
+            "optimization": 2,
+            "wall_seconds": 0.02,
+            "cycles": 27050,
+            "axi": {
+              "0": {
+                "read_requests": 45,
+                "read_bytes_requested": 2880,
+                "read_beats_received": 720
+              },
+              "1": {
+                "read_requests": 6,
+                "read_bytes_requested": 384,
+                "read_beats_received": 96
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "840c271962a35be9571a23f0823490067443405b6a2719469007768fe0172098"
+          },
+          {
+            "case": "page-flags",
+            "optimization": 0,
+            "wall_seconds": 0.21,
+            "cycles": 247684,
+            "axi": {
+              "0": {
+                "read_requests": 538,
+                "read_bytes_requested": 34432,
+                "read_beats_received": 8608
+              },
+              "1": {
+                "read_requests": 4,
+                "read_bytes_requested": 256,
+                "read_beats_received": 64
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "adf3f8acae19c402a1646a931630f74a2394036fa00309b98162760a307e9614"
+          },
+          {
+            "case": "page-flags",
+            "optimization": 2,
+            "wall_seconds": 0.04,
+            "cycles": 39813,
+            "axi": {
+              "0": {
+                "read_requests": 12,
+                "read_bytes_requested": 768,
+                "read_beats_received": 192
+              },
+              "1": {
+                "read_requests": 2,
+                "read_bytes_requested": 128,
+                "read_beats_received": 32
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "313ce085e8528272d7a0e38be35a2cb05ebb566211fd6651ff805b14d9d8a1fa"
+          },
+          {
+            "case": "page-range",
+            "optimization": 0,
+            "wall_seconds": 0.01,
+            "cycles": 3483,
+            "axi": {
+              "0": {
+                "read_requests": 30,
+                "read_bytes_requested": 1920,
+                "read_beats_received": 480
+              },
+              "1": {
+                "read_requests": 3,
+                "read_bytes_requested": 192,
+                "read_beats_received": 48
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "6152f5f9ecf64480c8f8f6992b49f072b915a7bd4264ac54a45a957ced5e9972"
+          },
+          {
+            "case": "page-range",
+            "optimization": 2,
+            "wall_seconds": 0.01,
+            "cycles": 1562,
+            "axi": {
+              "0": {
+                "read_requests": 15,
+                "read_bytes_requested": 960,
+                "read_beats_received": 240
+              },
+              "1": {
+                "read_requests": 2,
+                "read_bytes_requested": 128,
+                "read_beats_received": 32
+              },
+              "2": {
+                "read_requests": 5,
+                "read_bytes_requested": 20,
+                "read_beats_received": 5
+              }
+            },
+            "elf_sha256": "6fd32528160f5c671971cdc740bb2acabb28dd26364724a4c31252469adcd097"
+          }
+        ]
+      },
+      "system": {
+        "wall_seconds": 48.14,
+        "boot_seconds": 10.61,
+        "cycles": 69705226,
+        "axi": {
+          "0": {
+            "read_requests": 356780,
+            "read_bytes_requested": 22833920,
+            "read_beats_received": 5708480
+          },
+          "1": {
+            "read_requests": 234907,
+            "read_bytes_requested": 15034048,
+            "read_beats_received": 3758512
+          },
+          "2": {
+            "read_requests": 1673,
+            "read_bytes_requested": 6692,
+            "read_beats_received": 1673
+          }
+        },
+        "cases": [
+          {
+            "case": "chdir",
+            "wall_seconds": 2.21
+          },
+          {
+            "case": "dup",
+            "wall_seconds": 2.02
+          },
+          {
+            "case": "elf_permissions",
+            "wall_seconds": 5.87
+          },
+          {
+            "case": "elf_reject",
+            "wall_seconds": 10.82
+          },
+          {
+            "case": "fs_read",
+            "wall_seconds": 6.54
+          },
+          {
+            "case": "io_error",
+            "wall_seconds": 2.12
+          },
+          {
+            "case": "user_buffers",
+            "wall_seconds": 2.19
+          },
+          {
+            "case": "user_faults",
+            "wall_seconds": 5.76
+          }
+        ]
+      },
+      "smoke": {
+        "wall_seconds": 20.158428042021114,
+        "cycles": 29474385,
+        "axi": {
+          "0": {
+            "read_requests": 136789,
+            "read_bytes_requested": 8754496,
+            "read_beats_received": 2188610
+          },
+          "1": {
+            "read_requests": 122681,
+            "read_bytes_requested": 7851584,
+            "read_beats_received": 1962896
+          },
+          "2": {
+            "read_requests": 820,
+            "read_bytes_requested": 3280,
+            "read_beats_received": 820
+          }
+        }
+      }
+    }
+  },
+  "validation": {
+    "fuxi_imac_full_system": {
+      "passed": 9,
+      "invocation_wall_seconds": 54.766017040994484,
+      "cases": [
+        {
+          "case": "chdir",
+          "wall_seconds": 2.29
+        },
+        {
+          "case": "dup",
+          "wall_seconds": 2.04
+        },
+        {
+          "case": "elf_alignment",
+          "wall_seconds": 3.28
+        },
+        {
+          "case": "elf_permissions",
+          "wall_seconds": 5.84
+        },
+        {
+          "case": "elf_reject",
+          "wall_seconds": 10.62
+        },
+        {
+          "case": "fs_read",
+          "wall_seconds": 6.55
+        },
+        {
+          "case": "io_error",
+          "wall_seconds": 2.09
+        },
+        {
+          "case": "user_buffers",
+          "wall_seconds": 2.2
+        },
+        {
+          "case": "user_faults",
+          "wall_seconds": 5.63
+        }
+      ]
+    },
+    "qemu": {
+      "runtime_passed": 20,
+      "system_passed": 9,
+      "smoke_passed": true
+    },
+    "host_geefs": "passed",
+    "hashmap_sync": "passed",
+    "incremental": "passed",
+    "stack_alignment": "old ELF rejected; fixed kernel and boot accepted",
+    "workflow_yaml": "parsed",
+    "workflow_bash_scripts": 13
+  }
+}
