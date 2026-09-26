@@ -4,31 +4,31 @@ extern def memset(dst: u8 var*, c: i32, n: usize): u8 var* {
   var d = dst, remaining = n
   let byte = c as u8
   // Only issue aligned word stores: Fuxi does not support unaligned accesses.
-  while remaining != 0 as usize && ((d as usize) & (3 as usize)) != 0 as usize {
+  while remaining != 0 && ((d as usize) & (3)) != 0 {
     *d = byte
     d += 1
-    remaining -= 1 as usize
+    remaining -= 1
   }
-  let word = (byte as u32) * (0x01010101 as u32)
+  let word = (byte as u32) * (0x01010101)
   var words = d as u32 var*
-  while remaining >= 16 as usize {
+  while remaining >= 16 {
     words[0] = word
     words[1] = word
     words[2] = word
     words[3] = word
     words += 4
-    remaining -= 16 as usize
+    remaining -= 16
   }
-  while remaining >= 4 as usize {
+  while remaining >= 4 {
     *words = word
     words += 1
-    remaining -= 4 as usize
+    remaining -= 4
   }
   d = words as u8 var*
-  while remaining != 0 as usize {
+  while remaining != 0 {
     *d = byte
     d += 1
-    remaining -= 1 as usize
+    remaining -= 1
   }
   dst
 }
@@ -39,19 +39,19 @@ extern def memmove(dst: u8 var*, src: u8*, n: usize): u8 var* {
     // overlapped
     s += n
     d += n
-    while n > 0 as usize {
+    while n > 0 {
       d -= 1
       s -= 1
       (*d) = *s
-      n -= 1 as usize
+      n -= 1
     }
   }
   else {
-    while n > 0 as usize {
+    while n > 0 {
       *d = *s
       d += 1
       s += 1
-      n -= 1 as usize
+      n -= 1
     }
   }
   dst
@@ -62,12 +62,12 @@ extern def memcpy(dst: u8 var*, src: u8*, n: usize): u8 var* {
 }
 
 extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
-  var l = lhs, r = rhs, n = 0 as usize
+  var l = lhs, r = rhs, n: usize = 0
   while n < count {
     if l[n] != r[n] {
       return l[n] as i32 - r[n] as i32
     }
-    n += 1 as usize
+    n += 1
   }
   0
 }

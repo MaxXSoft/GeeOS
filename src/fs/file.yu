@@ -67,7 +67,7 @@ public def open(this: File var&, inode: INode var*, flags: i32): i32 {
   inode.open()
   this.inode = inode
   this.status = FileStatus.Opened
-  this.offset = 0 as usize
+  this.offset = 0
   0
 }
 
@@ -75,7 +75,7 @@ public def close(this: File var&): i32 {
   if this.isOpened() {
     this.status = FileStatus.Allocated
     this.inode.close()
-    this.inode = null as INode var*
+    this.inode = null
     0
   }
   else {

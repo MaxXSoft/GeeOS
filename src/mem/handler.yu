@@ -78,7 +78,7 @@ def frameMap(this: MemoryHandler var*, pt: ActivePageTable var&,
              addr: usize, attr: MemoryAttr&) {
   // allocate new frame
   let target = allocPhyMem() as usize
-  assert(target != 0 as usize, "frameMap - OOM")
+  assert(target != 0, "frameMap - OOM")
   attr.apply(pt.map(addr, target))
 }
 

@@ -12,7 +12,7 @@ inline let TID_NONE           = -1 as Tid
 inline let MAX_THREAD_COUNT   = 128
 
 // maximum time slice of round robin scheduler
-inline let TIME_SLICE         = 1 as usize
+inline let TIME_SLICE: usize         = 1
 
 // stack of user thread
 inline let USER_STACK_SIZE    = 0x10000

@@ -31,12 +31,12 @@ public def init(this: Scheduler var&, max_time: usize) {
     i += 1
   }
   this.max_time = max_time
-  this.current = 0 as Tid
+  this.current = 0
 }
 
 // add thread to scheduler
 public def push(this: Scheduler var&, tid: Tid) {
-  let tid = tid + 1 as Tid
+  let tid = tid + 1
   // allocate time slice for new thread
   let info: RoundRobinInfo var& = this.threads[tid]
   info.is_valid = true
@@ -48,23 +48,23 @@ public def push(this: Scheduler var&, tid: Tid) {
   this.threads[prev].next = tid
   this.threads[tid].prev = prev
   this.threads[0].prev = tid
-  this.threads[tid].next = 0 as Tid
+  this.threads[tid].next = 0
 }
 
 // get next thread from scheduler
 public def pop(this: Scheduler var&, tid: Tid var&): bool {
   let ret = this.threads[0].next
-  if ret != 0 as Tid {
+  if ret != 0 {
     // pop from queue
     let prev = this.threads[ret].prev, next = this.threads[ret].next
     this.threads[next].prev = prev
     this.threads[prev].next = next
-    this.threads[ret].prev = 0 as Tid
-    this.threads[ret].next = 0 as Tid
+    this.threads[ret].prev = 0
+    this.threads[ret].next = 0
     // set as current thread
     this.threads[ret].is_valid = false
     this.current = ret
-    tid = ret - 1 as Tid
+    tid = ret - 1
     true
   }
   else {
@@ -77,8 +77,8 @@ public def pop(this: Scheduler var&, tid: Tid var&): bool {
 // or current thread run out of time slices
 public def tick(this: Scheduler var&): bool {
   let tid = this.current
-  if tid != 0 as Tid {
-    this.threads[tid].time -= 1 as usize
+  if tid != 0 {
+    this.threads[tid].time -= 1
     !this.threads[tid].time
   }
   else {
@@ -88,8 +88,8 @@ public def tick(this: Scheduler var&): bool {
 
 // remove thread from scheduler
 public def exit(this: Scheduler var&, tid: Tid) {
-  let tid = tid + 1 as Tid
+  let tid = tid + 1
   if this.current == tid {
-    this.current = 0 as Tid
+    this.current = 0
   }
 }

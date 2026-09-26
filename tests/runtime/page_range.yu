@@ -4,32 +4,32 @@ extern declare test_check: (bool, u8*)
 
 def checkRange(start: usize, end: usize, first_page: usize, count: usize) {
   var range = newPageRange(start, end)
-  var i = 0 as usize
+  var i: usize = 0
   while i < count {
     test_check(!range.last(), "page range has expected page")
     test_check(range.next() == first_page + i * PAGE_SIZE as usize,
                "page range yields consecutive aligned addresses")
-    i += 1 as usize
+    i += 1
   }
   test_check(range.last(), "page range ends at expected boundary")
 }
 
 extern def test_main(): i32 {
   let page = PAGE_SIZE as usize
-  checkRange(0 as usize, 0 as usize, 0 as usize, 0 as usize)
-  checkRange(1 as usize, 1 as usize, 0 as usize, 0 as usize)
-  checkRange(page, page, 0 as usize, 0 as usize)
-  checkRange(0xffffffff as usize, 0xffffffff as usize, 0 as usize, 0 as usize)
-  checkRange(page * 2 as usize, page, 0 as usize, 0 as usize)
-  checkRange(0xffffffff as usize, 0 as usize, 0 as usize, 0 as usize)
-  checkRange(0 as usize, 1 as usize, 0 as usize, 1 as usize)
-  checkRange(1 as usize, page, 0 as usize, 1 as usize)
-  checkRange(page, page + 1 as usize, page, 1 as usize)
-  checkRange(page, page * 2 as usize, page, 1 as usize)
-  checkRange(page - 1 as usize, page + 1 as usize, 0 as usize, 2 as usize)
-  checkRange(page, page * 2 as usize + 1 as usize, page, 2 as usize)
-  checkRange(0 as usize, page * 3 as usize, 0 as usize, 3 as usize)
-  checkRange(0xffffe001 as usize, 0xffffffff as usize,
-              0xffffe000 as usize, 2 as usize)
+  checkRange(0, 0, 0, 0)
+  checkRange(1, 1, 0, 0)
+  checkRange(page, page, 0, 0)
+  checkRange(0xffffffff, 0xffffffff, 0, 0)
+  checkRange(page * 2, page, 0, 0)
+  checkRange(0xffffffff, 0, 0, 0)
+  checkRange(0, 1, 0, 1)
+  checkRange(1, page, 0, 1)
+  checkRange(page, page + 1, page, 1)
+  checkRange(page, page * 2, page, 1)
+  checkRange(page - 1, page + 1, 0, 2)
+  checkRange(page, page * 2 + 1, page, 2)
+  checkRange(0, page * 3, 0, 3)
+  checkRange(0xffffe001, 0xffffffff,
+              0xffffe000, 2)
   0
 }

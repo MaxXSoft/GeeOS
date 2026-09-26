@@ -40,23 +40,23 @@ def convToStat(this: Metadata&): Stat {
 public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
   // Close-on-exec flags are not implemented by the current descriptor table.
   if oldfd == newfd || newfd < 0 || newfd >= FILE_COUNT || flags != 0 {
-    return -1 as isize
+    return -1
   }
   let fds: FileInfo var& = getCurrentThread().getFds()
   fds.lock()
   // get file1
   let file1 = fds.getFile(oldfd)
-  if file1 == null as File var* || !(*file1).isOpened() {
+  if file1 == null || !(*file1).isOpened() {
     fds.unlock()
-    return -1 as isize
+    return -1
   }
   // initialize file2
   var file2 = fds.getFile(newfd)
-  if file2 == null as File var* {
+  if file2 == null {
     // allocate new file
     if !fds.allocFdAt(newfd) {
       fds.unlock()
-      return -1 as isize
+      return -1
     }
     file2 = fds.getFile(newfd)
   }
@@ -71,14 +71,14 @@ public def sysDup3(oldfd: i32, newfd: i32, flags: i32): isize {
 }
 
 public def sysChdir(path: u8*): isize {
-  if !userString(path) { return -1 as isize }
+  if !userString(path) { return -1 }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
   // get target inode
   let path = newStrView(path)
   let inode = fds.getCwd().lookup(path)
-  if inode != null as INode var* {
+  if inode != null {
     let meta = inode.getMetadata()
     if meta.itype == INodeType.Dir {
       // set inode as cwd
@@ -91,14 +91,14 @@ public def sysChdir(path: u8*): isize {
 }
 
 public def sysOpen(path: u8*, flags: i32): isize {
-  if !userString(path) { return -1 as isize }
+  if !userString(path) { return -1 }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var fd = -1
   fds.lock()
   // lookup the specific file
   let path = newStrView(path)
   let inode = fds.getCwd().lookup(path)
-  if inode != null as INode var* {
+  if inode != null {
     // allocate a new file descriptor & open file
     !fds.allocFd(fd) || (*fds.getFile(fd)).open(inode, flags) < 0
   }
@@ -112,7 +112,7 @@ public def sysClose(fd: i32): isize {
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
-  if file != null as File var* {
+  if file != null {
     // close file & deallocate file descriptor
     ret = (*file).close()
     if ret >= 0 { fds.deallocFd(fd) }
@@ -127,7 +127,7 @@ public def sysLseek(fd: i32, offset: usize, whence: i32): usize {
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
-  if file != null as File var* {
+  if file != null {
     // seek offset
     ret = (*file).seek(offset, whence)
   }
@@ -136,13 +136,13 @@ public def sysLseek(fd: i32, offset: usize, whence: i32): usize {
 }
 
 public def sysRead(fd: i32, buf: u8 var*, len: usize): isize {
-  if !userRange(buf as usize, len, true) { return -1 as isize }
+  if !userRange(buf as usize, len, true) { return -1 }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
-  if file != null as File var* {
+  if file != null {
     // read file
     ret = (*file).read(buf, len)
   }
@@ -151,13 +151,13 @@ public def sysRead(fd: i32, buf: u8 var*, len: usize): isize {
 }
 
 public def sysWrite(fd: i32, buf: u8*, len: usize): isize {
-  if !userRange(buf as usize, len, false) { return -1 as isize }
+  if !userRange(buf as usize, len, false) { return -1 }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
-  if file != null as File var* {
+  if file != null {
     // write file
     ret = (*file).write(buf, len)
   }
@@ -166,13 +166,13 @@ public def sysWrite(fd: i32, buf: u8*, len: usize): isize {
 }
 
 public def sysFstat(fd: i32, buf: Stat var*): isize {
-  if !userRange(buf as usize, sizeof Stat, true) { return -1 as isize }
+  if !userRange(buf as usize, sizeof Stat, true) { return -1 }
   let fds: FileInfo var& = getCurrentThread().getFds()
   var ret = -1
   fds.lock()
   // get file by descriptor
   let file = fds.getFile(fd)
-  if file != null as File var* {
+  if file != null {
     // get metadata
     var meta: Metadata
     if (*file).getMetadata(meta) {

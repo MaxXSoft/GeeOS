@@ -19,7 +19,7 @@ public struct TrapFrame {
 }
 
 inline def incSepc(this: TrapFrame var&) {
-  this.sepc += 4 as usize
+  this.sepc += 4
 }
 
 inline def isUser(this: TrapFrame&): bool {
@@ -83,7 +83,7 @@ def pushAt(this: ContextContext, stack_top: usize): Context {
 
 // create new null context
 public def newNullContext(): Context {
-  [Context] {null as ContextContext var*}
+  [Context] {null}
 }
 
 // create new kernel thread context

@@ -57,7 +57,7 @@ def handlePageFault(tf: TrapFrame var&) {
 // initialize trap handling
 public def initTrap() {
   initIntr()
-  setSscratch(0 as usize)
+  setSscratch(0)
   setStvec(_handleTrap as usize)
 }
 
@@ -81,7 +81,7 @@ extern def handleTrap(tf: TrapFrame var&) {
       io <<< "sepc    = 0x" <<$ tf.sepc <<< '\n'
       io <<< "scause  = " <<< tf.scause <<< '\n'
       io <<< "stval   = 0x" <<$ tf.stval <<< '\n'
-      if tf.isUser() && (tf.scause & (1 << 31) as usize) == 0 as usize {
+      if tf.isUser() && (tf.scause & (1 << 31)) == 0 {
         io <<< "ERROR: user thread exception\n"
         exit(-1 as usize)
       }

@@ -15,8 +15,8 @@ inline let CLINT_MTIME  = 0x11000100
 inline let CLINT_MCMP   = 0x11000108
 
 // UART related definitions
-inline let UART_CLOCK_FREQ  = 100000000 as u32
-inline let UART_BAUD_RATE   = 115200 as u32
+inline let UART_CLOCK_FREQ: u32  = 100000000
+inline let UART_BAUD_RATE: u32   = 115200
 inline let UART_DAT         = 0x11041000 as u32 volatile var*
 inline let UART_FCR         = 0x11041008 as u32 volatile var*
 inline let UART_LCR         = 0x1104100C as u32 volatile var*
@@ -25,10 +25,10 @@ inline let UART_DLL         = 0x11041000 as u32 volatile var*
 inline let UART_DLM         = 0x11041004 as u32 volatile var*
 inline let UART_MCR         = 0x11041010 as u32 volatile var*
 inline let UART_IER         = 0x11041004 as u32 volatile var*
-inline let UART_LCR_DLAB    = 0x80 as u32
-inline let UART_LCR_8BIT    = 0x03 as u32
-inline let UART_LSR_DA      = 0x01 as u32
-inline let UART_LSR_RI      = 0x40 as u32
+inline let UART_LCR_DLAB: u32    = 0x80
+inline let UART_LCR_8BIT: u32    = 0x03
+inline let UART_LSR_DA: u32      = 0x01
+inline let UART_LSR_RI: u32      = 0x40
 
 // PLIC related definitions
 inline let PLIC_IER         = 0x08
@@ -38,25 +38,25 @@ inline let PLIC_MER         = 0x1c
 // initialize UART
 inline def initIO() {
   // set baud rate
-  let divisor = UART_CLOCK_FREQ / ((16 as u32) * UART_BAUD_RATE)
+  let divisor = UART_CLOCK_FREQ / ((16) * UART_BAUD_RATE)
   (*UART_LCR) = UART_LCR_DLAB
-  (*UART_DLL) = divisor & 0xff as u32
-  (*UART_DLM) = divisor >> 8 as u32
+  (*UART_DLL) = divisor & 0xff
+  (*UART_DLM) = divisor >> 8
   // set transfer format (8-bit, no parity bit)
   (*UART_LCR) = UART_LCR_8BIT
   // enable 8 bytes receive FIFO
-  (*UART_FCR) = 0x81 as u32
+  (*UART_FCR) = 0x81
   // enable interrupts
-  (*UART_IER) = 0x01 as u32
+  (*UART_IER) = 0x01
   // disable modem controls
-  (*UART_MCR) = 0 as u32
+  (*UART_MCR) = 0
 }
 
 // initialize PLIC
 inline def initIntr() {
   let UART_IRQ = 1 << 2
   (*((PLIC_ADDR + PLIC_IER) as u32 volatile var*)) = UART_IRQ as u32
-  (*((PLIC_ADDR + PLIC_MER) as u32 volatile var*)) = 3 as u32
+  (*((PLIC_ADDR + PLIC_MER) as u32 volatile var*)) = 3
 }
 
 // acknowledge all IRQs from PLIC
@@ -64,7 +64,7 @@ inline def ackIntr(): u32 {
   // acknowledge IRQ #2 (UART) only
   let UART_IRQ = 1 << 2
   (*((PLIC_ADDR + PLIC_IAR) as u32 volatile var*)) = UART_IRQ as u32
-  0 as u32
+  0
 }
 
 // This platform does not require a separate IRQ completion.
@@ -72,13 +72,13 @@ inline def finishIntr(irq: u32) {}
 
 // put character
 inline def putChar(c: u8) {
-  while ((*UART_LSR) & UART_LSR_RI) == 0 as u32 {}
+  while ((*UART_LSR) & UART_LSR_RI) == 0 {}
   (*UART_DAT) = c as u32
 }
 
 // get character
 inline def getChar(): i32 {
-  if ((*UART_LSR) & UART_LSR_DA) != 0 as u32 {
+  if ((*UART_LSR) & UART_LSR_DA) != 0 {
     (*UART_DAT) as i32
   }
   else {

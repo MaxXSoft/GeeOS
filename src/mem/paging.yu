@@ -10,11 +10,11 @@ import lib.except
 import mem.consts
 
 // address for temporary mapping
-let TEMP_PAGE_ADDR  = 0xcafeb000 as usize
+let TEMP_PAGE_ADDR: usize  = 0xcafeb000
 // address of root page table
 let ROOT_PAGE_TABLE =
-    ((RECURSIVE_INDEX << 22 as usize) |
-     ((RECURSIVE_INDEX + 1 as usize) << 12 as usize)) as PageTable var*
+    ((RECURSIVE_INDEX << 22) |
+     ((RECURSIVE_INDEX + 1) << 12)) as PageTable var*
 
 
 // page entry representation
@@ -99,7 +99,7 @@ struct PhysFrameAlloc {
 
 def allocPhysFrame(this: FrameAllocator var*): Frame {
   let addr = allocPhyMem() as usize
-  if addr == 0 as usize {
+  if addr == 0 {
     panic("allocPhysFrame - OOM")
   }
   newFrame(newPhysAddr(addr))
@@ -133,7 +133,7 @@ public struct ActivePageTable {
 public def getEntry(this: ActivePageTable var&, vaddr: usize): PageEntry var& {
   let page = newPage(newVirtAddr(vaddr))
   let pte_ptr = this.page_table.getPtePtr(page)
-  if pte_ptr == null as PageTableEntry var* {
+  if pte_ptr == null {
     panic("getEntry - fail to get entry")
   }
   this.entry = newPageEntry(pte_ptr, page)
@@ -143,8 +143,8 @@ public def getEntry(this: ActivePageTable var&, vaddr: usize): PageEntry var& {
 def getEntryPtr(this: ActivePageTable var&, vaddr: usize): PageEntry var* {
   let page = newPage(newVirtAddr(vaddr))
   let pte_ptr = this.page_table.getPtePtr(page)
-  if pte_ptr == null as PageTableEntry var* {
-    null as PageEntry var*
+  if pte_ptr == null {
+    null
   }
   else {
     this.entry = newPageEntry(pte_ptr, page)
@@ -211,7 +211,7 @@ public struct IptWithIter {
 }
 
 public def newInactivePageTable(): InactivePageTable {
-  let frame = allocPhysFrame(null as FrameAllocator var*)
+  let frame = allocPhysFrame(null)
   var act_pt = newActivePageTable()
   let temp_pt = act_pt.withTempMapBegin(frame.getAddr()); {
     temp_pt.zero()
@@ -332,17 +332,17 @@ public struct PageRange {
 
 public def newPageRange(start_addr: usize, end_addr: usize): PageRange {
   if start_addr >= end_addr {
-    return [PageRange] {0 as usize, 0 as usize}
+    return [PageRange] {0, 0}
   }
   [PageRange] {
     start_addr / PAGE_SIZE as usize,
-    (end_addr - 1 as usize) / PAGE_SIZE as usize + 1 as usize,
+    (end_addr - 1) / PAGE_SIZE as usize + 1,
   }
 }
 
 public def next(this: PageRange var&): usize {
   let page = this.start * PAGE_SIZE as usize
-  this.start += 1 as usize
+  this.start += 1
   page
 }
 

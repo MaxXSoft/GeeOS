@@ -53,7 +53,7 @@ inline def getCwd(this: FileInfo&): INode var* {
 }
 
 public def setCwd(this: FileInfo var&, cwd: INode var*) {
-  assert(cwd != null as INode var*, "FileInfo.setCwd")
+  assert(cwd != null, "FileInfo.setCwd")
   cwd.open()
   this.cwd.close()
   this.cwd = cwd
@@ -114,6 +114,6 @@ public def getFile(this: FileInfo var&, fd: i32): File var* {
     &this.files[fd]
   }
   else {
-    null as File var*
+    null
   }
 }

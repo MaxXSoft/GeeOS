@@ -12,12 +12,12 @@ extern declare __acquire: (Spinlock var&)
 extern declare __release: (Spinlock var&)
 
 public def newSpinlock(): Spinlock {
-  [Spinlock] {0 as u32}
+  [Spinlock] {0}
 }
 
 public def isHold(this: Spinlock&): bool {
   pushOff()
-  let r = this.locked != 0 as u32
+  let r = this.locked != 0
   popOff()
   r
 }

@@ -158,11 +158,11 @@ public def lookup(this: INode var*, path: StrView&): INode var* {
   // check if is valid
   let meta = this.getMetadata()
   if meta.itype != INodeType.Dir || path.empty() {
-    return null as INode var*
+    return null
   }
   // get trimmed path
   var path = path
-  if path.getLen() > 1 as usize && path.back() == '/' {
+  if path.getLen() > 1 && path.back() == '/' {
     path.removeSuffix(1)
   }
   // get current inode
@@ -176,11 +176,11 @@ public def lookup(this: INode var*, path: StrView&): INode var* {
   // get target inode
   for name in path.split('/') {
     let next = cur.find(name)
-    if next != null as INode var* {
+    if next != null {
       cur = next
     }
     else {
-      return null as INode var*
+      return null
     }
   }
   cur

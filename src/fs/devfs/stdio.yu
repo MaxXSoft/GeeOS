@@ -86,15 +86,15 @@ public def newStdOutINode(): INode var* {
  * inode virtual operations of stdio
  */
 def stdIoGetFs(this: INode var*): FileSystem var* {
-  null as FileSystem var*
+  null
 }
 
 def stdIoGetMetadata(this: INode var*): Metadata {
-  [Metadata] {0 as u32, INodeType.CharDevice}
+  [Metadata] {0, INodeType.CharDevice}
 }
 
 def stdIoFind(this: INode var*, name: StrView&): INode var* {
-  null as INode var*
+  null
 }
 
 def stdIoRead(this: INode var*, buf: u8 var*, len: usize,

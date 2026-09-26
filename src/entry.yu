@@ -43,10 +43,10 @@ extern def entry() {
   // set mepc to S-mode entry
   setMepc(main as usize)
   // disable paging
-  setSatp(0 as usize)
+  setSatp(0)
   // delegate all interrupts & exceptions to S-mode
-  setMedeleg(0xffff as usize)
-  setMideleg(0xffff as usize)
+  setMedeleg(0xffff)
+  setMideleg(0xffff)
   // initialize timer
   initTimer()
   // enter S-mode

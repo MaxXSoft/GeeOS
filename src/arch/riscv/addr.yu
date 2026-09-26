@@ -11,7 +11,7 @@ inline def newVirtAddr(addr: usize): VirtAddr {
 }
 
 inline def newVirtAddr(vpn1: usize, vpn0: usize, offset: usize): VirtAddr {
-  [VirtAddr] {(vpn1 << 22 as usize) | (vpn0 << 12 as usize) | offset}
+  [VirtAddr] {(vpn1 << 22) | (vpn0 << 12) | offset}
 }
 
 inline def getAddr(this: VirtAddr&): usize {
@@ -19,27 +19,27 @@ inline def getAddr(this: VirtAddr&): usize {
 }
 
 inline def getVpn1(this: VirtAddr&): usize {
-  this.addr >> 22 as usize
+  this.addr >> 22
 }
 
 inline def getVpn0(this: VirtAddr&): usize {
-  (this.addr >> 12 as usize) & 0x3ff as usize
+  (this.addr >> 12) & 0x3ff
 }
 
 inline def getVpn(this: VirtAddr&): usize {
-  this.addr >> 12 as usize
+  this.addr >> 12
 }
 
 inline def getOffset(this: VirtAddr&): usize {
-  this.addr & 0xfff as usize
+  this.addr & 0xfff
 }
 
 inline def roundUp(this: VirtAddr&): VirtAddr {
-  [VirtAddr] {(this.addr + 0xfff as usize) & (~0xfff as usize)}
+  [VirtAddr] {(this.addr + 0xfff) & (~0xfff)}
 }
 
 inline def roundDown(this: VirtAddr&): VirtAddr {
-  [VirtAddr] {this.addr & (~0xfff as usize)}
+  [VirtAddr] {this.addr & (~0xfff)}
 }
 
 // 32-bit physical address
@@ -56,27 +56,27 @@ inline def getAddr(this: PhysAddr&): usize {
 }
 
 inline def getPpn1(this: PhysAddr&): usize {
-  this.addr >> 22 as usize
+  this.addr >> 22
 }
 
 inline def getPpn0(this: PhysAddr&): usize {
-  (this.addr >> 12 as usize) & 0x3ff as usize
+  (this.addr >> 12) & 0x3ff
 }
 
 inline def getPpn(this: PhysAddr&): usize {
-  this.addr >> 12 as usize
+  this.addr >> 12
 }
 
 inline def getOffset(this: PhysAddr&): usize {
-  this.addr & 0xfff as usize
+  this.addr & 0xfff
 }
 
 inline def roundUp(this: PhysAddr&): PhysAddr {
-  [PhysAddr] {(this.addr + 0xfff as usize) & (~0xfff as usize)}
+  [PhysAddr] {(this.addr + 0xfff) & (~0xfff)}
 }
 
 inline def roundDown(this: PhysAddr&): PhysAddr {
-  [PhysAddr] {this.addr & (~0xfff as usize)}
+  [PhysAddr] {this.addr & (~0xfff)}
 }
 
 // virtual page address
@@ -89,11 +89,11 @@ inline def newPage(addr: VirtAddr): Page {
 }
 
 inline def newPage(vpn: usize): Page {
-  [Page] {newVirtAddr(vpn << 12 as usize)}
+  [Page] {newVirtAddr(vpn << 12)}
 }
 
 inline def newPage(vpn1: usize, vpn0: usize): Page {
-  [Page] {newVirtAddr(vpn1, vpn0, 0 as usize)}
+  [Page] {newVirtAddr(vpn1, vpn0, 0)}
 }
 
 inline def getAddr(this: Page&): VirtAddr {
@@ -122,11 +122,11 @@ inline def newFrame(addr: PhysAddr): Frame {
 }
 
 inline def newFrame(ppn: usize): Frame {
-  [Frame] {newPhysAddr(ppn << 12 as usize)}
+  [Frame] {newPhysAddr(ppn << 12)}
 }
 
 inline def newFrameFromSatp(): Frame {
-  newFrame(getSatp() & 0x3fffff as usize)
+  newFrame(getSatp() & 0x3fffff)
 }
 
 inline def getAddr(this: Frame&): PhysAddr {

@@ -11,5 +11,5 @@ def release(ptr: u8 var*) {
 
 extern def test_main(): i32 {
   initUserHeap()
-  runHeapCases(allocate, release, 0x4000 as usize)
+  runHeapCases(allocate, release, 0x4000)
 }

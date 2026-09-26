@@ -91,7 +91,7 @@ def getINode(this: GeeFs var&, id: u32): INode var* {
   // get offset
   let in_per_blk = (this.super_block.block_size - sizeof GfsInbHeader) /
                    sizeof GfsINode
-  var offset = 1 as u32 + this.super_block.free_map_num + id / in_per_blk
+  var offset: u32 = 1 + this.super_block.free_map_num + id / in_per_blk
   offset *= this.super_block.block_size
   offset += sizeof GfsInbHeader + (id % in_per_blk) * sizeof GfsINode
   // read inode
@@ -99,7 +99,7 @@ def getINode(this: GeeFs var&, id: u32): INode var* {
   if !this.dev.readAssert(sizeof GfsINode, &inode as u8 var*,
                           offset as usize) {
     this.sema.signal()
-    return null as INode var*
+    return null
   }
   // add to map
   let mem_inode = newGeeFsINode(id, inode, &this)
@@ -155,7 +155,7 @@ def getBlockOffset(this: GeeFs var&, inode: GfsINode&, n: u32,
 def open(this: GeeFs var&): bool {
   // read super block header
   if !this.dev.readAssert(sizeof GfsSbHeader, &this.super_block as u8 var*,
-                          0 as usize) {
+                          0) {
     return false
   }
   // clear the inode map
@@ -167,7 +167,7 @@ def open(this: GeeFs var&): bool {
     this.inodes.clear()
   }
   // initialize root inode
-  this.getINode(0 as u32) != null as INode var*
+  this.getINode(0) != null
 }
 
 // create filesystem by opening image on device
@@ -185,7 +185,7 @@ public def newGeeFs(dev: DeviceInterface var*): FileSystem var* {
   }
   else {
     (geefs as FileSystem var*).del()
-    null as FileSystem var*
+    null
   }
 }
 
@@ -221,40 +221,40 @@ def gfsINodeFind(this: INode var*, name: StrView&): INode var* {
   let fs: GeeFs var& = this.getGeeFs()
   // make sure current inode represents a directory
   if inode.itype != GfsINodeType.Dir {
-    return null as INode var*
+    return null
   }
   // traverse all entries in current inode
   let ent_num = inode.size / sizeof GfsEntry
   let ent_per_blk = fs.super_block.block_size / sizeof GfsEntry
   // traverse data blocks
-  var i = 0 as u32
+  var i: u32 = 0
   while i < inode.block_num {
     // get offset
     var blk_ofs: u32
     if !fs.getBlockOffset(inode, i, blk_ofs) {
-      return null as INode var*
+      return null
     }
     let offset = blk_ofs * fs.super_block.block_size
     // traverse entries in current block
     let entry_num = min(ent_num - i * ent_per_blk, ent_per_blk)
-    var j = 0 as u32
+    var j: u32 = 0
     while j < entry_num {
       // read entry
       let ent_ofs = offset + j * sizeof GfsEntry as u32
       var entry: GfsEntry
       if !fs.dev.readAssert(sizeof GfsEntry, &entry as u8 var*,
                             ent_ofs as usize) {
-        return null as INode var*
+        return null
       }
       // get inode
       if name == entry.filename as u8* {
         return fs.getINode(entry.inode_id)
       }
-      j += 1 as u32
+      j += 1
     }
-    i += 1 as u32
+    i += 1
   }
-  null as INode var*
+  null
 }
 
 // read inode content to buffer
@@ -264,11 +264,11 @@ def gfsINodeRead(this: INode var*, buf: u8 var*, len: usize,
   let fs: GeeFs var& = this.getGeeFs()
   if offset >= inode.size as usize { return 0 }
   // read file
-  var data_len = 0 as u32, i = offset as u32
+  var data_len: u32 = 0, i = offset as u32
   var remaining = inode.size - i
   if len < remaining as usize { remaining = len as u32 }
-  remaining = min(remaining, 0x7fffffff as u32)
-  while remaining != 0 as u32 {
+  remaining = min(remaining, 0x7fffffff)
+  while remaining != 0 {
     // get block offset
     let n = i / fs.super_block.block_size
     if n >= inode.block_num { break }
@@ -309,8 +309,8 @@ def gfsINodeCleanUp(this: INode var*) {
 def gfsGetRoot(this: FileSystem var*): INode var* {
   let fs: GeeFs var& = this.getGeeFs()
   fs.sema.wait()
-  let root = fs.inodes.get(0 as u32) as INode var*
-  assert(root != null as INode var*, "GeeFs.getRoot")
+  let root = fs.inodes.get(0) as INode var*
+  assert(root != null, "GeeFs.getRoot")
   fs.sema.signal()
   root
 }

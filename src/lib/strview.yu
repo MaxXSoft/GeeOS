@@ -28,7 +28,7 @@ inline def getLen(this: StrView&): usize {
 
 // check whether the view is empty
 inline def empty(this: StrView&): bool {
-  this.len == 0 as usize
+  this.len == 0
 }
 
 // get the specified character
@@ -46,7 +46,7 @@ inline def front(this: StrView&): u8 {
 
 // get the last character
 inline def back(this: StrView&): u8 {
-  this.str[this.len - 1 as usize]
+  this.str[this.len - 1]
 }
 
 // check if equals to a null terminated string
@@ -116,18 +116,18 @@ inline def split(this: StrView&, delimiter: u8): StrViewSplitIter {
 // iterator method 'next'
 public def next(this: StrViewSplitIter var&): StrView {
   // find next position of delimiter
-  var len = 0 as usize
+  var len: usize = 0
   while len < this.len {
     if this.cur[len] == this.delimiter {
       break
     }
-    len += 1 as usize
+    len += 1
   }
   // get next string view
   let sv = newStrView(this.cur, len)
   // update current iterator
   if len < this.len {
-    len += 1 as usize
+    len += 1
   }
   this.cur += len
   this.len -= len
@@ -136,5 +136,5 @@ public def next(this: StrViewSplitIter var&): StrView {
 
 // iterator method 'last'
 inline def last(this: StrViewSplitIter&): bool {
-  this.len == 0 as usize
+  this.len == 0
 }

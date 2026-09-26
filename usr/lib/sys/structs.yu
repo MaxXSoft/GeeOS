@@ -1,5 +1,5 @@
 // constants
-inline let FILE_NAME_MAX_LEN  = 28 as u32
+inline let FILE_NAME_MAX_LEN: u32  = 28
 
 // file type
 public enum FileType {

@@ -3,8 +3,8 @@ public import fs.vfs.vfs
 import fs.devfs.stdio
 
 // inodes of stdio
-public var stdin: INode var* = null as INode var*
-public var stdout: INode var* = null as INode var*
+public var stdin: INode var* = null
+public var stdout: INode var* = null
 
 // input buffer
 var inbuffer = [StdIn] {}
@@ -25,9 +25,9 @@ public def initDevFs() {
 public def cleanUpDevFs() {
   // release stdio
   stdin.close()
-  stdin = null as INode var*
+  stdin = null
   stdout.close()
-  stdout = null as INode var*
+  stdout = null
   inbuffer.del()
   // TODO: other devices
 }

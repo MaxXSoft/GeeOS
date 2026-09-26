@@ -15,7 +15,7 @@ inline let CLINT_MCMP   = 0x90010100
 
 inline def initIO() {}
 inline def initIntr() {}
-inline def ackIntr(): u32 { 0 as u32 }
+inline def ackIntr(): u32 { 0 }
 inline def finishIntr(irq: u32) {}
 
 inline def putChar(c: u8) {
@@ -27,6 +27,6 @@ inline def getChar(): i32 {
 }
 
 inline def halt(code: i32) {
-  *(0x90000100 as u8 volatile var*) = 1 as u8
+  *(0x90000100 as u8 volatile var*) = 1
   while true {}
 }

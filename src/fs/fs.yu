@@ -4,7 +4,7 @@ import fs.geefs.fs
 import fs.devfs.fs
 
 // root inode of filesystem
-public var root_inode: INode var* = null as INode var*
+public var root_inode: INode var* = null
 
 
 // initialize filesystem
@@ -22,7 +22,7 @@ public def initFileSystem() {
 public def cleanUpFileSystem() {
   // release root inode
   root_inode.close()
-  root_inode = null as INode var*
+  root_inode = null
   // clean up GeeFS
   cleanUpGeeFs()
   // clean up DevFS

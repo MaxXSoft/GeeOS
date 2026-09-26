@@ -18,7 +18,7 @@ public def del(this: CondVar var&) {
 
 public def wait(this: CondVar var&) {
   this.lock.acquire()
-  this.wait_queue.push(getCurrentTid() as usize)
+  this.wait_queue.push(getCurrentTid())
   this.lock.release()
   sleep()
 }

@@ -36,7 +36,7 @@ public def del(this: KernelStack var&) {
   if this.addr as i32 != 0 {
     freePhyMem(this.addr)
   }
-  this.addr = null as u8 var*
+  this.addr = null
 }
 
 // get top of kernel stack
@@ -103,20 +103,20 @@ def validUserElf(data: u8*, size: usize): bool {
   if size < sizeof Elf32Ehdr { return false }
   let ehdr = data as Elf32Ehdr*
   if !ehdr.isValid() || ehdr.getType() != ElfEtype.Executable ||
-     ((*ehdr).e_ident[1] & 0xffffff as u32) != 0x010101 as u32 ||
-     (*ehdr).e_version != 1 as u32 ||
+     ((*ehdr).e_ident[1] & 0xffffff) != 0x010101 ||
+     (*ehdr).e_version != 1 ||
      (*ehdr).e_ehsize as usize != sizeof Elf32Ehdr ||
      (*ehdr).e_phentsize as usize != sizeof Elf32Phdr {
     return false
   }
   let phoff = (*ehdr).e_phoff as usize
   let count = (*ehdr).e_phnum as usize
-  if phoff % 4 as usize != 0 as usize || phoff > size ||
+  if phoff % 4 != 0 || phoff > size ||
      count > (size - phoff) / sizeof Elf32Phdr {
     return false
   }
   let headers = ehdr.getPhdr()
-  var entry_found = false, i = 0 as usize
+  var entry_found = false, i: usize = 0
   while i < count {
     let ph = headers + i
     if ph.getType() == ElfPtype.Load {
@@ -127,7 +127,7 @@ def validUserElf(data: u8*, size: usize): bool {
       if offset > size || file_size > size - offset || file_size > mem_size {
         return false
       }
-      if mem_size != 0 as usize {
+      if mem_size != 0 {
         // The fixed user stack and kernel mappings must remain untouched.
         if start >= USER_STACK_OFFSET as usize ||
            mem_size > USER_STACK_OFFSET as usize - start {
@@ -137,37 +137,37 @@ def validUserElf(data: u8*, size: usize): bool {
         // mapKernel reserves whole megapages for its device mappings,
         // including the megapage containing each inclusive end address.
         let first = start / MEGAPAGE_SIZE as usize
-        let last = (end - 1 as usize) / MEGAPAGE_SIZE as usize
+        let last = (end - 1) / MEGAPAGE_SIZE as usize
         if (first <= UART_END as usize / MEGAPAGE_SIZE as usize &&
             last >= UART_ADDR as usize / MEGAPAGE_SIZE as usize) ||
            (first <= PLIC_END as usize / MEGAPAGE_SIZE as usize &&
             last >= PLIC_ADDR as usize / MEGAPAGE_SIZE as usize) {
           return false
         }
-        var j = 0 as usize
+        var j: usize = 0
         while j < i {
           let other = headers + j
           if other.getType() == ElfPtype.Load &&
-             other.getMemSize() != 0 as u32 {
+             other.getMemSize() != 0 {
             let other_start = other.getVaddr() as usize
-            let other_end = other_start + other.getMemSize() as usize
+            let other_end = other_start + other.getMemSize()
             if start / PAGE_SIZE as usize <=
-                 (other_end - 1 as usize) / PAGE_SIZE as usize &&
+                 (other_end - 1) / PAGE_SIZE as usize &&
                other_start / PAGE_SIZE as usize <=
-                 (end - 1 as usize) / PAGE_SIZE as usize {
+                 (end - 1) / PAGE_SIZE as usize {
               return false
             }
           }
-          j += 1 as usize
+          j += 1
         }
         let entry = ehdr.getEntry() as usize
         if ph.isExecute() && entry >= start && entry < end &&
-           entry % 4 as usize == 0 as usize {
+           entry % 4 == 0 {
           entry_found = true
         }
       }
     }
-    i += 1 as usize
+    i += 1
   }
   entry_found
 }
@@ -198,13 +198,13 @@ def makeMemorySet(this: ElfFile&): MemorySet {
   // traverse program headers in ELF file
   let handler = newFrameHandler()
   for ph in this.getLoadPhdrIter() {
-    if ph.getType() != ElfPtype.Load || ph.getMemSize() == 0 as u32 {
+    if ph.getType() != ElfPtype.Load || ph.getMemSize() == 0 {
       continue
     }
     let start = ph.getVaddr() as usize
-    let end = start + ph.getMemSize() as usize
+    let end = start + ph.getMemSize()
     let data = this.getPhdrData(ph)
-    let file_end = start + ph.getFileSize() as usize
+    let file_end = start + ph.getFileSize()
     ms.push(start, end, ph.toAttr(), handler)
     // Initialize through the kernel's physical mapping. User mappings and
     // MemoryArea metadata retain their final ELF permissions throughout.
@@ -233,8 +233,8 @@ public def newIdleThread(): Thread var* {
   (*thread) = [Thread] {
     newNullContext(),
     newKernelStack(),
-    null as Process var*,
-    0 as Tid,
+    null,
+    0,
   }
   thread
 }
@@ -246,8 +246,8 @@ public def newKernelThread(entry: usize): Thread var* {
   (*thread) = [Thread] {
     newKernelContext(entry, kstack.getTop(), getSatp()),
     kstack,
-    null as Process var*,
-    0 as Tid,
+    null,
+    0,
   }
   thread
 }
@@ -256,7 +256,7 @@ public def newKernelThread(entry: usize): Thread var* {
 public def newUserThread(data: u8*, size: usize,
                          wait_thread: Tid): Thread var* {
   if !validUserElf(data, size) {
-    return null as Thread var*
+    return null
   }
   // get entry point
   let elf = newElfFile(data), ehdr = elf.getEhdr()
@@ -288,7 +288,7 @@ public def newUserThread(data: u8*, size: usize,
 // release current thread structure
 public def del(this: Thread var*) {
   (*this).kstack.del()
-  if (*this).proc != null as Process var* {
+  if (*this).proc != null {
     (*this).proc.decCounter()
   }
   heap.dealloc(this as u8 var*)
@@ -306,7 +306,7 @@ public def switchTo(this: Thread var*, target: Thread var*) {
 
 // get file info
 public def getFds(this: Thread var*): FileInfo var& {
-  assert((*this).proc != null as Process var*, "Thread.getFds")
+  assert((*this).proc != null, "Thread.getFds")
   (*this).proc.getFds()
 }
 

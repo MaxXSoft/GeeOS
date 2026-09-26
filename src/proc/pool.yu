@@ -40,7 +40,7 @@ def allocTid(this: ThreadPool&): Tid {
     i += 1
   }
   panic("allocTid")
-  0 as Tid
+  0
 }
 
 def getInfo(this: ThreadPool var&, tid: Tid): ThreadInfo var& {
@@ -57,7 +57,7 @@ public def init(this: ThreadPool var&, max_time: usize) {
     this.threads[i] = [ThreadInfo] {
       [ThreadStatusCode] {ThreadStatus.Unused},
       false,
-      null as Thread var*,
+      null,
     }
     i += 1
   }
@@ -68,7 +68,7 @@ public def init(this: ThreadPool var&, max_time: usize) {
 public def add(this: ThreadPool var&, thread: Thread var*) {
   let tid = this.allocTid()
   this.threads[tid] = [ThreadInfo] {
-    [ThreadStatusCode] {ThreadStatus.Ready, 0 as usize},
+    [ThreadStatusCode] {ThreadStatus.Ready, 0},
     true,
     thread,
   }
@@ -86,7 +86,7 @@ public def acquire(this: ThreadPool var&, tid: Tid var&): Thread var* {
     info.thread
   }
   else {
-    null as Thread var*
+    null
   }
 }
 
@@ -106,7 +106,7 @@ public def retrieve(this: ThreadPool var&, tid: Tid, thread: Thread var*) {
     // thread exited, release resources
     info.status.status = ThreadStatus.Unused
     info.thread.del()
-    info.thread = null as Thread var*
+    info.thread = null
   }
 }
 

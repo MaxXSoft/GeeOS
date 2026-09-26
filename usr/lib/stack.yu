@@ -24,7 +24,7 @@ def newStackFrame(next: StackFrame var*): StackFrame var* {
 }
 
 def empty(this: StackFrame var*): bool {
-  this == null as StackFrame var*
+  this == null
 }
 
 def push(this: StackFrame var*): StackFrame var* {
@@ -53,7 +53,7 @@ def del(this: StackFrame var*) {
  * stack related stuffs
  */
 public def newStack(): Stack {
-  [Stack] {newStackFrame(null as StackFrame var*), 0}
+  [Stack] {newStackFrame(null), 0}
 }
 
 public def del(this: Stack var&) {
@@ -94,6 +94,6 @@ public def pop(this: Stack var&): u8 var* {
 
 public def clear(this: Stack var&) {
   (*this.frames).next.del()
-  (*this.frames).next = null as StackFrame var*
+  (*this.frames).next = null
   this.sp = 0
 }

@@ -4,9 +4,9 @@ extern declare test_check: (bool, u8*)
 
 def checkRange(start: usize, end: usize, other_start: usize,
                other_end: usize, expected: bool) {
-  let area = [MemoryArea] {start, end, null as MemoryHandler var*, newMemoryAttr()}
+  let area = [MemoryArea] {start, end, null, newMemoryAttr()}
   let other = [MemoryArea] {other_start, other_end,
-                           null as MemoryHandler var*, newMemoryAttr()}
+                           null, newMemoryAttr()}
   test_check(area.isOverlap(other_start, other_end) == expected,
              "page overlap result")
   test_check(other.isOverlap(start, end) == expected, "overlap is symmetric")
@@ -14,30 +14,30 @@ def checkRange(start: usize, end: usize, other_start: usize,
 
 extern def test_main(): i32 {
   let page = PAGE_SIZE as usize
-  checkRange(0 as usize, 0 as usize, page, page * 2 as usize, false)
-  checkRange(page, page, page, page + 1 as usize, false)
+  checkRange(0, 0, page, page * 2, false)
+  checkRange(page, page, page, page + 1, false)
   checkRange(page, page, page, page, false)
-  checkRange(page, page * 2 as usize, page, page * 2 as usize, true)
-  checkRange(page, page * 2 as usize, page * 2 as usize, page * 3 as usize, false)
-  checkRange(page, page * 4 as usize, page * 2 as usize, page * 3 as usize, true)
-  checkRange(0 as usize, page, page - 1 as usize, page, true)
-  checkRange(page - 1 as usize, page + 1 as usize, page, page + 1 as usize, true)
-  checkRange(page - 1 as usize, page, page, page + 1 as usize, false)
-  checkRange(page * 2 as usize, page, 0 as usize, page * 4 as usize, false)
+  checkRange(page, page * 2, page, page * 2, true)
+  checkRange(page, page * 2, page * 2, page * 3, false)
+  checkRange(page, page * 4, page * 2, page * 3, true)
+  checkRange(0, page, page - 1, page, true)
+  checkRange(page - 1, page + 1, page, page + 1, true)
+  checkRange(page - 1, page, page, page + 1, false)
+  checkRange(page * 2, page, 0, page * 4, false)
   // Disjoint byte ranges still overlap when they occupy the same page.
-  var first = 0 as usize
-  while first < 16 as usize {
-    var second = 0 as usize
-    while second < 16 as usize {
-      checkRange(page + first, page + first + 1 as usize,
-                  page + second, page + second + 1 as usize, true)
-      second += 1 as usize
+  var first: usize = 0
+  while first < 16 {
+    var second: usize = 0
+    while second < 16 {
+      checkRange(page + first, page + first + 1,
+                  page + second, page + second + 1, true)
+      second += 1
     }
-    first += 1 as usize
+    first += 1
   }
-  checkRange(0xfffff000 as usize, 0xffffffff as usize,
-             0xfffffffe as usize, 0xffffffff as usize, true)
-  checkRange(0xffffe000 as usize, 0xfffff000 as usize,
-             0xfffff000 as usize, 0xffffffff as usize, false)
+  checkRange(0xfffff000, 0xffffffff,
+             0xfffffffe, 0xffffffff, true)
+  checkRange(0xffffe000, 0xfffff000,
+             0xfffff000, 0xffffffff, false)
   0
 }

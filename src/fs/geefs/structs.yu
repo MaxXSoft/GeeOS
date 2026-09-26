@@ -1,14 +1,14 @@
 // constants
-inline let MAGIC_NUM          = 0x9eef5000 as u32
-inline let DIRECT_BLOCK_NUM   = 12 as u32
+inline let MAGIC_NUM: u32          = 0x9eef5000
+inline let DIRECT_BLOCK_NUM: u32   = 12
 inline let BLOCK_OFS_SIZE     = sizeof u32 as u32
-inline let FILE_NAME_MAX_LEN  = 28 as u32
+inline let FILE_NAME_MAX_LEN: u32  = 28
 
 // disk inode type
 public enum GfsINodeType: u32 {
-  Unused  = 0 as u32,
-  File    = 1 as u32,
-  Dir     = 2 as u32,
+  Unused  = 0,
+  File    = 1,
+  Dir     = 2,
 }
 
 // super block header

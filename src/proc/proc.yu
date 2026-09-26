@@ -17,23 +17,23 @@ public def execute(path: u8*, host_tid: Tid): bool {
   let path = newStrView(path)
   // find file in root inode
   let inode = root_inode.lookup(path)
-  if inode != null as INode var* {
+  if inode != null {
     var ret = false
     inode.open()
     // read content of inode
     let meta = inode.getMetadata()
     let size = meta.size, buf = heap.alloc(size)
-    if buf != null as u8 var* &&
-       inode.read(buf, size, 0 as usize) as usize == size {
+    if buf != null &&
+       inode.read(buf, size, 0) as usize == size {
       // create user thread
       let thread = newUserThread(buf, size, host_tid)
-      if thread != null as Thread var* {
+      if thread != null {
         cpu.addThread(thread)
         ret = true
       }
     }
     // free buffer & inode
-    if buf != null as u8 var* { heap.dealloc(buf) }
+    if buf != null { heap.dealloc(buf) }
     inode.close()
     ret
   }

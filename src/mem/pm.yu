@@ -22,7 +22,7 @@ var phy_mem: PhyMemory
 // free physical page
 public def freePhyMem(addr: u8 var*) {
   // check if address is not aligned, or out of range
-  if addr as usize % PAGE_SIZE as usize != 0 as usize ||
+  if addr as usize % PAGE_SIZE as usize != 0 ||
      addr < _geeos_end as u8 var* || addr >= HEAP_BASE as u8 var* {
     panic("freePhyMem")
   }
@@ -54,12 +54,12 @@ public def allocPhyMem(): u8 var* {
   // pick a new free page from 'free_list'
   phy_mem.lock.acquire()
   let fp = phy_mem.free_list
-  if fp != null as FreePage var* {
+  if fp != null {
     phy_mem.free_list = (*fp).next
   }
   phy_mem.lock.release()
   // fill with junk
-  if fp != null as FreePage var* {
+  if fp != null {
     memset(fp as u8 var*, 5, PAGE_SIZE as usize)
   }
   fp as u8 var*

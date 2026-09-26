@@ -13,28 +13,28 @@ inline def newPte(data: usize) {
 }
 
 inline def isUnused(this: PageTableEntry&): bool {
-  this.data == 0 as usize
+  this.data == 0
 }
 
 inline def setUnused(this: PageTableEntry var&) {
-  this.data = 0 as usize
+  this.data = 0
 }
 
 inline def getFlags(this: PageTableEntry&): usize {
-  this.data & 0xff as usize
+  this.data & 0xff
 }
 
 inline def getFlag(this: PageTableEntry&, flag: usize): bool {
-  (this.getFlags() & flag) != 0 as usize
+  (this.getFlags() & flag) != 0
 }
 
 inline def isLeaf(this: PageTableEntry&): bool {
   let flag_vad = PTE_FLAG_V | PTE_FLAG_A | PTE_FLAG_D
-  (this.getFlags() & ~flag_vad) != 0 as usize
+  (this.getFlags() & ~flag_vad) != 0
 }
 
 inline def setFlags(this: PageTableEntry var&, flags: usize) {
-  this.data = (this.data & ~(0xff as usize)) | flags
+  this.data = (this.data & ~(0xff)) | flags
 }
 
 inline def setFlag(this: PageTableEntry var&, flag: usize, value: bool) {
@@ -52,11 +52,11 @@ inline def clearFlag(this: PageTableEntry var&, flag: usize) {
 }
 
 inline def getPpn(this: PageTableEntry&): usize {
-  this.data >> 10 as usize
+  this.data >> 10
 }
 
 inline def getAddr(this: PageTableEntry&): PhysAddr {
-  newPhysAddr(this.getPpn() << 12 as usize)
+  newPhysAddr(this.getPpn() << 12)
 }
 
 inline def getFrame(this: PageTableEntry&): Frame {
@@ -65,13 +65,13 @@ inline def getFrame(this: PageTableEntry&): Frame {
 
 inline def set(this: PageTableEntry var&, frame: Frame, flags: usize) {
   // Non-leaf entries reserve A/D; Fuxi requires them preset on leaves.
-  let flags = if (flags & (PTE_FLAG_R | PTE_FLAG_X)) != 0 as usize {
+  let flags = if (flags & (PTE_FLAG_R | PTE_FLAG_X)) != 0 {
     flags | PTE_FLAG_A | PTE_FLAG_D
   }
   else {
     flags & ~(PTE_FLAG_A | PTE_FLAG_D)
   }
-  this.data = (frame.getPpn() << 10 as usize) | flags
+  this.data = (frame.getPpn() << 10) | flags
 }
 
 // RISC-V page table
@@ -113,7 +113,7 @@ inline def clear(this: PageTable var*, index: usize,
 // root page table is (K, K+1, 0) in Sv32.
 inline def setRecursive(this: PageTable var*, index: usize, frame: Frame) {
   (*this).ptes[index].set(frame, PTE_FLAG_V)
-  (*this).ptes[index + 1 as usize].set(frame, PTE_FLAG_V | PTE_FLAG_R |
+  (*this).ptes[index + 1].set(frame, PTE_FLAG_V | PTE_FLAG_R |
                                               PTE_FLAG_W)
 }
 
@@ -133,6 +133,6 @@ inline def mapLinearRange(this: PageTable var*, begin: usize, end: usize,
   var ppn1 = begin_ppn
   while ppn1 <= end_ppn {
     this.mapLinear(ppn1, offset, flags)
-    ppn1 += 1 as usize
+    ppn1 += 1
   }
 }

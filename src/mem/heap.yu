@@ -8,7 +8,7 @@ import lib.alloc
 // The C programming Language, 2nd ed.  Section 8.7.
 
 // size of heap memory that to be allocated each time
-let LEAST_ALLOC = 32 as usize
+let LEAST_ALLOC: usize = 32
 
 // definition of linked list header
 struct Header {
@@ -35,7 +35,7 @@ def increaseHeap(size: usize): u8 var* {
   let used = heap_mem.heap_base as usize - heap_mem.heap_mem as usize
   if size > HEAP_SIZE as usize - used {
     // heap is full
-    null as u8 var*
+    null
   }
   else {
     // just increase
@@ -79,15 +79,15 @@ def moreCore(len: usize): Header var* {
   // Bound the rounded request before adding units or multiplying bytes.
   let max_units = HEAP_SIZE as usize / sizeof Header
   if len > max_units - max_units % LEAST_ALLOC {
-    return null as Header var*
+    return null
   }
   // get size of increased headers
-  let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1 as usize) /
+  let unit_size = LEAST_ALLOC * ((len + LEAST_ALLOC - 1) /
                                  LEAST_ALLOC)
   // allocate more headers
   let core_ptr = increaseHeap(unit_size * sizeof Header)
-  if core_ptr == null as u8 var* {
-    null as Header var*
+  if core_ptr == null {
+    null
   }
   else {
     // initialize new header
@@ -101,15 +101,15 @@ def moreCore(len: usize): Header var* {
 def allocMem(size: usize): u8 var* {
   // Divide first so a request near usize's maximum cannot wrap to zero.
   let unit_size = size / sizeof Header +
-                  (size % sizeof Header != 0 as usize) as usize + 1 as usize
-  var ret = null as u8 var*
+                  (size % sizeof Header != 0) as usize + 1
+  var ret: u8 var* = null
   // check if no free blocks
   var prev = heap_mem.free_unit
-  if prev == null as Header var* {
+  if prev == null {
     prev = &heap_mem.base
     heap_mem.free_unit = prev
     heap_mem.base.next = heap_mem.free_unit
-    heap_mem.base.size = 0 as usize
+    heap_mem.base.size = 0
   }
   // allocate free block
   var p = (*prev).next
@@ -132,9 +132,9 @@ def allocMem(size: usize): u8 var* {
     }
     if p == heap_mem.free_unit {
       p = moreCore(unit_size)
-      if p == null as Header var* {
+      if p == null {
         // no spare space
-        ret = null as u8 var*
+        ret = null
         break
       }
     }

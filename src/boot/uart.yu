@@ -14,7 +14,7 @@ def readUart(): u8 {
 def waitMagicHeader() {
   var i = 0
   while i < 4 {
-    if readUart() == 0x9e as u8 {
+    if readUart() == 0x9e {
       i += 1
     }
     else {
@@ -26,9 +26,9 @@ def waitMagicHeader() {
 // read 32-bit word from UART
 def readWordFromUart(): u32 {
   var word = readUart() as u32
-  word |= readUart() as u32 << 8 as u32
-  word |= readUart() as u32 << 16 as u32
-  word |= readUart() as u32 << 24 as u32
+  word |= readUart() as u32 << 8
+  word |= readUart() as u32 << 16
+  word |= readUart() as u32 << 24
   word
 }
 

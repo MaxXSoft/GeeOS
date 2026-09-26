@@ -1,15 +1,15 @@
 // magic number of ELF
-inline let ELF_MAGIC      = 0x464c457f as u32
+inline let ELF_MAGIC: u32      = 0x464c457f
 
 // e_machine definitions
-inline let ELF_EM_386     = 0x03 as u16   // Intel x86
-inline let ELF_EM_MIPS    = 0x08 as u16   // MIPS
-inline let ELF_EM_RISCV   = 0xf3 as u16   // RISC-V
+inline let ELF_EM_386: u16     = 0x03   // Intel x86
+inline let ELF_EM_MIPS: u16    = 0x08   // MIPS
+inline let ELF_EM_RISCV: u16   = 0xf3   // RISC-V
 
 // p_flags definitions
-inline let ELF_PF_EXEC    = (1 << 0) as u32
-inline let ELF_PF_WRITE   = (1 << 1) as u32
-inline let ELF_PF_READ    = (1 << 2) as u32
+inline let ELF_PF_EXEC: u32    = (1 << 0)
+inline let ELF_PF_WRITE: u32   = (1 << 1)
+inline let ELF_PF_READ: u32    = (1 << 2)
 
 // ELF header
 public struct Elf32Ehdr {
@@ -48,7 +48,7 @@ public enum ElfEtype: u16 {
 
 // ELF program header type
 public enum ElfPtype: u32 {
-  Load = 1 as u32,
+  Load = 1,
 }
 
 // check if current header is a valid RISC-V ELF file header
@@ -110,17 +110,17 @@ inline def getMemSize(this: Elf32Phdr*): u32 {
 
 // check if current program header is executable
 inline def isExecute(this: Elf32Phdr*): bool {
-  ((*this).p_flags & ELF_PF_EXEC) != 0 as u32
+  ((*this).p_flags & ELF_PF_EXEC) != 0
 }
 
 // check if current program header is writable
 inline def isWrite(this: Elf32Phdr*): bool {
-  ((*this).p_flags & ELF_PF_WRITE) != 0 as u32
+  ((*this).p_flags & ELF_PF_WRITE) != 0
 }
 
 // check if current program header is readable
 inline def isRead(this: Elf32Phdr*): bool {
-  ((*this).p_flags & ELF_PF_READ) != 0 as u32
+  ((*this).p_flags & ELF_PF_READ) != 0
 }
 
 // ELF file reader

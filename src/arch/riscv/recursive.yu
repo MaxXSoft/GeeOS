@@ -27,11 +27,11 @@ public struct TempMap {
 }
 
 def newTempMap(index: usize): TempMap {
-  let va = newVirtAddr(index, index + 1 as usize,
-                       (index + 2 as usize) * 4 as usize)
+  let va = newVirtAddr(index, index + 1,
+                       (index + 2) * 4)
   [TempMap] {
     va.getAddr() as PageTableEntry var*,
-    newVirtAddr(index, index + 2 as usize, 0 as usize),
+    newVirtAddr(index, index + 2, 0),
   }
 }
 
@@ -59,7 +59,7 @@ public struct RecursivePageTable {
 
 def createP1IfNotExist(this: RecursivePageTable var&, vpn1: usize,
                        alloc: FrameAllocator var*): PageTable var* {
-  assert(vpn1 < this.index || vpn1 > this.index + 2 as usize,
+  assert(vpn1 < this.index || vpn1 > this.index + 2,
          "invalid vpn1")
   let pte: PageTableEntry var& = this.root_table.getPte(vpn1)
   if pte.isUnused() {
@@ -87,12 +87,12 @@ public def newRecursivePageTable(pt: PageTable var*): RecursivePageTable {
   let index = page.getVpn1()
   // check if is valid
   let satp_frame = newFrameFromSatp()
-  if page.getVpn0() != index + 1 as usize ||
+  if page.getVpn0() != index + 1 ||
      satp_frame != pt.getPte(index).getFrame() ||
-     satp_frame != pt.getPte(index + 1 as usize).getFrame() ||
+     satp_frame != pt.getPte(index + 1).getFrame() ||
      !(pt.getPte(index).getFlags() & PTE_FLAG_V) ||
      !(!(pt.getPte(index).getFlags() & (PTE_FLAG_R | PTE_FLAG_W))) ||
-     !(pt.getPte(index + 1 as usize).getFlags() &
+     !(pt.getPte(index + 1).getFlags() &
        (PTE_FLAG_V | PTE_FLAG_R | PTE_FLAG_W)) {
     panic("newRecursivePageTable")
   }
@@ -145,7 +145,7 @@ public def unmap(this: RecursivePageTable var&, page: Page,
 public def getPtePtr(this: RecursivePageTable var&,
                      page: Page): PageTableEntry var* {
   if this.root_table.getPte(page.getVpn1()).isUnused() {
-    return null as PageTableEntry var*
+    return null
   }
   let p1_frame = this.root_table.getPte(page.getVpn1()).getFrame()
   let p1_table = this.temp_map.map(p1_frame)
