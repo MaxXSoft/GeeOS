@@ -11,7 +11,7 @@ import lib.except
 import proc.proc
 
 public def newSemaphore(value: i32): Semaphore {
-  [Semaphore] {newSpinlock(), value, newQueue()}
+  [] {newSpinlock(), value, newQueue()}
 }
 
 public def newSemaphore(): Semaphore {

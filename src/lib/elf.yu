@@ -135,7 +135,7 @@ public struct ElfPhdrIter {
 }
 
 inline def newElfFile(data: u8*): ElfFile {
-  [ElfFile] {data as Elf32Ehdr*}
+  [] {data as Elf32Ehdr*}
 }
 
 // get ELF header
@@ -155,7 +155,7 @@ inline def getPhdrData(this: ElfFile&, phdr: Elf32Phdr*): u8* {
 
 // get program header iter
 inline def getPhdrIter(this: ElfFile&): ElfPhdrIter {
-  [ElfPhdrIter] {this.getPhdr(), this.ehdr.getLastPhdr()}
+  [] {this.getPhdr(), this.ehdr.getLastPhdr()}
 }
 
 // iterator method 'next'

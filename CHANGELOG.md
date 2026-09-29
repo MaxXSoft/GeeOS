@@ -6,6 +6,8 @@ All notable changes to the Gee OS will be documented in this file.
 
 ### Changed
 
+- Omit redundant structure and array initializer types where YuLang can infer
+  them from declarations, returns, assignments, or nested members.
 - Use YuLang contextual integer and null literals across kernel, user programs,
   and regression fixtures; preserve explicit bit-pattern and pointer conversions.
 - Update the pinned YuLang compiler and keep the shared HashMap sources in sync.

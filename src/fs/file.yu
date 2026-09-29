@@ -17,7 +17,7 @@ public struct File {
 }
 
 public def newFile(): File {
-  [File] {FileStatus.None}
+  [] {FileStatus.None}
 }
 
 inline def isNone(this: File&): bool {

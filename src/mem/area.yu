@@ -18,7 +18,7 @@ public def newMemArea(start: usize, end: usize,
                       handler: MemoryHandler var*,
                       attr: MemoryAttr): MemoryArea {
   handler.incCounter()
-  [MemoryArea] {start, end, handler, attr}
+  [] {start, end, handler, attr}
 }
 
 public def del(this: MemoryArea var&) {
@@ -57,7 +57,7 @@ public struct MemAreaList {
 }
 
 public def newMemAreaList(): MemAreaList {
-  [MemAreaList] {}
+  [] {}
 }
 
 public def del(this: MemAreaList var&) {

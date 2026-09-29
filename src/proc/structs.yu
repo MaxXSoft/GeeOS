@@ -28,7 +28,7 @@ public struct KernelStack {
 public def newKernelStack(): KernelStack {
   let addr = allocPhyMem()
   assert(addr as i32 != 0, "newKernelStack - OOM")
-  [KernelStack] {addr}
+  [] {addr}
 }
 
 // release kernel stack
@@ -176,7 +176,7 @@ def validUserElf(data: u8*, size: usize): bool {
 // the two 16-bit header fields in ElfFile.getPhdrIter().
 def getLoadPhdrIter(this: ElfFile&): ElfPhdrIter {
   let ehdr = this.getEhdr(), first = ehdr.getPhdr()
-  [ElfPhdrIter] {first, first + (*ehdr).e_phnum as usize}
+  [] {first, first + (*ehdr).e_phnum as usize}
 }
 
 // create memory attribute by ELF program header
@@ -230,7 +230,7 @@ def makeMemorySet(this: ElfFile&): MemorySet {
 // create new idle thread
 public def newIdleThread(): Thread var* {
   let thread = heap.alloc(sizeof Thread) as Thread var*
-  (*thread) = [Thread] {
+  (*thread) = [] {
     newNullContext(),
     newKernelStack(),
     null,
@@ -243,7 +243,7 @@ public def newIdleThread(): Thread var* {
 public def newKernelThread(entry: usize): Thread var* {
   let kstack = newKernelStack()
   let thread = heap.alloc(sizeof Thread) as Thread var*
-  (*thread) = [Thread] {
+  (*thread) = [] {
     newKernelContext(entry, kstack.getTop(), getSatp()),
     kstack,
     null,
@@ -276,7 +276,7 @@ public def newUserThread(data: u8*, size: usize,
   // create kernel stack & user thread
   let kstack = newKernelStack()
   let thread = heap.alloc(sizeof Thread) as Thread var*
-  (*thread) = [Thread] {
+  (*thread) = [] {
     newUserContext(entry as usize, ustack_top, kstack.getTop(), ms.token()),
     kstack,
     proc,

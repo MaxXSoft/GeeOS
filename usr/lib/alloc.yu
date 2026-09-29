@@ -30,11 +30,11 @@ struct Heap {
 var heap: Heap
 
 // heap memory
-var heap_mem: u8[HEAP_SIZE] = [u8[HEAP_SIZE]] {}
+var heap_mem: u8[HEAP_SIZE] = [] {}
 
 // global heap allocator
 public struct HeapAllocator {}
-public let alloc: HeapAllocator = [HeapAllocator] {}
+public let alloc: HeapAllocator = [] {}
 
 
 // allocate more heap space

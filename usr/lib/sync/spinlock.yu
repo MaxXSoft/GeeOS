@@ -10,7 +10,7 @@ extern declare __try_to_acquire: (Spinlock var&): i32
 extern declare __release: (Spinlock var&)
 
 public def newSpinlock(): Spinlock {
-  [Spinlock] {0}
+  [] {0}
 }
 
 public def isHold(this: Spinlock&): bool {

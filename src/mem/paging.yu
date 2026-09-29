@@ -24,7 +24,7 @@ public struct PageEntry {
 }
 
 public def newPageEntry(pte: PageTableEntry var*, page: Page): PageEntry {
-  [PageEntry] {pte, page}
+  [] {pte, page}
 }
 
 public def update(this: PageEntry var&) {
@@ -106,7 +106,7 @@ def allocPhysFrame(this: FrameAllocator var*): Frame {
 }
 
 def newPhysFrameAlloc(): PhysFrameAlloc {
-  [PhysFrameAlloc] {[FrameAllocator] {allocPhysFrame}}
+  [] {[] {allocPhysFrame}}
 }
 
 // physical frame deallocator
@@ -120,7 +120,7 @@ def deallocPhysFrame(this: FrameDeallocator var*, frame: Frame) {
 }
 
 def newPhysFrameDealloc(): PhysFrameDealloc {
-  [PhysFrameDealloc] {[FrameDeallocator] {deallocPhysFrame}}
+  [] {[] {deallocPhysFrame}}
 }
 
 
@@ -153,7 +153,7 @@ def getEntryPtr(this: ActivePageTable var&, vaddr: usize): PageEntry var* {
 }
 
 public def newActivePageTable(): ActivePageTable {
-  [ActivePageTable] {newRecursivePageTable(ROOT_PAGE_TABLE)}
+  [] {newRecursivePageTable(ROOT_PAGE_TABLE)}
 }
 
 public def map(this: ActivePageTable var&, addr: usize,
@@ -217,7 +217,7 @@ public def newInactivePageTable(): InactivePageTable {
     temp_pt.zero()
     temp_pt.setRecursive(RECURSIVE_INDEX, frame)
   }; act_pt.withTempMapEnd()
-  [InactivePageTable] {frame}
+  [] {frame}
 }
 
 public def del(this: InactivePageTable var&) {
@@ -261,7 +261,7 @@ public def edit(this: InactivePageTable var&): IptEditIter {
   let root_table = act_pt.withTempMapBegin(frame.getAddr())
   let backup = root_table.getPte(RECURSIVE_INDEX)
   root_table.getPte(RECURSIVE_INDEX).set(this.root_frame, PTE_FLAG_V)
-  [IptEditIter] {false, act_pt, root_table, backup}
+  [] {false, act_pt, root_table, backup}
 }
 
 // iterator methods of `IptEditIter`
@@ -287,7 +287,7 @@ public def last(this: IptEditIter var&): bool {
 // activate current inactive page table temporarily
 // and run specific function in new context
 public def with(this: InactivePageTable&): IptWithIter {
-  [IptWithIter] {false, getSatp(), this.token()}
+  [] {false, getSatp(), this.token()}
 }
 
 // iterator methods of `IptWithIter`
@@ -332,9 +332,9 @@ public struct PageRange {
 
 public def newPageRange(start_addr: usize, end_addr: usize): PageRange {
   if start_addr >= end_addr {
-    return [PageRange] {0, 0}
+    return [] {0, 0}
   }
-  [PageRange] {
+  [] {
     start_addr / PAGE_SIZE as usize,
     (end_addr - 1) / PAGE_SIZE as usize + 1,
   }

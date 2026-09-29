@@ -15,7 +15,7 @@ public struct StdIn {
 }
 
 public def newStdIn(): StdIn {
-  [StdIn] {newSpinlock(), newQueue(), newCondVar()}
+  [] {newSpinlock(), newQueue(), newCondVar()}
 }
 
 public def del(this: StdIn var&) {
@@ -90,7 +90,7 @@ def stdIoGetFs(this: INode var*): FileSystem var* {
 }
 
 def stdIoGetMetadata(this: INode var*): Metadata {
-  [Metadata] {0, INodeType.CharDevice}
+  [] {0, INodeType.CharDevice}
 }
 
 def stdIoFind(this: INode var*, name: StrView&): INode var* {

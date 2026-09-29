@@ -15,7 +15,7 @@ public struct MemorySet {
 public def newMemorySet(): MemorySet {
   var pt = newInactivePageTable()
   pt.mapKernel()
-  [MemorySet] {pt}
+  [] {pt}
 }
 
 public def del(this: MemorySet var&) {

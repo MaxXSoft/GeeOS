@@ -176,7 +176,7 @@ public def newGeeFs(dev: DeviceInterface var*): FileSystem var* {
   let geefs = heap.alloc(sizeof GeeFs) as GeeFs var*
   (geefs as FileSystem var*).init(&geefs_ops)
   (*geefs).dev = dev
-  (*geefs).super_block = [GfsSbHeader] {}
+  (*geefs).super_block = [] {}
   (*geefs).sema = newSemaphore()
   (*geefs).inodes = newHashMap()
   // perform open operation
@@ -206,7 +206,7 @@ def gfsINodeGetFs(this: INode var*): FileSystem var* {
 // get metadata of current inode
 def gfsINodeGetMetadata(this: INode var*): Metadata {
   let inode: GfsINode& = this.getINode().gfs_inode
-  [Metadata] {
+  [] {
     this.getINode().id,
     inode.itype.convToINodeType(),
     inode.size as usize,

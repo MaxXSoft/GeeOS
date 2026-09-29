@@ -63,7 +63,7 @@ def linearUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
 
 public def newLinearHandler(offset: isize): MemoryHandler var* {
   let handler = heap.alloc(sizeof LinearHandler) as LinearHandler var*
-  (*handler).base = [MemoryHandler] {linearMap, linearUnmap}
+  (*handler).base = [] {linearMap, linearUnmap}
   (*handler).offset = offset
   handler as MemoryHandler var*
 }
@@ -92,6 +92,6 @@ def frameUnmap(this: MemoryHandler var*, pt: ActivePageTable var&,
 
 public def newFrameHandler(): MemoryHandler var* {
   let handler = heap.alloc(sizeof FrameHandler) as FrameHandler var*
-  (*handler).base = [MemoryHandler] {frameMap, frameUnmap}
+  (*handler).base = [] {frameMap, frameUnmap}
   handler as MemoryHandler var*
 }

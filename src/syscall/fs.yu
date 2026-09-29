@@ -27,7 +27,7 @@ def convToFileType(this: INodeType): FileType {
 }
 
 def convToStat(this: Metadata&): Stat {
-  [Stat] {
+  [] {
     this.id,
     this.itype.convToFileType(),
     this.size,

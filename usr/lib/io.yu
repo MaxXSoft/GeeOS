@@ -7,7 +7,7 @@ let FD_STDERR = 2
 
 // IO object
 public struct IO {}
-public let io: IO = [IO] {}
+public let io: IO = [] {}
 
 // put character
 public def putChar(this: IO&, c: u8) {

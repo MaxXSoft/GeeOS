@@ -27,7 +27,7 @@ public struct Scheduler {
 public def init(this: Scheduler var&, max_time: usize) {
   var i = 0
   while i < MAX_THREAD_COUNT + 1 {
-    this.threads[i] = [RoundRobinInfo] {false}
+    this.threads[i] = [] {false}
     i += 1
   }
   this.max_time = max_time

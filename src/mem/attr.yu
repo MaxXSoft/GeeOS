@@ -11,19 +11,19 @@ public struct MemoryAttr {
 }
 
 public def newMemoryAttr(): MemoryAttr {
-  [MemoryAttr] {false, false, false}
+  [] {false, false, false}
 }
 
 public def setUser(this: MemoryAttr): MemoryAttr {
-  [MemoryAttr] {true, this.readonly, this.execute}
+  [] {true, this.readonly, this.execute}
 }
 
 public def setReadonly(this: MemoryAttr): MemoryAttr {
-  [MemoryAttr] {this.user, true, this.execute}
+  [] {this.user, true, this.execute}
 }
 
 public def setExecute(this: MemoryAttr): MemoryAttr {
-  [MemoryAttr] {this.user, this.readonly, true}
+  [] {this.user, this.readonly, true}
 }
 
 public def apply(this: MemoryAttr&, entry: PageEntry var&) {

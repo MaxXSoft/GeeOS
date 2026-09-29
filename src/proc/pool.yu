@@ -54,8 +54,8 @@ def getInfo(this: ThreadPool var&, tid: Tid): ThreadInfo var& {
 public def init(this: ThreadPool var&, max_time: usize) {
   var i = 0
   while i < MAX_THREAD_COUNT {
-    this.threads[i] = [ThreadInfo] {
-      [ThreadStatusCode] {ThreadStatus.Unused},
+    this.threads[i] = [] {
+      [] {ThreadStatus.Unused},
       false,
       null,
     }
@@ -67,8 +67,8 @@ public def init(this: ThreadPool var&, max_time: usize) {
 // add thread to pool
 public def add(this: ThreadPool var&, thread: Thread var*) {
   let tid = this.allocTid()
-  this.threads[tid] = [ThreadInfo] {
-    [ThreadStatusCode] {ThreadStatus.Ready, 0},
+  this.threads[tid] = [] {
+    [] {ThreadStatus.Ready, 0},
     true,
     thread,
   }

@@ -7,11 +7,11 @@ public struct VirtAddr {
 }
 
 inline def newVirtAddr(addr: usize): VirtAddr {
-  [VirtAddr] {addr}
+  [] {addr}
 }
 
 inline def newVirtAddr(vpn1: usize, vpn0: usize, offset: usize): VirtAddr {
-  [VirtAddr] {(vpn1 << 22) | (vpn0 << 12) | offset}
+  [] {(vpn1 << 22) | (vpn0 << 12) | offset}
 }
 
 inline def getAddr(this: VirtAddr&): usize {
@@ -35,11 +35,11 @@ inline def getOffset(this: VirtAddr&): usize {
 }
 
 inline def roundUp(this: VirtAddr&): VirtAddr {
-  [VirtAddr] {(this.addr + 0xfff) & (~0xfff)}
+  [] {(this.addr + 0xfff) & (~0xfff)}
 }
 
 inline def roundDown(this: VirtAddr&): VirtAddr {
-  [VirtAddr] {this.addr & (~0xfff)}
+  [] {this.addr & (~0xfff)}
 }
 
 // 32-bit physical address
@@ -48,7 +48,7 @@ public struct PhysAddr {
 }
 
 inline def newPhysAddr(addr: usize): PhysAddr {
-  [PhysAddr] {addr}
+  [] {addr}
 }
 
 inline def getAddr(this: PhysAddr&): usize {
@@ -72,11 +72,11 @@ inline def getOffset(this: PhysAddr&): usize {
 }
 
 inline def roundUp(this: PhysAddr&): PhysAddr {
-  [PhysAddr] {(this.addr + 0xfff) & (~0xfff)}
+  [] {(this.addr + 0xfff) & (~0xfff)}
 }
 
 inline def roundDown(this: PhysAddr&): PhysAddr {
-  [PhysAddr] {this.addr & (~0xfff)}
+  [] {this.addr & (~0xfff)}
 }
 
 // virtual page address
@@ -85,15 +85,15 @@ public struct Page {
 }
 
 inline def newPage(addr: VirtAddr): Page {
-  [Page] {addr.roundDown()}
+  [] {addr.roundDown()}
 }
 
 inline def newPage(vpn: usize): Page {
-  [Page] {newVirtAddr(vpn << 12)}
+  [] {newVirtAddr(vpn << 12)}
 }
 
 inline def newPage(vpn1: usize, vpn0: usize): Page {
-  [Page] {newVirtAddr(vpn1, vpn0, 0)}
+  [] {newVirtAddr(vpn1, vpn0, 0)}
 }
 
 inline def getAddr(this: Page&): VirtAddr {
@@ -118,11 +118,11 @@ public struct Frame {
 }
 
 inline def newFrame(addr: PhysAddr): Frame {
-  [Frame] {addr.roundDown()}
+  [] {addr.roundDown()}
 }
 
 inline def newFrame(ppn: usize): Frame {
-  [Frame] {newPhysAddr(ppn << 12)}
+  [] {newPhysAddr(ppn << 12)}
 }
 
 inline def newFrameFromSatp(): Frame {

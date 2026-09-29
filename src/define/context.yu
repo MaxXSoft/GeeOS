@@ -51,10 +51,10 @@ def newKernelCC(entry: usize, kstack_top: usize,
   tf.x[2] = kstack_top
   tf.sepc = entry
   tf.sstatus = (getSstatus() | SSTATUS_SPP | SSTATUS_SPIE) & ~SSTATUS_SIE
-  [ContextContext] {
+  [] {
     _retTrap as usize,
     satp,
-    [usize[12]] {},
+    [] {},
     tf,
   }
 }
@@ -67,10 +67,10 @@ def newUserCC(entry: usize, ustack_top: usize,
   tf.x[2] = ustack_top
   tf.sepc = entry
   tf.sstatus = (getSstatus() | SSTATUS_SPIE) & ~SSTATUS_SIE & ~SSTATUS_SPP
-  [ContextContext] {
+  [] {
     _retTrap as usize,
     satp,
-    [usize[12]] {},
+    [] {},
     tf
   }
 }
@@ -78,12 +78,12 @@ def newUserCC(entry: usize, ustack_top: usize,
 def pushAt(this: ContextContext, stack_top: usize): Context {
   let ptr = stack_top as ContextContext var* - 1
   (*ptr) = this
-  [Context] {ptr}
+  [] {ptr}
 }
 
 // create new null context
 public def newNullContext(): Context {
-  [Context] {null}
+  [] {null}
 }
 
 // create new kernel thread context

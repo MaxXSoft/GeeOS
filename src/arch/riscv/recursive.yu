@@ -11,7 +11,7 @@ public struct MapperFlush {
 }
 
 def newMapperFlush(page: Page): MapperFlush {
-  [MapperFlush] {page}
+  [] {page}
 }
 
 // flush current page
@@ -29,7 +29,7 @@ public struct TempMap {
 def newTempMap(index: usize): TempMap {
   let va = newVirtAddr(index, index + 1,
                        (index + 2) * 4)
-  [TempMap] {
+  [] {
     va.getAddr() as PageTableEntry var*,
     newVirtAddr(index, index + 2, 0),
   }
@@ -97,14 +97,14 @@ public def newRecursivePageTable(pt: PageTable var*): RecursivePageTable {
     panic("newRecursivePageTable")
   }
   // create page table
-  [RecursivePageTable] {pt, index, newTempMap(index)}
+  [] {pt, index, newTempMap(index)}
 }
 
 // Creates a new RecursivePageTable without performing any checks.
 // The `index` parameter must be the index of the recursively mapped entry.
 public def newUncheckedRecursivePageTable(
     pt: PageTable var*, index: usize): RecursivePageTable {
-  [RecursivePageTable] {pt, index, newTempMap(index)}
+  [] {pt, index, newTempMap(index)}
 }
 
 // Creates a new mapping in the page table.

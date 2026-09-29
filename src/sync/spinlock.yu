@@ -12,7 +12,7 @@ extern declare __acquire: (Spinlock var&)
 extern declare __release: (Spinlock var&)
 
 public def newSpinlock(): Spinlock {
-  [Spinlock] {0}
+  [] {0}
 }
 
 public def isHold(this: Spinlock&): bool {

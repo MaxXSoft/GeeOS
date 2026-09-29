@@ -9,7 +9,7 @@ public struct CondVar {
 }
 
 public def newCondVar(): CondVar {
-  [CondVar] {newSpinlock(), newQueue()}
+  [] {newSpinlock(), newQueue()}
 }
 
 public def del(this: CondVar var&) {

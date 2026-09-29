@@ -44,8 +44,8 @@ public def syncMem(this: DeviceInterface var*): bool {
 }
 
 public def newMemDevice(buf: u8 var*, len: usize): MemDevice {
-  [MemDevice] {
-    [DeviceInterface] {readMem, writeMem, syncMem},
+  [] {
+    [] {readMem, writeMem, syncMem},
     newSemaphore(),
     buf,
     len,
