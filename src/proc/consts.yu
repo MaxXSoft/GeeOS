@@ -1,4 +1,5 @@
-public import arch.arch
+
+
 
 // some definitions about process managing
 
@@ -6,14 +7,14 @@ public import arch.arch
 public type Tid = usize
 
 // tid for 'none'
-inline let TID_NONE           = -1 as Tid
+public inline let TID_NONE           = -1 as Tid
 
 // maximum number of thread
-inline let MAX_THREAD_COUNT   = 128
+public inline let MAX_THREAD_COUNT   = 128
 
 // maximum time slice of round robin scheduler
-inline let TIME_SLICE: usize         = 1
+public inline let TIME_SLICE: usize         = 1
 
 // stack of user thread
-inline let USER_STACK_SIZE    = 0x10000
-inline let USER_STACK_OFFSET  = 0x7ffff000 - USER_STACK_SIZE
+public inline let USER_STACK_SIZE    = 0x10000
+public inline let USER_STACK_OFFSET  = 0x7ffff000 - USER_STACK_SIZE

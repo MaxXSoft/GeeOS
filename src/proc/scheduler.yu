@@ -1,8 +1,8 @@
-public import arch.arch
-public import proc.consts
+import geeos.proc.consts.{MAX_THREAD_COUNT, Tid}
+
 
 // info of each thread
-public struct RoundRobinInfo {
+struct RoundRobinInfo {
   // is current thread valid
   is_valid: bool,
   // time slice of current thread

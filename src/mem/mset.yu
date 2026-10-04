@@ -1,15 +1,13 @@
-public import arch.arch
-public import mem.paging
-public import mem.attr
-public import mem.handler
-public import mem.area
+import geeos.mem.paging.{InactivePageTable, IptWithIter, newInactivePageTable}
+import geeos.mem.attr.MemoryAttr
+import geeos.mem.handler.MemoryHandler
+import geeos.mem.area.{MemAreaList, newMemArea}
+import geeos.lib.except.assert
 
-import mem.consts
-import lib.except
 
 public struct MemorySet {
-  page_table: InactivePageTable,
-  areas: MemAreaList,
+  public page_table: InactivePageTable,
+  public areas: MemAreaList,
 }
 
 public def newMemorySet(): MemorySet {

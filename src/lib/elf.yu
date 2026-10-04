@@ -1,29 +1,29 @@
 // magic number of ELF
-inline let ELF_MAGIC: u32      = 0x464c457f
+public inline let ELF_MAGIC: u32      = 0x464c457f
 
 // e_machine definitions
-inline let ELF_EM_386: u16     = 0x03   // Intel x86
-inline let ELF_EM_MIPS: u16    = 0x08   // MIPS
-inline let ELF_EM_RISCV: u16   = 0xf3   // RISC-V
+public inline let ELF_EM_386: u16     = 0x03   // Intel x86
+public inline let ELF_EM_MIPS: u16    = 0x08   // MIPS
+public inline let ELF_EM_RISCV: u16   = 0xf3   // RISC-V
 
 // p_flags definitions
-inline let ELF_PF_EXEC: u32    = (1 << 0)
-inline let ELF_PF_WRITE: u32   = (1 << 1)
-inline let ELF_PF_READ: u32    = (1 << 2)
+public inline let ELF_PF_EXEC: u32    = (1 << 0)
+public inline let ELF_PF_WRITE: u32   = (1 << 1)
+public inline let ELF_PF_READ: u32    = (1 << 2)
 
 // ELF header
 public struct Elf32Ehdr {
-  e_ident: u32[4],    // Magic number and other info
+  public e_ident: u32[4],    // Magic number and other info
   e_type: u16,        // Object file type
   e_machine: u16,     // Architecture
-  e_version: u32,     // Object file version
+  public e_version: u32,     // Object file version
   e_entry: u32,       // Entry point virtual address
-  e_phoff: u32,       // Program header table file offset
+  public e_phoff: u32,       // Program header table file offset
   e_shoff: u32,       // Section header table file offset
   e_flags: u32,       // Processor-specific flags
-  e_ehsize: u16,      // ELF header size in bytes
-  e_phentsize: u16,   // Program header table entry size
-  e_phnum: u16,       // Program header table entry count
+  public e_ehsize: u16,      // ELF header size in bytes
+  public e_phentsize: u16,   // Program header table entry size
+  public e_phnum: u16,       // Program header table entry count
   e_shentsize: u16,   // Section header table entry size
   e_shnum: u16,       // Section header table entry count
   e_shstrndx: u16,    // Section header string table index
@@ -52,74 +52,74 @@ public enum ElfPtype: u32 {
 }
 
 // check if current header is a valid RISC-V ELF file header
-inline def isValid(this: Elf32Ehdr*): bool {
+public inline def isValid(this: Elf32Ehdr*): bool {
   (*this).e_ident[0] == ELF_MAGIC && (*this).e_machine == ELF_EM_RISCV
 }
 
 // get type of ELF file
-inline def getType(this: Elf32Ehdr*): ElfEtype {
+public inline def getType(this: Elf32Ehdr*): ElfEtype {
   (*this).e_type as ElfEtype
 }
 
 // get entry of ELF file
-inline def getEntry(this: Elf32Ehdr*): u32 {
+public inline def getEntry(this: Elf32Ehdr*): u32 {
   (*this).e_entry
 }
 
 // get address of first program header
-inline def getPhdr(this: Elf32Ehdr*): Elf32Phdr* {
+public inline def getPhdr(this: Elf32Ehdr*): Elf32Phdr* {
   (this as u32 + (*this).e_phoff) as Elf32Phdr*
 }
 
 // get address of last program header
-inline def getLastPhdr(this: Elf32Ehdr*): Elf32Phdr* {
+public inline def getLastPhdr(this: Elf32Ehdr*): Elf32Phdr* {
   let phdr = this.getPhdr()
   (phdr as u32 + ((*this).e_phentsize *
                   (*this).e_phnum) as u32) as Elf32Phdr*
 }
 
 // get type of current program header
-inline def getType(this: Elf32Phdr*): ElfPtype {
+public inline def getType(this: Elf32Phdr*): ElfPtype {
   (*this).p_type as ElfPtype
 }
 
 // get offset of current program header
-inline def getOffset(this: Elf32Phdr*): u32 {
+public inline def getOffset(this: Elf32Phdr*): u32 {
   (*this).p_offset
 }
 
 // get virtual address of current program header
-inline def getVaddr(this: Elf32Phdr*): u32 {
+public inline def getVaddr(this: Elf32Phdr*): u32 {
   (*this).p_vaddr
 }
 
 // get physical address of current program header
-inline def getPaddr(this: Elf32Phdr*): u32 {
+public inline def getPaddr(this: Elf32Phdr*): u32 {
   (*this).p_paddr
 }
 
 // get file size of current program header
-inline def getFileSize(this: Elf32Phdr*): u32 {
+public inline def getFileSize(this: Elf32Phdr*): u32 {
   (*this).p_filesz
 }
 
 // get memory size of current program header
-inline def getMemSize(this: Elf32Phdr*): u32 {
+public inline def getMemSize(this: Elf32Phdr*): u32 {
   (*this).p_memsz
 }
 
 // check if current program header is executable
-inline def isExecute(this: Elf32Phdr*): bool {
+public inline def isExecute(this: Elf32Phdr*): bool {
   ((*this).p_flags & ELF_PF_EXEC) != 0
 }
 
 // check if current program header is writable
-inline def isWrite(this: Elf32Phdr*): bool {
+public inline def isWrite(this: Elf32Phdr*): bool {
   ((*this).p_flags & ELF_PF_WRITE) != 0
 }
 
 // check if current program header is readable
-inline def isRead(this: Elf32Phdr*): bool {
+public inline def isRead(this: Elf32Phdr*): bool {
   ((*this).p_flags & ELF_PF_READ) != 0
 }
 
@@ -134,38 +134,42 @@ public struct ElfPhdrIter {
   end: Elf32Phdr*,
 }
 
-inline def newElfFile(data: u8*): ElfFile {
+public inline def newElfPhdrIter(first: Elf32Phdr*, end: Elf32Phdr*): ElfPhdrIter {
+  [] {first, end}
+}
+
+public inline def newElfFile(data: u8*): ElfFile {
   [] {data as Elf32Ehdr*}
 }
 
 // get ELF header
-inline def getEhdr(this: ElfFile&): Elf32Ehdr* {
+public inline def getEhdr(this: ElfFile&): Elf32Ehdr* {
   this.ehdr
 }
 
 // get program header
-inline def getPhdr(this: ElfFile&): Elf32Phdr* {
+public inline def getPhdr(this: ElfFile&): Elf32Phdr* {
   this.ehdr.getPhdr()
 }
 
 // get data of specific program header
-inline def getPhdrData(this: ElfFile&, phdr: Elf32Phdr*): u8* {
+public inline def getPhdrData(this: ElfFile&, phdr: Elf32Phdr*): u8* {
   this.ehdr as u8* + phdr.getOffset()
 }
 
 // get program header iter
-inline def getPhdrIter(this: ElfFile&): ElfPhdrIter {
-  [] {this.getPhdr(), this.ehdr.getLastPhdr()}
+public inline def getPhdrIter(this: ElfFile&): ElfPhdrIter {
+  newElfPhdrIter(this.getPhdr(), this.ehdr.getLastPhdr())
 }
 
 // iterator method 'next'
-inline def next(this: ElfPhdrIter var&): Elf32Phdr* {
+public inline def next(this: ElfPhdrIter var&): Elf32Phdr* {
   let cur = this.cur
   this.cur += 1
   cur
 }
 
 // iterator method 'last'
-inline def last(this: ElfPhdrIter&): bool {
+public inline def last(this: ElfPhdrIter&): bool {
   this.cur >= this.end
 }

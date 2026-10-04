@@ -1,42 +1,42 @@
 // arch definition of Fuxi SoC
 
 // constant address
-inline let FLASH_ADDR   = 0x10800000
-inline let MEM_ADDR     = 0x80000000
-inline let MEM_SIZE_MIB = 128
-inline let SWITCH_ADDR  = 0x1107f020
-inline let LED_ADDR     = 0x1107f000
-inline let NUM_ADDR     = 0x1107f010
-inline let UART_ADDR    = 0x11040000
-inline let UART_END     = 0x11042000
-inline let PLIC_ADDR    = 0x11010000
-inline let PLIC_END     = 0x11020000
-inline let CLINT_MTIME  = 0x11000100
-inline let CLINT_MCMP   = 0x11000108
+public inline let FLASH_ADDR   = 0x10800000
+public inline let MEM_ADDR     = 0x80000000
+public inline let MEM_SIZE_MIB = 128
+public inline let SWITCH_ADDR  = 0x1107f020
+public inline let LED_ADDR     = 0x1107f000
+public inline let NUM_ADDR     = 0x1107f010
+public inline let UART_ADDR    = 0x11040000
+public inline let UART_END     = 0x11042000
+public inline let PLIC_ADDR    = 0x11010000
+public inline let PLIC_END     = 0x11020000
+public inline let CLINT_MTIME  = 0x11000100
+public inline let CLINT_MCMP   = 0x11000108
 
 // UART related definitions
-inline let UART_CLOCK_FREQ: u32  = 100000000
-inline let UART_BAUD_RATE: u32   = 115200
-inline let UART_DAT         = 0x11041000 as u32 volatile var*
-inline let UART_FCR         = 0x11041008 as u32 volatile var*
-inline let UART_LCR         = 0x1104100C as u32 volatile var*
-inline let UART_LSR         = 0x11041014 as u32 volatile var*
-inline let UART_DLL         = 0x11041000 as u32 volatile var*
-inline let UART_DLM         = 0x11041004 as u32 volatile var*
-inline let UART_MCR         = 0x11041010 as u32 volatile var*
-inline let UART_IER         = 0x11041004 as u32 volatile var*
-inline let UART_LCR_DLAB: u32    = 0x80
-inline let UART_LCR_8BIT: u32    = 0x03
-inline let UART_LSR_DA: u32      = 0x01
-inline let UART_LSR_RI: u32      = 0x40
+public inline let UART_CLOCK_FREQ: u32  = 100000000
+public inline let UART_BAUD_RATE: u32   = 115200
+public inline let UART_DAT         = 0x11041000 as u32 volatile var*
+public inline let UART_FCR         = 0x11041008 as u32 volatile var*
+public inline let UART_LCR         = 0x1104100C as u32 volatile var*
+public inline let UART_LSR         = 0x11041014 as u32 volatile var*
+public inline let UART_DLL         = 0x11041000 as u32 volatile var*
+public inline let UART_DLM         = 0x11041004 as u32 volatile var*
+public inline let UART_MCR         = 0x11041010 as u32 volatile var*
+public inline let UART_IER         = 0x11041004 as u32 volatile var*
+public inline let UART_LCR_DLAB: u32    = 0x80
+public inline let UART_LCR_8BIT: u32    = 0x03
+public inline let UART_LSR_DA: u32      = 0x01
+public inline let UART_LSR_RI: u32      = 0x40
 
 // PLIC related definitions
-inline let PLIC_IER         = 0x08
-inline let PLIC_IAR         = 0x0c
-inline let PLIC_MER         = 0x1c
+public inline let PLIC_IER         = 0x08
+public inline let PLIC_IAR         = 0x0c
+public inline let PLIC_MER         = 0x1c
 
 // initialize UART
-inline def initIO() {
+public inline def initIO() {
   // set baud rate
   let divisor = UART_CLOCK_FREQ / ((16) * UART_BAUD_RATE)
   (*UART_LCR) = UART_LCR_DLAB
@@ -53,14 +53,14 @@ inline def initIO() {
 }
 
 // initialize PLIC
-inline def initIntr() {
+public inline def initIntr() {
   let UART_IRQ = 1 << 2
   (*((PLIC_ADDR + PLIC_IER) as u32 volatile var*)) = UART_IRQ as u32
   (*((PLIC_ADDR + PLIC_MER) as u32 volatile var*)) = 3
 }
 
 // acknowledge all IRQs from PLIC
-inline def ackIntr(): u32 {
+public inline def ackIntr(): u32 {
   // acknowledge IRQ #2 (UART) only
   let UART_IRQ = 1 << 2
   (*((PLIC_ADDR + PLIC_IAR) as u32 volatile var*)) = UART_IRQ as u32
@@ -68,16 +68,16 @@ inline def ackIntr(): u32 {
 }
 
 // This platform does not require a separate IRQ completion.
-inline def finishIntr(irq: u32) {}
+public inline def finishIntr(irq: u32) {}
 
 // put character
-inline def putChar(c: u8) {
+public inline def putChar(c: u8) {
   while ((*UART_LSR) & UART_LSR_RI) == 0 {}
   (*UART_DAT) = c as u32
 }
 
 // get character
-inline def getChar(): i32 {
+public inline def getChar(): i32 {
   if ((*UART_LSR) & UART_LSR_DA) != 0 {
     (*UART_DAT) as i32
   }
@@ -87,6 +87,6 @@ inline def getChar(): i32 {
 }
 
 // halt
-inline def halt(code: i32) {
+public inline def halt(code: i32) {
   while true {}
 }

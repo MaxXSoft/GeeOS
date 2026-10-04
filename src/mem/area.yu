@@ -1,17 +1,16 @@
-public import arch.arch
-public import mem.handler
-public import mem.attr
-public import mem.paging
-
-import lib.alloc
+import geeos.mem.handler.MemoryHandler
+import geeos.mem.attr.MemoryAttr
+import geeos.mem.paging.{ActivePageTable, newPageRange}
+import geeos.arch.riscv.consts.PAGE_SIZE
+import geeos.lib.alloc.heap
 
 
 // representation of a memory area 
 public struct MemoryArea {
-  start: usize,
-  end: usize,
-  handler: MemoryHandler var*,
-  attr: MemoryAttr,
+  public start: usize,
+  public end: usize,
+  public handler: MemoryHandler var*,
+  public attr: MemoryAttr,
 }
 
 public def newMemArea(start: usize, end: usize,
@@ -52,8 +51,8 @@ public def isOverlap(this: MemoryArea&, start: usize, end: usize): bool {
 
 // linked list of memory area
 public struct MemAreaList {
-  area: MemoryArea,
-  next: MemAreaList var*,
+  public area: MemoryArea,
+  public next: MemAreaList var*,
 }
 
 public def newMemAreaList(): MemAreaList {

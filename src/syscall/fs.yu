@@ -1,7 +1,12 @@
-import proc.proc
-import fs.fs
-import syscall.user
-import lib.c.string
+import geeos.proc.proc.getCurrentThread
+import geeos.fs.info.FileInfo
+import geeos.fs.vfs.vfs.{INodeType, Metadata}
+import geeos.lib.strview.newStrView
+import geeos.lib.c.string.memcpy
+import geeos.fs.file.File
+import geeos.fs.consts.FILE_COUNT
+import geeos.syscall.user.{userRange, userString}
+
 
 // file type
 public enum FileType {
@@ -12,7 +17,7 @@ public enum FileType {
 public struct Stat {
   ino: u32,
   file_type: FileType,
-  size: usize,
+  public size: usize,
   blk_size: usize,
   blocks: usize,
 }

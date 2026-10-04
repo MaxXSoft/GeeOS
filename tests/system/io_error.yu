@@ -1,5 +1,6 @@
-import lib.io
-import lib.sys.syscall
+import grt.lib.io.io
+import grt.lib.sys.syscall.{close, lseek, open, read, write}
+
 
 extern def main(argc: i32, argv: u8**): i32 {
   let fd = open("/big", 2)

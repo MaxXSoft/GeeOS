@@ -143,7 +143,7 @@ in `.github/workflows/build-test.yml`. Internal names, default hash function and
 container behavior match upstream. The only adaptations are module imports and calls
 to the kernel allocator/deallocator. `tests/runtime/hashmap_behavior.yu` mirrors the
 upstream behavior fixture with its import path adapted; the kernel runner also retains
-its own collision-work measurements.
+its own sequential and strided key workloads.
 
 After updating either copy, run:
 
@@ -155,3 +155,11 @@ python3 tests/runtime/run.py --case hashmap --clang /path/to/clang --lld /path/t
 The first command checks both sources against the selected YuLang checkout; CI uses
 its pinned checkout. Synchronize upstream fixes and behavior tests together, keeping
 only the explicit adaptations encoded in the checker.
+
+Runtime Yu fixtures register `tests/runtime/runtime.lib.yu` with `-I tests/runtime`
+as well as the kernel (`geeos`) or user (`grt`) root selected by the test case.
+Shared heap cases are imported as `runtime.heap_cases.runHeapCases`; no search
+path overlay chooses between two modules with the same library identity.
+HashMap tests observe `size()`, `capacity()`, iteration and lookup/update behavior.
+Reported metrics are entry count and capacity; the tests no longer read private
+bucket chains or report their node counts.

@@ -1,5 +1,6 @@
-import lib.sys.syscall
-import lib.io
+import grt.lib.sys.syscall.exit
+import grt.lib.io.io
+
 
 public def panic(str: u8*) {
   io <<< "===== USER PANIC! =====\n"

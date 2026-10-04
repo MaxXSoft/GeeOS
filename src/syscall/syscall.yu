@@ -1,9 +1,8 @@
-public import arch.arch
-public import define.context
+import geeos.define.context.TrapFrame
+import geeos.syscall.fs.{Stat, sysChdir, sysClose, sysDup3, sysFstat, sysLseek, sysOpen, sysRead, sysSync, sysWrite}
+import geeos.syscall.proc.{sysExecve, sysExit, sysYield}
+import geeos.lib.io.io
 
-import syscall.fs
-import syscall.proc
-import lib.io
 
 // definitions of system call id
 let SYS_DUP3: usize    = 24

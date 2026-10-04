@@ -87,3 +87,30 @@ GeeOS is heavily influenced by [rCore](https://github.com/rcore-os/rCore) and [x
 ## License
 
 Copyright (C) 2020-2026 MaxXing. License GPLv3.
+
+## Yu library identities
+
+The kernel is registered by `-I src` and `src/geeos.lib.yu`; its imports use
+`geeos.<module>`. User programs and their runtime use `-I usr` with
+`usr/grt.lib.yu` and imports under `grt.<module>`. These are distinct libraries,
+so kernel and user allocator/IO modules no longer depend on import-search-path
+ordering. Both remain independent of the hosted `std` library.
+
+Every module imports the definitions it uses directly. There are no transitive
+`public import` bindings. Platform-dependent imports retain the command-line
+`GEEOS_TARGET` macro, for example `geeos.arch.target.GEEOS_TARGET.MEM_ADDR`.
+Marker files carry no code and are excluded from source/object collections.
+The generated depfiles include the registered library marker and root alongside
+actual source dependencies.
+
+Structure fields are private unless explicitly public. Kernel records shared
+between subsystems expose the fields that form those data interfaces; allocator,
+queue, stack, string-view and hash-map storage stays private. Public inline and
+C ABI declarations spell visibility explicitly as `public inline` and
+`public extern`. C and assembly entrypoints retain their external symbol names.
+
+Synchronization primitives import the small `geeos.proc.scheduling` interface.
+Its prefixed `geeos_sched_*` C symbols are implemented by `geeos.proc.proc` using
+the existing processor state. This static interface breaks the process /
+filesystem / synchronization import cycle without callback installation or a
+change to initialization order.

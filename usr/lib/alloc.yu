@@ -1,4 +1,5 @@
-import lib.sync.spinlock
+import grt.lib.sync.spinlock.{Spinlock, newSpinlock}
+
 
 // Memory allocator by Kernighan and Ritchie,
 // The C programming Language, 2nd ed.  Section 8.7.

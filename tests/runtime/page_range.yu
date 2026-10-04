@@ -1,4 +1,6 @@
-import mem.paging
+import geeos.mem.paging.newPageRange
+import geeos.arch.riscv.consts.PAGE_SIZE
+
 
 extern declare test_check: (bool, u8*)
 

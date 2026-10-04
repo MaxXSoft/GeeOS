@@ -1,9 +1,10 @@
-public import arch.arch
-public import arch.riscv.pagetable
-public import arch.riscv.addr
-public import arch.riscv.framealloc
+import geeos.arch.riscv.pagetable.{PageTable, PageTableEntry}
+import geeos.arch.riscv.consts.{PTE_FLAG_R, PTE_FLAG_V, PTE_FLAG_W}
+import geeos.arch.riscv.addr.{Frame, Page, VirtAddr, newFrameFromSatp, newPage, newVirtAddr}
+import geeos.arch.riscv.csr.runSfencePage
+import geeos.arch.riscv.framealloc.FrameAllocator
+import geeos.lib.except.{assert, panic}
 
-import lib.except
 
 // helper struct for mappers (like `RecursivePageTable`)
 public struct MapperFlush {
@@ -15,13 +16,13 @@ def newMapperFlush(page: Page): MapperFlush {
 }
 
 // flush current page
-inline def flush(this: MapperFlush) {
+public inline def flush(this: MapperFlush) {
   let addr = this.page.getAddr()
   runSfencePage(addr.getAddr())
 }
 
 // helper struct for `RecursivePageTable`
-public struct TempMap {
+struct TempMap {
   entry: PageTableEntry var*,
   pt_addr: VirtAddr,
 }

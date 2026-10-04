@@ -1,32 +1,32 @@
 // arch definitions of Risky32 emulator
 
-inline let FLASH_ADDR   = 0x90020000
-inline let MEM_ADDR     = 0x80000000
-inline let MEM_SIZE_MIB = 4
-inline let SWITCH_ADDR  = 0x1000f020
-inline let LED_ADDR     = 0x1000f000
-inline let NUM_ADDR     = 0x1000f010
-inline let UART_ADDR    = 0x90000104
-inline let UART_END     = 0x90000200
-inline let PLIC_ADDR    = 0x00000000
-inline let PLIC_END     = 0x00000000
-inline let CLINT_MTIME  = 0x90010000
-inline let CLINT_MCMP   = 0x90010100
+public inline let FLASH_ADDR   = 0x90020000
+public inline let MEM_ADDR     = 0x80000000
+public inline let MEM_SIZE_MIB = 4
+public inline let SWITCH_ADDR  = 0x1000f020
+public inline let LED_ADDR     = 0x1000f000
+public inline let NUM_ADDR     = 0x1000f010
+public inline let UART_ADDR    = 0x90000104
+public inline let UART_END     = 0x90000200
+public inline let PLIC_ADDR    = 0x00000000
+public inline let PLIC_END     = 0x00000000
+public inline let CLINT_MTIME  = 0x90010000
+public inline let CLINT_MCMP   = 0x90010100
 
-inline def initIO() {}
-inline def initIntr() {}
-inline def ackIntr(): u32 { 0 }
-inline def finishIntr(irq: u32) {}
+public inline def initIO() {}
+public inline def initIntr() {}
+public inline def ackIntr(): u32 { 0 }
+public inline def finishIntr(irq: u32) {}
 
-inline def putChar(c: u8) {
+public inline def putChar(c: u8) {
   *(0x90000104 as u8 volatile var*) = c
 }
 
-inline def getChar(): i32 {
+public inline def getChar(): i32 {
   *(0x90000104 as u8 volatile var*) as i32
 }
 
-inline def halt(code: i32) {
+public inline def halt(code: i32) {
   *(0x90000100 as u8 volatile var*) = 1
   while true {}
 }

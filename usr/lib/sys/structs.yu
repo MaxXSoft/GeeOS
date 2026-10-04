@@ -1,5 +1,5 @@
 // constants
-inline let FILE_NAME_MAX_LEN: u32  = 28
+public inline let FILE_NAME_MAX_LEN: u32  = 28
 
 // file type
 public enum FileType {
@@ -8,15 +8,15 @@ public enum FileType {
 
 // file status
 public struct Stat {
-  ino: u32,
-  file_type: FileType,
-  size: usize,
-  blk_size: usize,
-  blocks: usize,
+  public ino: u32,
+  public file_type: FileType,
+  public size: usize,
+  public blk_size: usize,
+  public blocks: usize,
 }
 
 // directory entry
 public struct Dirent {
-  inode_id: u32,
-  filename: u8[FILE_NAME_MAX_LEN],
+  public inode_id: u32,
+  public filename: u8[FILE_NAME_MAX_LEN],
 }

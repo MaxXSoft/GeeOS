@@ -1,6 +1,6 @@
-import proc.proc
-import lib.io
-import syscall.user
+import geeos.proc.proc.{execute, exit, getCurrentTid, sleep, yield}
+import geeos.syscall.user.userString
+
 
 public def sysExit(code: usize): isize {
   exit(code)

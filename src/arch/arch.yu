@@ -29,9 +29,10 @@ all targets must define the following functions:
 
 
 // use the following target
-public import arch.target.GEEOS_TARGET
+import geeos.arch.target.GEEOS_TARGET as target
+
 
 // halt the CPU
-inline def halt() {
-  halt(0)
+public inline def halt() {
+  target.halt(0)
 }

@@ -1,4 +1,5 @@
-public import arch.arch
+
+
 
 public type HeapAllocator = (usize): u8 var*
 public type HeapDeallocator = (u8 var*)
@@ -11,16 +12,16 @@ public struct HeapManager {
 public var heap: HeapManager = [] {}
 
 
-inline def init(this: HeapManager var&, alloc: HeapAllocator,
+public inline def init(this: HeapManager var&, alloc: HeapAllocator,
                 dealloc: HeapDeallocator) {
   this.alloc = alloc
   this.dealloc = dealloc
 }
 
-inline def alloc(this: HeapManager&, size: usize): u8 var* {
+public inline def alloc(this: HeapManager&, size: usize): u8 var* {
   (this.alloc)(size)
 }
 
-inline def dealloc(this: HeapManager&, ptr: u8 var*) {
+public inline def dealloc(this: HeapManager&, ptr: u8 var*) {
   (this.dealloc)(ptr)
 }

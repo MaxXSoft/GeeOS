@@ -1,5 +1,6 @@
-import lib.alloc
-import lib.stack
+import grt.lib.alloc.initUserHeap
+import grt.lib.stack.newStack
+
 
 extern declare test_check: (bool, u8*)
 

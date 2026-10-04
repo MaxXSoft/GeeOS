@@ -1,6 +1,7 @@
-public import lib.sys.structs
 
-extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
+
+
+public extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
   var l = lhs, r = rhs, n: usize = 0
   while n < count {
     if l[n] != r[n] {
@@ -11,7 +12,7 @@ extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
   0
 }
 
-extern def strcmp(lhs: u8*, rhs: u8*): i32 {
+public extern def strcmp(lhs: u8*, rhs: u8*): i32 {
   var s1 = lhs, s2 = rhs
   while *s1 == *s2 && *s1 != '\0' {
     s1 += 1

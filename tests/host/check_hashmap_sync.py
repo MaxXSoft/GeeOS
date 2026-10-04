@@ -9,22 +9,23 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def kernel_hashmap(source):
-    imports = 'import sys.stdlib\nimport sys.string\n'
+    imports = 'import std.sys.stdlib.{free, malloc}\nimport std.sys.string.memset\n'
     if not source.startswith(imports):
         raise ValueError('YuLang HashMap imports changed; review the kernel adaptation')
     source = source.replace(imports,
-                            'public import arch.arch\n\n'
-                            'import lib.alloc\nimport lib.c.string\n', 1)
+                            'import geeos.lib.alloc.heap\n'
+                            'import geeos.lib.c.string.memset\n', 1)
     source = source.replace('malloc(', 'heap.alloc(')
     # The kernel allocator accepts mutable pointers for memory it owns.
-    for pointer in ('cur', 'this.table', 'this.__table.table'):
+    for pointer in ('cur', 'this.table', 'this.table.table'):
         source = source.replace(f'free({pointer} as u8*)',
                                 f'heap.dealloc({pointer} as u8 var*)')
     return source
 
 
 def kernel_cases(source):
-    return source.replace('import hashmap\n', 'import lib.hashmap\n', 1)
+    return source.replace('import std.hashmap.{HashMap, newHashMap}\n',
+                          'import geeos.lib.hashmap.{HashMap, newHashMap}\n', 1)
 
 
 def main():

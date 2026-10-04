@@ -1,5 +1,6 @@
-import arch.arch
-import lib.io
+import geeos.arch.target.GEEOS_TARGET.getChar
+import geeos.lib.io.io
+
 
 // read a byte from UART
 def readUart(): u8 {

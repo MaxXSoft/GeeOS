@@ -1,6 +1,7 @@
-public import arch.arch
 
-extern def memset(dst: u8 var*, c: i32, n: usize): u8 var* {
+
+
+public extern def memset(dst: u8 var*, c: i32, n: usize): u8 var* {
   var d = dst, remaining = n
   let byte = c as u8
   // Only issue aligned word stores: Fuxi does not support unaligned accesses.
@@ -33,7 +34,7 @@ extern def memset(dst: u8 var*, c: i32, n: usize): u8 var* {
   dst
 }
 
-extern def memmove(dst: u8 var*, src: u8*, n: usize): u8 var* {
+public extern def memmove(dst: u8 var*, src: u8*, n: usize): u8 var* {
   var s = src, d = dst, n = n
   if s < d && s + n > d {
     // overlapped
@@ -57,11 +58,11 @@ extern def memmove(dst: u8 var*, src: u8*, n: usize): u8 var* {
   dst
 }
 
-extern def memcpy(dst: u8 var*, src: u8*, n: usize): u8 var* {
+public extern def memcpy(dst: u8 var*, src: u8*, n: usize): u8 var* {
   memmove(dst, src, n)
 }
 
-extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
+public extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
   var l = lhs, r = rhs, n: usize = 0
   while n < count {
     if l[n] != r[n] {
@@ -72,7 +73,7 @@ extern def memcmp(lhs: u8*, rhs: u8*, count: usize): i32 {
   0
 }
 
-extern def strlen(str: u8*): usize {
+public extern def strlen(str: u8*): usize {
   var len = 0
   while str[len] != '\0' {
     len += 1

@@ -1,7 +1,8 @@
-import arch.arch
-import arch.riscv.csr
-import lib.io
-import main
+import geeos.arch.target.GEEOS_TARGET.{CLINT_MCMP, CLINT_MTIME, initIO}
+import geeos.arch.riscv.csr.{MIE_MTIE, MSTATUS_MIE, MSTATUS_MPP_MASK, MSTATUS_MPP_S, getMie, getMstatus, initPmp, setMedeleg, setMepc, setMideleg, setMie, setMscratch, setMstatus, setMtvec, setSatp}
+import geeos.lib.io.io
+import geeos.main.main
+
 
 // M-mode timer interrupt handler
 extern declare _handleTimer: ()

@@ -1,7 +1,7 @@
-public import fs.vfs.vfs
+import geeos.fs.vfs.vfs.INode
+import geeos.fs.geefs.fs.{cleanUpGeeFs, geefs, initGeeFs}
+import geeos.fs.devfs.fs.{cleanUpDevFs, initDevFs}
 
-import fs.geefs.fs
-import fs.devfs.fs
 
 // root inode of filesystem
 public var root_inode: INode var* = null

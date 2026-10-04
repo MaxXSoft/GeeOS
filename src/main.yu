@@ -1,8 +1,9 @@
-import lib.io
-import trap.trap
-import mem.mem
-import fs.fs
-import proc.proc
+import geeos.lib.io.io
+import geeos.trap.trap.initTrap
+import geeos.mem.mem.initMem
+import geeos.fs.fs.initFileSystem
+import geeos.proc.proc.{initProcess, runCpu}
+
 
 // supervisor mode entry of GeeOS
 public def main() {

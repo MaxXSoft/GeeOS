@@ -1,10 +1,9 @@
-public import proc.pool
-public import proc.structs
+import geeos.proc.pool.ThreadPool
+import geeos.proc.structs.{Thread, newIdleThread}
+import geeos.arch.riscv.csr.{getSstatus, setIntrOff, setIntrOn, setSstatus}
+import geeos.proc.consts.{TID_NONE, Tid}
+import geeos.lib.alloc.heap
 
-import arch.arch
-import lib.alloc
-import arch.riscv.csr
-import proc.consts
 
 // model of processor
 // objects of this structure will always be allocated on the heap

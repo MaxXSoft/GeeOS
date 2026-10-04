@@ -1,5 +1,6 @@
-import sync.intr
-import lib.except
+import geeos.sync.intr.{popOff, pushOff}
+import geeos.lib.except.assert
+
 
 // structure definition of spinlock
 public struct Spinlock {

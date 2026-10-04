@@ -1,5 +1,10 @@
-public import sync.spinlock
-public import lib.queue
+import geeos.sync.spinlock.{Spinlock, newSpinlock}
+import geeos.lib.queue.{Queue, newQueue}
+import geeos.proc.scheduling.{geeos_sched_current_tid as getCurrentTid,
+                              geeos_sched_sleep as sleep,
+                              geeos_sched_wake_up as wakeUp}
+import geeos.proc.consts.Tid
+
 
 public struct Semaphore {
   lock: Spinlock,
@@ -7,8 +12,6 @@ public struct Semaphore {
   wait_queue: Queue,
 }
 
-import lib.except
-import proc.proc
 
 public def newSemaphore(value: i32): Semaphore {
   [] {newSpinlock(), value, newQueue()}

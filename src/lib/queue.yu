@@ -1,8 +1,7 @@
-public import arch.arch
+import geeos.lib.alloc.heap
 
-import lib.alloc
 
-public struct QueueElem {
+struct QueueElem {
   val: usize,
   prev: QueueElem var*,
   next: QueueElem var*,

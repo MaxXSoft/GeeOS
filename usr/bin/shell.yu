@@ -1,6 +1,7 @@
-import lib.io
-import lib.c.string
-import lib.sys.syscall
+import grt.lib.io.io
+import grt.lib.c.string.strcmp
+import grt.lib.sys.syscall.{execve, exit}
+
 
 let BUF_SIZE = 128
 var buf: u8[BUF_SIZE]

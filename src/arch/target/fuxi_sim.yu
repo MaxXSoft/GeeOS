@@ -1,39 +1,39 @@
 // Fuxi in verilator-axi-testbench: virt-style UART/PLIC in the uncached window.
 
 // constant address
-inline let FLASH_ADDR   = 0x00000000
-inline let MEM_ADDR     = 0x80000000
-inline let MEM_SIZE_MIB = 4
-inline let SWITCH_ADDR  = 0x00000000
-inline let LED_ADDR     = 0x00000000
-inline let NUM_ADDR     = 0x00000000
-inline let UART_ADDR    = 0x10000000
-inline let UART_END     = 0x10000100
-inline let PLIC_ADDR    = 0x12000000
-inline let PLIC_END     = 0x16000000
-inline let CLINT_MTIME  = 0x1100bff8
-inline let CLINT_MCMP   = 0x11004000
+public inline let FLASH_ADDR   = 0x00000000
+public inline let MEM_ADDR     = 0x80000000
+public inline let MEM_SIZE_MIB = 4
+public inline let SWITCH_ADDR  = 0x00000000
+public inline let LED_ADDR     = 0x00000000
+public inline let NUM_ADDR     = 0x00000000
+public inline let UART_ADDR    = 0x10000000
+public inline let UART_END     = 0x10000100
+public inline let PLIC_ADDR    = 0x12000000
+public inline let PLIC_END     = 0x16000000
+public inline let CLINT_MTIME  = 0x1100bff8
+public inline let CLINT_MCMP   = 0x11004000
 
 // UART related definitions
-inline let UART_DEV         = UART_ADDR as u8 volatile var*
-inline let UART_CLOCK_FREQ: u32  = 1843200
-inline let UART_BAUD_RATE: u32   = 115200
-inline let UART_RBR         = 0x00
-inline let UART_THR         = 0x00
-inline let UART_DLL         = 0x00
-inline let UART_DLM         = 0x01
-inline let UART_IER         = 0x01
-inline let UART_FCR         = 0x02
-inline let UART_LCR         = 0x03
-inline let UART_LSR         = 0x05
-inline let UART_LCR_DLAB: u8    = 0x80
-inline let UART_LCR_8BIT: u8    = 0x03
-inline let UART_LCR_PODD: u8    = 0x08
-inline let UART_LSR_DA: u8      = 0x01
-inline let UART_LSR_RI: u8      = 0x40
+public inline let UART_DEV         = UART_ADDR as u8 volatile var*
+public inline let UART_CLOCK_FREQ: u32  = 1843200
+public inline let UART_BAUD_RATE: u32   = 115200
+public inline let UART_RBR         = 0x00
+public inline let UART_THR         = 0x00
+public inline let UART_DLL         = 0x00
+public inline let UART_DLM         = 0x01
+public inline let UART_IER         = 0x01
+public inline let UART_FCR         = 0x02
+public inline let UART_LCR         = 0x03
+public inline let UART_LSR         = 0x05
+public inline let UART_LCR_DLAB: u8    = 0x80
+public inline let UART_LCR_8BIT: u8    = 0x03
+public inline let UART_LCR_PODD: u8    = 0x08
+public inline let UART_LSR_DA: u8      = 0x01
+public inline let UART_LSR_RI: u8      = 0x40
 
 // initialize UART
-inline def initIO() {
+public inline def initIO() {
   let divisor = UART_CLOCK_FREQ / ((16) * UART_BAUD_RATE)
   UART_DEV[UART_LCR] = UART_LCR_DLAB
   UART_DEV[UART_DLL] = divisor as u8
@@ -44,7 +44,7 @@ inline def initIO() {
 }
 
 // initialize PLIC
-inline def initIntr() {
+public inline def initIntr() {
   let UART_IRQ = 10
   let PLIC_UART_IRQ = (PLIC_ADDR + UART_IRQ * 4) as u32 volatile var*
   let S_MODE_INT_EN = (PLIC_ADDR + 0x2080) as u32 volatile var*
@@ -55,24 +55,24 @@ inline def initIntr() {
 }
 
 // Claim before servicing UART; complete after draining its receive FIFO.
-inline def ackIntr(): u32 {
+public inline def ackIntr(): u32 {
   *((PLIC_ADDR + 0x201004) as u32 volatile var*)
 }
 
-inline def finishIntr(irq: u32) {
+public inline def finishIntr(irq: u32) {
   if irq != 0 {
     (*((PLIC_ADDR + 0x201004) as u32 volatile var*)) = irq
   }
 }
 
 // put character
-inline def putChar(c: u8) {
+public inline def putChar(c: u8) {
   while (UART_DEV[UART_LSR] & UART_LSR_RI) == 0 {}
   UART_DEV[UART_THR] = c
 }
 
 // get character
-inline def getChar(): i32 {
+public inline def getChar(): i32 {
   if (UART_DEV[UART_LSR] & UART_LSR_DA) != 0 {
     UART_DEV[UART_RBR] as i32
   }
@@ -82,7 +82,7 @@ inline def getChar(): i32 {
 }
 
 // halt
-inline def halt(code: i32) {
+public inline def halt(code: i32) {
   (*(0x10001000 as u32 volatile var*)) = code as u32
   while true {}
 }

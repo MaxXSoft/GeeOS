@@ -1,5 +1,6 @@
-import lib.except
-import lib.sys.syscall
+import grt.lib.except.assert
+import grt.lib.sys.syscall.yield
+
 
 public struct Spinlock {
   locked: u32,

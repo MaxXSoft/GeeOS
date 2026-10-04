@@ -1,5 +1,6 @@
-import lib.alloc
-import lib.sys.syscall
+import grt.lib.alloc.initUserHeap
+import grt.lib.sys.syscall.exit
+
 
 // user defined main function
 extern declare main: (i32, u8**): i32

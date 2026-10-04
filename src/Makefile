@@ -7,6 +7,9 @@ BOOT_DIR := $(SRC_DIR)/boot
 LIB_SRC := $(call rwildcard, $(LIB_DIR), *.yu)
 LIB_SRC += $(call rwildcard, $(ARCH_DIR)/riscv, *.yu)
 LIB_SRC += $(call rwildcard, $(ARCH_DIR)/riscv, *.S)
+# Inline definitions still have one owner for global storage and addresses.
+LIB_SRC += $(ARCH_DIR)/arch.yu $(ARCH_DIR)/target/$(TARGET).yu
+LIB_SRC := $(filter-out %.lib.yu, $(LIB_SRC))
 $(call make_obj, LIB, $(LIB_SRC))
 LIB_TARGET := $(BUILD_DIR)/libgee.a
 
@@ -27,6 +30,7 @@ KERNEL_SRC += $(call rwildcard, $(SRC_DIR), *.c)
 KERNEL_SRC += $(call rwildcard, $(SRC_DIR), *.S)
 KERNEL_SRC := $(filter-out $(LIB_SRC) $(call rwildcard, $(BOOT_DIR), *.*), $(KERNEL_SRC))
 KERNEL_SRC := $(filter-out $(call rwildcard, $(ARCH_DIR), *.*), $(KERNEL_SRC))
+KERNEL_SRC := $(filter-out %.lib.yu, $(KERNEL_SRC))
 $(call make_obj, KERNEL, $(KERNEL_SRC))
 KERNEL_INIT := $(SRC_DIR)/init.S
 $(call make_obj, KERNEL_INIT, $(KERNEL_INIT))

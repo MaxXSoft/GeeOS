@@ -1,9 +1,10 @@
-import arch.arch
-import lib.io
-import lib.except
-import lib.elf
-import lib.c.string
-import boot.uart
+import geeos.arch.target.GEEOS_TARGET.{FLASH_ADDR, LED_ADDR, NUM_ADDR, SWITCH_ADDR, initIO}
+import geeos.lib.io.io
+import geeos.lib.except.panic
+import geeos.lib.elf.{ElfPtype, newElfFile}
+import geeos.lib.c.string.{memcpy, memset}
+import geeos.boot.uart.receiveFromUart
+
 
 // boot from specific address
 extern declare jumpToAddr: (u8*)

@@ -1,5 +1,6 @@
-import lib.io
-import lib.sys.syscall
+import grt.lib.io.io
+import grt.lib.sys.syscall.execve
+
 
 var initialized: u32 = 0x13579bdf
 var zeroed: u8[5000]

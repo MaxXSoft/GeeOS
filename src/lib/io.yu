@@ -1,4 +1,5 @@
-import arch.arch
+import geeos.arch.target.GEEOS_TARGET as target
+
 
 // IO object
 public struct IO {}
@@ -6,12 +7,12 @@ public let io: IO = [] {}
 
 // put character
 public def putChar(this: IO&, c: u8) {
-  putChar(c)
+  target.putChar(c)
 }
 
 // get character
 public def getChar(this: IO&): u8 {
-  getChar() as u8
+  target.getChar() as u8
 }
 
 // print string

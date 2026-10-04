@@ -1,7 +1,9 @@
-public import fs.geefs.geefs
+import geeos.fs.geefs.geefs.{initGeeFsOps, newGeeFs}
+import geeos.fs.dev.device.DeviceInterface
+import geeos.fs.vfs.vfs.FileSystem
+import geeos.fs.dev.mem.{MemDevice, newMemDevice}
+import geeos.lib.except.panic
 
-import fs.dev.mem
-import lib.except
 
 // filesystem image embedded in kernel, defined in 'init.S'
 extern declare _user_img_start: ()

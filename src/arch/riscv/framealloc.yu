@@ -1,20 +1,21 @@
-public import arch.riscv.addr
+import geeos.arch.riscv.addr.Frame
+
 
 // interface of frame allocator
 public struct FrameAllocator {
-  alloc: (FrameAllocator var*): Frame,
+  public alloc: (FrameAllocator var*): Frame,
 }
 
 // Allocate a frame of the appropriate size, panic on error.
-inline def alloc(this: FrameAllocator var*): Frame {
+public inline def alloc(this: FrameAllocator var*): Frame {
   ((*this).alloc)(this)
 }
 
 // interface of frame deallocator
 public struct FrameDeallocator {
-  dealloc: (FrameDeallocator var*, Frame),
+  public dealloc: (FrameDeallocator var*, Frame),
 }
 
-inline def dealloc(this: FrameDeallocator var*, frame: Frame) {
+public inline def dealloc(this: FrameDeallocator var*, frame: Frame) {
   ((*this).dealloc)(this, frame)
 }

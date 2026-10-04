@@ -1,5 +1,6 @@
-import arch.riscv.csr
-import lib.except
+import geeos.arch.riscv.csr.{getIntr, setIntrOff, setIntrOn}
+import geeos.lib.except.assert
+
 
 // pushOff/popOff are like setIntrOff()/setIntrOn(),
 // except that they are matched:

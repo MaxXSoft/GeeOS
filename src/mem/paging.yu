@@ -1,13 +1,14 @@
-public import arch.riscv.pagetable
-public import arch.riscv.addr
-public import arch.riscv.framealloc
-public import arch.riscv.recursive
+import geeos.arch.riscv.pagetable.{PageTable, PageTableEntry}
+import geeos.arch.target.GEEOS_TARGET.{PLIC_ADDR, PLIC_END, UART_ADDR, UART_END}
+import geeos.arch.riscv.consts.{PAGE_SIZE, PTE_FLAG_A, PTE_FLAG_D, PTE_FLAG_R, PTE_FLAG_U, PTE_FLAG_V, PTE_FLAG_W, PTE_FLAG_X, RECURSIVE_INDEX}
+import geeos.arch.riscv.addr.{Frame, Page, PhysAddr, VirtAddr, newFrame, newFrameFromSatp, newPage, newPhysAddr, newVirtAddr}
+import geeos.arch.riscv.csr.{SATP_SV32, getSatp, runSfence, runSfencePage, setSatp}
+import geeos.arch.riscv.framealloc.{FrameAllocator, FrameDeallocator}
+import geeos.arch.riscv.recursive.{RecursivePageTable, newRecursivePageTable}
+import geeos.mem.pm.{allocPhyMem, freePhyMem}
+import geeos.lib.except.panic
+import geeos.mem.consts.{KERNEL_BASE, KERNEL_VM_BASE, PHY_STOP}
 
-import arch.riscv.csr
-import arch.riscv.consts
-import mem.pm
-import lib.except
-import mem.consts
 
 // address for temporary mapping
 let TEMP_PAGE_ADDR: usize  = 0xcafeb000

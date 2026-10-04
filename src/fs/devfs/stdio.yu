@@ -1,10 +1,10 @@
-public import sync.spinlock
-public import lib.queue
-public import sync.condvar
-public import fs.vfs.vfs
-
-import lib.alloc
-import lib.io
+import geeos.sync.spinlock.{Spinlock, newSpinlock}
+import geeos.lib.queue.{Queue, newQueue}
+import geeos.sync.condvar.{CondVar, newCondVar}
+import geeos.fs.vfs.vfs.{FileSystem, INode, INodeOps, INodeType, Metadata}
+import geeos.lib.strview.StrView
+import geeos.lib.alloc.heap
+import geeos.lib.io.io
 
 
 // buffer for standard input
@@ -56,14 +56,14 @@ public def pop(this: StdIn var&): u8 {
  * INode related stuffs
  */
 // inode of stdin
-public struct StdInINode {
+struct StdInINode {
   inode: INode,
   stdin: StdIn var*,
 }
 var stdin_ops: INodeOps
 
 // inode of stdout
-public struct StdOutINode {
+struct StdOutINode {
   inode: INode,
 }
 var stdout_ops: INodeOps

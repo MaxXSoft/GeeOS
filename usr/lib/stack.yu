@@ -1,9 +1,10 @@
-import lib.alloc
+import grt.lib.alloc.alloc
+
 
 // length of stack frame
 inline let STACK_FRAME_LEN = 32
 
-public struct StackFrame {
+struct StackFrame {
   data: u8 var*[STACK_FRAME_LEN],
   next: StackFrame var*,
 }

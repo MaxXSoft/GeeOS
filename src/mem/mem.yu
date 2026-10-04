@@ -1,13 +1,14 @@
-import arch.arch
-import arch.riscv.pagetable
-import arch.riscv.addr
-import arch.riscv.consts
-import arch.riscv.csr
-import mem.mset
-import mem.consts
-import mem.pm
-import mem.heap
-import lib.io
+import geeos.arch.target.GEEOS_TARGET.{UART_ADDR, UART_END}
+import geeos.arch.riscv.pagetable.PageTable
+import geeos.arch.riscv.consts.{PTE_FLAG_R, PTE_FLAG_V, PTE_FLAG_W, PTE_FLAG_X, RECURSIVE_INDEX}
+import geeos.arch.riscv.addr.{newFrame, newPhysAddr}
+import geeos.arch.riscv.csr.{SATP_SV32, SSTATUS_SUM, getSstatus, runSfence, setSatp, setSstatus}
+import geeos.mem.mset.newMemorySet
+import geeos.mem.consts.{KERNEL_BASE, KERNEL_VM_BASE, PHY_STOP}
+import geeos.mem.pm.{allocPhyMem, freePhyMem, initPhyMem}
+import geeos.mem.heap.initHeapMem
+import geeos.lib.io.io
+
 
 // initialize temporary root page table for kernel
 // returns temporary allocated root page table

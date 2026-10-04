@@ -1,4 +1,8 @@
-import mem.paging
+import geeos.mem.paging.newPageEntry
+import geeos.arch.riscv.pagetable.PageTableEntry
+import geeos.arch.riscv.consts.{PTE_FLAG_A, PTE_FLAG_D}
+import geeos.arch.riscv.addr.{newPage, newVirtAddr}
+
 
 extern declare test_check: (bool, u8*)
 

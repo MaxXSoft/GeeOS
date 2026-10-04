@@ -1,8 +1,7 @@
-public import arch.arch
+import geeos.mem.consts.{HEAP_BASE, HEAP_SIZE}
+import geeos.sync.spinlock.{Spinlock, newSpinlock}
+import geeos.lib.alloc.heap
 
-import mem.consts
-import sync.spinlock
-import lib.alloc
 
 // Memory allocator by Kernighan and Ritchie,
 // The C programming Language, 2nd ed.  Section 8.7.

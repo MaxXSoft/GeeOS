@@ -1,5 +1,6 @@
-import lib.io
-import lib.sys.syscall
+import grt.lib.io.io
+import grt.lib.sys.syscall.execve
+
 
 extern def main(argc: i32, argv: u8**): i32 {
   if execve("fault_illegal", null, null) != 0 ||

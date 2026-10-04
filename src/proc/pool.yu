@@ -1,11 +1,11 @@
-public import proc.structs
-public import proc.consts
-public import proc.scheduler
+import geeos.proc.structs.Thread
+import geeos.proc.consts.{MAX_THREAD_COUNT, Tid}
+import geeos.proc.scheduler.Scheduler
+import geeos.lib.except.{assert, panic}
 
-import lib.except
 
 // definition of thread status
-public enum ThreadStatus {
+enum ThreadStatus {
   Unused,
   Ready,
   Running,
@@ -14,12 +14,12 @@ public enum ThreadStatus {
 }
 
 // definition of thread status with code
-public struct ThreadStatusCode {
+struct ThreadStatusCode {
   status: ThreadStatus,
   code: usize,
 }
 
-public struct ThreadInfo {
+struct ThreadInfo {
   status: ThreadStatusCode,
   present: bool,
   thread: Thread var*,

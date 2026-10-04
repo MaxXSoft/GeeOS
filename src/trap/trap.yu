@@ -1,12 +1,12 @@
-public import define.context
+import geeos.define.context.TrapFrame
+import geeos.arch.target.GEEOS_TARGET.{ackIntr, finishIntr, getChar, initIntr}
+import geeos.arch.riscv.csr.{SIE_SSIE, TRAP_INST_FAULT, TRAP_LOAD_FAULT, TRAP_STORE_FAULT, TRAP_S_EXT_INT, TRAP_S_SOFT_INT, TRAP_U_SYSCALL, getSip, setSip, setSscratch, setStvec}
+import geeos.lib.io.io
+import geeos.fs.devfs.fs.pushChar
+import geeos.syscall.syscall.runSyscall
+import geeos.lib.except.panic
+import geeos.proc.proc.{exit, tick}
 
-import arch.arch
-import arch.riscv.csr
-import lib.io
-import fs.devfs.fs
-import syscall.syscall
-import lib.except
-import proc.proc
 
 // trap handler in 'traphand.S'
 extern declare _handleTrap: ()

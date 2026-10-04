@@ -1,12 +1,12 @@
-public import arch.arch
-public import proc.consts
-public import proc.structs
+import geeos.proc.consts.{TID_NONE, TIME_SLICE, Tid}
+import geeos.proc.structs.{Thread, newUserThread}
+import geeos.arch.riscv.csr.setIntrOn
+import geeos.lib.strview.newStrView
+import geeos.fs.fs.root_inode
+import geeos.lib.alloc.heap
+import geeos.proc.processor.{Processor, newProcessor}
+import geeos.lib.except.assert
 
-import fs.fs
-import lib.alloc
-import proc.processor
-import lib.except
-import arch.riscv.csr
 
 // current processor
 var cpu: Processor var*
@@ -81,4 +81,17 @@ public def getCurrentTid(): Tid {
 
 public def getCurrentThread(): Thread var* {
   cpu.getCurrentThread()
+}
+
+// Static entry points for proc.scheduling. Keep the Yu API above unchanged.
+extern def geeos_sched_current_tid(): usize {
+  getCurrentTid()
+}
+
+extern def geeos_sched_sleep() {
+  sleep()
+}
+
+extern def geeos_sched_wake_up(tid: usize) {
+  wakeUp(tid)
 }

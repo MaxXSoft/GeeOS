@@ -1,9 +1,8 @@
-public import sync.spinlock
-public import arch.arch
-public import lib.strview
+import geeos.sync.spinlock.{Spinlock, newSpinlock}
+import geeos.lib.strview.StrView
+import geeos.lib.except.assert
+import geeos.lib.alloc.heap
 
-import lib.except
-import lib.alloc
 
 // type of inode
 public enum INodeType {
@@ -12,11 +11,11 @@ public enum INodeType {
 
 // metadata of inode
 public struct Metadata {
-  id: u32,
-  itype: INodeType,
-  size: usize,
-  blk_size: u32,
-  blocks: u32,
+  public id: u32,
+  public itype: INodeType,
+  public size: usize,
+  public blk_size: u32,
+  public blocks: u32,
 }
 
 // inode interface (base struct)
@@ -36,19 +35,19 @@ public struct FileSystem {
 
 // operations on inode
 public struct INodeOps {
-  op_get_fs: (INode var*): FileSystem var*,
-  op_get_metadata: (INode var*): Metadata,
-  op_find: (INode var*, StrView&): INode var*,
-  op_read: (INode var*, u8 var*, usize, usize): i32,
-  op_write: (INode var*, u8*, usize, usize): i32,
-  op_cleanup: (INode var*),
+  public op_get_fs: (INode var*): FileSystem var*,
+  public op_get_metadata: (INode var*): Metadata,
+  public op_find: (INode var*, StrView&): INode var*,
+  public op_read: (INode var*, u8 var*, usize, usize): i32,
+  public op_write: (INode var*, u8*, usize, usize): i32,
+  public op_cleanup: (INode var*),
 }
 
 // operations on filesystem
 public struct FileSystemOps {
-  op_get_root: (FileSystem var*): INode var*,
-  op_sync: (FileSystem var*): bool,
-  op_cleanup: (FileSystem var*),
+  public op_get_root: (FileSystem var*): INode var*,
+  public op_sync: (FileSystem var*): bool,
+  public op_cleanup: (FileSystem var*),
 }
 
 
@@ -71,33 +70,33 @@ public def del(this: INode var*) {
 }
 
 // get virtual filesystem
-inline def getFs(this: INode var*): FileSystem var* {
+public inline def getFs(this: INode var*): FileSystem var* {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_get_fs)(this)
 }
 
 // get metadata of current inode
-inline def getMetadata(this: INode var*): Metadata {
+public inline def getMetadata(this: INode var*): Metadata {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_get_metadata)(this)
 }
 
 // find inode in current inode
 // `name` will not contains '/'
-inline def find(this: INode var*, name: StrView&): INode var* {
+public inline def find(this: INode var*, name: StrView&): INode var* {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_find)(this, name)
 }
 
 // read the content of current inode to buffer
-inline def read(this: INode var*, buf: u8 var*, len: usize,
+public inline def read(this: INode var*, buf: u8 var*, len: usize,
                 offset: usize): i32 {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_read)(this, buf, len, offset)
 }
 
 // write the content of buffer to current inode
-inline def write(this: INode var*, buf: u8*, len: usize,
+public inline def write(this: INode var*, buf: u8*, len: usize,
                  offset: usize): i32 {
   let ops = (*this).ops as INodeOps*
   ((*ops).op_write)(this, buf, len, offset)
@@ -120,13 +119,13 @@ public def del(this: FileSystem var*) {
 }
 
 // get root inode of filesystem
-inline def getRoot(this: FileSystem var*): INode var* {
+public inline def getRoot(this: FileSystem var*): INode var* {
   let ops = (*this).ops as FileSystemOps*
   ((*ops).op_get_root)(this)
 }
 
 // commit filesystem caches to disk
-inline def sync(this: FileSystem var*): bool {
+public inline def sync(this: FileSystem var*): bool {
   let ops = (*this).ops as FileSystemOps*
   ((*ops).op_sync)(this)
 }

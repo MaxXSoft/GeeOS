@@ -1,10 +1,9 @@
-public import arch.arch
-public import fs.vfs.vfs
+import geeos.fs.vfs.vfs.{INode, Metadata}
+import geeos.lib.except.assert
+import geeos.fs.consts.{O_ACCMODE, O_RDONLY, O_RDWR, O_WRONLY, SEEK_CUR, SEEK_END, SEEK_SET}
 
-import lib.except
-import fs.consts
 
-public enum FileStatus {
+enum FileStatus {
   None, Allocated, Opened,
 }
 
@@ -20,15 +19,15 @@ public def newFile(): File {
   [] {FileStatus.None}
 }
 
-inline def isNone(this: File&): bool {
+public inline def isNone(this: File&): bool {
   this.status == FileStatus.None
 }
 
-inline def isAllocated(this: File&): bool {
+public inline def isAllocated(this: File&): bool {
   this.status == FileStatus.Allocated
 }
 
-inline def isOpened(this: File&): bool {
+public inline def isOpened(this: File&): bool {
   this.status == FileStatus.Opened
 }
 

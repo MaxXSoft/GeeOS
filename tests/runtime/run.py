@@ -16,11 +16,12 @@ USER_MODULES = [
 KERNEL_MODULES = [
     'mem/heap.yu', 'lib/alloc.yu', 'sync/spinlock.yu', 'sync/intr.yu',
     'lib/except.yu', 'lib/io.yu', 'lib/c/string.yu',
-    'arch/riscv/csr.S', 'sync/slimpl.c',
+    'arch/riscv/csr.S', 'sync/slimpl.c', 'arch/arch.yu',
+    'arch/target/{target}.yu',
 ]
 MEMORY_MODULES = KERNEL_MODULES + [
     'mem/area.yu', 'mem/handler.yu', 'mem/attr.yu', 'mem/paging.yu',
-    'mem/pm.yu', 'arch/riscv/recursive.yu',
+    'mem/pm.yu', 'arch/riscv/recursive.yu', 'arch/riscv/consts.yu',
 ]
 CASES = {
     'memset': ('src', ['memset.c'], ['lib/c/string.yu']),
@@ -82,7 +83,7 @@ def main():
                   '-tf', '+m,+a,+c' if args.march == 'rv32imac' else '+m,+a',
                   '-O', str(optimization)]
             sources = [HERE / test for test in tests]
-            sources += [ROOT / folder / item for item in modules]
+            sources += [ROOT / folder / item.format(target=target) for item in modules]
             for index, source in enumerate(sources):
                 obj = work / f'{index}-{source.name}.o'
                 compiler = yu if source.suffix == '.yu' else cc + [f'-O{optimization}']

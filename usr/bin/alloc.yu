@@ -1,5 +1,6 @@
-import lib.io
-import lib.alloc
+import grt.lib.io.io
+import grt.lib.alloc.alloc
+
 
 extern def main(argc: i32, argv: u8**): i32 {
   io <<< "testing heap allocator...\n"

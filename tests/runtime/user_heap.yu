@@ -1,5 +1,6 @@
-import lib.alloc
-import heap_cases
+import grt.lib.alloc.{alloc, initUserHeap}
+import runtime.heap_cases.runHeapCases
+
 
 def allocate(size: usize): u8 var* {
   alloc.alloc(size)

@@ -1,4 +1,7 @@
-import mem.area
+import geeos.mem.area.MemoryArea
+import geeos.mem.attr.newMemoryAttr
+import geeos.arch.riscv.consts.PAGE_SIZE
+
 
 extern declare test_check: (bool, u8*)
 

@@ -1,4 +1,5 @@
-public import lib.sys.structs
+import grt.lib.sys.structs.Stat
+
 
 // id of system call
 public enum SyscallId {
@@ -20,63 +21,63 @@ public enum SyscallId {
 extern declare syscall: (i32, i32, i32, i32, i32, i32, i32, SyscallId): i32
 
 // duplicate file descriptor
-inline def dup3(oldfd: i32, newfd: i32, flags: i32): i32 {
+public inline def dup3(oldfd: i32, newfd: i32, flags: i32): i32 {
   syscall(oldfd, newfd, flags, 0, 0, 0, 0, SyscallId.Dup3)
 }
 
 // change cwd
-inline def chdir(path: u8*): i32 {
+public inline def chdir(path: u8*): i32 {
   syscall(path as i32, 0, 0, 0, 0, 0, 0, SyscallId.Chdir)
 }
 
 // open file
-inline def open(path: u8*, flags: i32): i32 {
+public inline def open(path: u8*, flags: i32): i32 {
   syscall(path as i32, flags, 0, 0, 0, 0, 0, SyscallId.Open)
 }
 
 // close file
-inline def close(fd: i32): i32 {
+public inline def close(fd: i32): i32 {
   syscall(fd, 0, 0, 0, 0, 0, 0, SyscallId.Close)
 }
 
 // reposition read/write file offset
-inline def lseek(fd: i32, offset: usize, whence: i32): usize {
+public inline def lseek(fd: i32, offset: usize, whence: i32): usize {
   syscall(fd, offset as i32, whence, 0, 0, 0, 0, SyscallId.Lseek) as usize
 }
 
 // read bytes from file to buffer
-inline def read(fd: i32, buf: u8 var*, len: usize): i32 {
+public inline def read(fd: i32, buf: u8 var*, len: usize): i32 {
   syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Read)
 }
 
 // write bytes from buffer to file
-inline def write(fd: i32, buf: u8*, len: usize): i32 {
+public inline def write(fd: i32, buf: u8*, len: usize): i32 {
   syscall(fd, buf as i32, len as i32, 0, 0, 0, 0, SyscallId.Write)
 }
 
 // get file status
-inline def fstat(fd: i32, buf: Stat var*): i32 {
+public inline def fstat(fd: i32, buf: Stat var*): i32 {
   syscall(fd, buf as i32, 0, 0, 0, 0, 0, SyscallId.Fstat)
 }
 
 // commit filesystem caches to disk
-inline def sync() {
+public inline def sync() {
   syscall(0, 0, 0, 0, 0, 0, 0, SyscallId.Sync)
 }
 
 // exit current thread
-inline def exit(code: usize) {
+public inline def exit(code: usize) {
   syscall(code as i32, 0, 0, 0, 0, 0, 0, SyscallId.Exit)
   while true {}
 }
 
 // yield and reschedule
-inline def yield(): i32 {
+public inline def yield(): i32 {
   syscall(0, 0, 0, 0, 0, 0, 0, SyscallId.Yield)
 }
 
 // execute program
-inline def execve(path: u8*, argv: u8**, envp: u8**): i32 {
+public inline def execve(path: u8*, argv: u8**, envp: u8**): i32 {
   syscall(path as i32, argv as i32, envp as i32,
           0, 0, 0, 0, SyscallId.Execve)
 }

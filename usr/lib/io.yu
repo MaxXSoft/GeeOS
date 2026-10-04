@@ -1,4 +1,5 @@
-import lib.sys.syscall
+import grt.lib.sys.syscall.{read, write}
+
 
 // standard file descriptor
 let FD_STDIN  = 0

@@ -1,5 +1,5 @@
-public import arch.arch
-public import arch.riscv.csr
+import geeos.arch.riscv.csr.{SSTATUS_SIE, SSTATUS_SPIE, SSTATUS_SPP, getSstatus}
+
 
 // trap return in 'traphand.S'
 extern declare _retTrap: ()
@@ -7,27 +7,27 @@ extern declare _retTrap: ()
 // definition of trap frame
 public struct TrapFrame {
   // GPRs
-  x: usize[32],
+  public x: usize[32],
   // supervisor status register
-  sstatus: usize,
+  public sstatus: usize,
   // supervisor exception program counter
-  sepc: usize,
+  public sepc: usize,
   // supervisor trap value
-  stval: usize,
+  public stval: usize,
   // supervisor trap cause
-  scause: usize,
+  public scause: usize,
 }
 
-inline def incSepc(this: TrapFrame var&) {
+public inline def incSepc(this: TrapFrame var&) {
   this.sepc += 4
 }
 
-inline def isUser(this: TrapFrame&): bool {
+public inline def isUser(this: TrapFrame&): bool {
   !(this.sstatus & SSTATUS_SPP)
 }
 
 // definition of context of thread context
-public struct ContextContext {
+struct ContextContext {
   // return address
   ra: usize,
   // page table
@@ -108,4 +108,4 @@ public def appendInitArgs(this: Context&, args: usize[3]) {
 
 // switch to another context
 // defined in 'proc/switch.S'
-extern declare switchTo: (Context var&, Context var&)
+public extern declare switchTo: (Context var&, Context var&)

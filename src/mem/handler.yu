@@ -1,10 +1,8 @@
-public import arch.arch
-public import mem.attr
-public import mem.paging
-
-import lib.alloc
-import mem.pm
-import lib.except
+import geeos.mem.attr.MemoryAttr
+import geeos.mem.paging.ActivePageTable
+import geeos.lib.alloc.heap
+import geeos.mem.pm.{allocPhyMem, freePhyMem}
+import geeos.lib.except.assert
 
 
 // interface of memory handler
@@ -45,7 +43,7 @@ public def unmap(this: MemoryHandler var*, pt: ActivePageTable var&,
 
 
 // linear mapping
-public struct LinearHandler {
+struct LinearHandler {
   base: MemoryHandler,
   offset: isize,
 }
@@ -70,7 +68,7 @@ public def newLinearHandler(offset: isize): MemoryHandler var* {
 
 
 // map by frame
-public struct FrameHandler {
+struct FrameHandler {
   base: MemoryHandler,
 }
 

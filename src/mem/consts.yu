@@ -1,24 +1,25 @@
-public import arch.arch
+import geeos.arch.target.GEEOS_TARGET.{MEM_ADDR, MEM_SIZE_MIB}
+
 
 // position definitions in 'linker.ld'
-extern declare _geeos_start: ()
-extern declare _geeos_end: ()
-extern declare _text_start: ()
-extern declare _text_end: ()
-extern declare _rodata_start: ()
-extern declare _rodata_end: ()
-extern declare _data_start: ()
-extern declare _data_end: ()
-extern declare _bss_start: ()
-extern declare _bss_end: ()
-extern declare _stack_start: ()
-extern declare _stack_end: ()
+public extern declare _geeos_start: ()
+public extern declare _geeos_end: ()
+public extern declare _text_start: ()
+public extern declare _text_end: ()
+public extern declare _rodata_start: ()
+public extern declare _rodata_end: ()
+public extern declare _data_start: ()
+public extern declare _data_end: ()
+public extern declare _bss_start: ()
+public extern declare _bss_end: ()
+public extern declare _stack_start: ()
+public extern declare _stack_end: ()
 
 // definitions about physical memory
-inline let KERNEL_BASE    = MEM_ADDR
-inline let KERNEL_VM_BASE = 0x80000000
-inline let PHY_STOP       = KERNEL_BASE + MEM_SIZE_MIB * 1024 * 1024
+public inline let KERNEL_BASE    = MEM_ADDR
+public inline let KERNEL_VM_BASE = 0x80000000
+public inline let PHY_STOP       = KERNEL_BASE + MEM_SIZE_MIB * 1024 * 1024
 // Process/page-table metadata still needs a usable heap on small RAM targets.
-inline let HEAP_SIZE      = if MEM_SIZE_MIB < 128 { 128 * 1024 }
+public inline let HEAP_SIZE      = if MEM_SIZE_MIB < 128 { 128 * 1024 }
                             else { MEM_SIZE_MIB * 1024 }
-inline let HEAP_BASE      = PHY_STOP - HEAP_SIZE
+public inline let HEAP_BASE      = PHY_STOP - HEAP_SIZE

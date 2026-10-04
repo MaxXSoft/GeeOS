@@ -1,11 +1,12 @@
-public import mem.paging
+import geeos.mem.paging.PageEntry
+
 
 // attribute of page
 public struct MemoryAttr {
   // is user accessable
-  user: bool,
+  public user: bool,
   // is readonly
-  readonly: bool,
+  public readonly: bool,
   // is executable
   execute: bool,
 }

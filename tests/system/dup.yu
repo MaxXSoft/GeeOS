@@ -1,5 +1,6 @@
-import lib.io
-import lib.sys.syscall
+import grt.lib.io.io
+import grt.lib.sys.syscall.{close, dup3, exit, open, write}
+
 
 def check(ok: bool, message: u8*) {
   if !ok { io <<< "FAIL: " <<< message <<< '\n'; exit(1) }

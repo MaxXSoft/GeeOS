@@ -1,12 +1,13 @@
-public import fs.dev.device
-public import fs.vfs.vfs
+import geeos.fs.dev.device.DeviceInterface
+import geeos.fs.vfs.vfs.{FileSystem, FileSystemOps, INode, INodeOps, INodeType, Metadata}
+import geeos.lib.strview.StrView
+import geeos.fs.geefs.structs.{BLOCK_OFS_SIZE, DIRECT_BLOCK_NUM, GfsEntry, GfsINode, GfsINodeType, GfsInbHeader, GfsSbHeader}
+import geeos.lib.hashmap.{HashMap, newHashMap}
+import geeos.sync.semaphore.{Semaphore, newSemaphore}
+import geeos.lib.except.assert
+import geeos.lib.alloc.heap
+import geeos.lib.algo.min
 
-import fs.geefs.structs
-import lib.hashmap
-import sync.semaphore
-import lib.except
-import lib.alloc
-import lib.algo
 
 // filesystem object
 // NOTE: this object will NOT HAVE any inodes

@@ -1,10 +1,10 @@
-import arch.arch
-import arch.riscv.consts
-import arch.riscv.addr
-import sync.spinlock
-import mem.consts
-import lib.except
-import lib.c.string
+import geeos.arch.riscv.consts.PAGE_SIZE
+import geeos.arch.riscv.addr.newPhysAddr
+import geeos.sync.spinlock.{Spinlock, newSpinlock}
+import geeos.mem.consts.{HEAP_BASE, _geeos_end}
+import geeos.lib.except.panic
+import geeos.lib.c.string.memset
+
 
 // structure of all free physical pages
 struct FreePage {

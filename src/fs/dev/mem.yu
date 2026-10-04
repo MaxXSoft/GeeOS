@@ -1,8 +1,8 @@
-public import fs.dev.device
-public import sync.semaphore
+import geeos.fs.dev.device.DeviceInterface
+import geeos.sync.semaphore.{Semaphore, newSemaphore}
+import geeos.lib.c.string.memcpy
+import geeos.lib.algo.min
 
-import lib.c.string
-import lib.algo
 
 public struct MemDevice {
   dev: DeviceInterface,

@@ -1,19 +1,19 @@
-public import define.context
-public import mem.mset
-public import fs.info
-public import proc.consts
+import geeos.define.context.{Context, newKernelContext, newNullContext, newUserContext}
+import geeos.arch.target.GEEOS_TARGET.{PLIC_ADDR, PLIC_END, UART_ADDR, UART_END}
+import geeos.arch.riscv.csr.getSatp
+import geeos.mem.mset.{MemorySet, newMemorySet}
+import geeos.mem.paging.newPageRange
+import geeos.arch.riscv.consts.{MEGAPAGE_SIZE, PAGE_SIZE}
+import geeos.mem.attr.{MemoryAttr, newMemoryAttr}
+import geeos.mem.handler.newFrameHandler
+import geeos.fs.info.FileInfo
+import geeos.lib.c.string.{memcpy, memset}
+import geeos.proc.consts.{Tid, USER_STACK_OFFSET, USER_STACK_SIZE}
+import geeos.mem.pm.{allocPhyMem, freePhyMem}
+import geeos.lib.except.{assert, panic}
+import geeos.lib.alloc.heap
+import geeos.lib.elf.{Elf32Ehdr, Elf32Phdr, ElfEtype, ElfFile, ElfPhdrIter, ElfPtype, newElfFile, newElfPhdrIter}
 
-import arch.arch
-import arch.riscv.consts
-import arch.riscv.csr
-import mem.pm
-import mem.attr
-import mem.handler
-import lib.except
-import lib.alloc
-import lib.elf
-import lib.c.string
-import proc.consts
 
 // size of kernel stack
 // must be page size because stack is allocated by frame allocator
@@ -47,7 +47,7 @@ public def getTop(this: KernelStack&): usize {
 
 // definition of process
 public struct Process {
-  vm: MemorySet,
+  public vm: MemorySet,
   fds: FileInfo,
   thread_count: i32,
 }
@@ -93,7 +93,7 @@ def getFds(this: Process var*): FileInfo var& {
 public struct Thread {
   context: Context,
   kstack: KernelStack,
-  proc: Process var*,
+  public proc: Process var*,
   wait: Tid,
 }
 
@@ -176,7 +176,7 @@ def validUserElf(data: u8*, size: usize): bool {
 // the two 16-bit header fields in ElfFile.getPhdrIter().
 def getLoadPhdrIter(this: ElfFile&): ElfPhdrIter {
   let ehdr = this.getEhdr(), first = ehdr.getPhdr()
-  [] {first, first + (*ehdr).e_phnum as usize}
+  newElfPhdrIter(first, first + (*ehdr).e_phnum as usize)
 }
 
 // create memory attribute by ELF program header
@@ -311,6 +311,6 @@ public def getFds(this: Thread var*): FileInfo var& {
 }
 
 // get wait thread
-inline def getWait(this: Thread var*): Tid {
+public inline def getWait(this: Thread var*): Tid {
   (*this).wait
 }

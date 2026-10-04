@@ -1,5 +1,6 @@
-import lib.io
-import lib.sys.syscall
+import grt.lib.io.io
+import grt.lib.sys.syscall.{chdir, close, open}
+
 
 extern def main(argc: i32, argv: u8**): i32 {
   if chdir("/missing") != -1 || chdir("/big") != -1 || chdir("/") != 0 ||

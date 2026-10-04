@@ -1,13 +1,13 @@
-public import fs.vfs.vfs
+import geeos.fs.vfs.vfs.INode
+import geeos.fs.devfs.stdio.{StdIn, initStdIoOps, newStdIn, newStdInINode, newStdOutINode}
 
-import fs.devfs.stdio
 
 // inodes of stdio
 public var stdin: INode var* = null
 public var stdout: INode var* = null
 
 // input buffer
-var inbuffer = [StdIn] {}
+var inbuffer: StdIn
 
 
 // initialize device filesystem

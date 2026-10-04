@@ -1,11 +1,11 @@
-public import sync.semaphore
-public import fs.vfs.vfs
-public import fs.file
-public import fs.consts
+import geeos.sync.semaphore.{Semaphore, newSemaphore}
+import geeos.fs.vfs.vfs.INode
+import geeos.fs.file.{File, newFile}
+import geeos.fs.consts.{FILE_COUNT, O_RDONLY, O_WRONLY}
+import geeos.fs.fs.root_inode
+import geeos.lib.except.assert
+import geeos.fs.devfs.fs.{stdin, stdout}
 
-import fs.fs
-import lib.except
-import fs.devfs.fs
 
 public struct FileInfo {
   // semaphore for file descriptors
@@ -48,7 +48,7 @@ public def unlock(this: FileInfo var&) {
   this.sema.signal()
 }
 
-inline def getCwd(this: FileInfo&): INode var* {
+public inline def getCwd(this: FileInfo&): INode var* {
   this.cwd
 }
 

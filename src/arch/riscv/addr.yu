@@ -1,44 +1,44 @@
-public import arch.arch
-public import arch.riscv.csr
+import geeos.arch.riscv.csr.getSatp
+
 
 // 32-bit virtual addresss
 public struct VirtAddr {
   addr: usize,
 }
 
-inline def newVirtAddr(addr: usize): VirtAddr {
+public inline def newVirtAddr(addr: usize): VirtAddr {
   [] {addr}
 }
 
-inline def newVirtAddr(vpn1: usize, vpn0: usize, offset: usize): VirtAddr {
+public inline def newVirtAddr(vpn1: usize, vpn0: usize, offset: usize): VirtAddr {
   [] {(vpn1 << 22) | (vpn0 << 12) | offset}
 }
 
-inline def getAddr(this: VirtAddr&): usize {
+public inline def getAddr(this: VirtAddr&): usize {
   this.addr
 }
 
-inline def getVpn1(this: VirtAddr&): usize {
+public inline def getVpn1(this: VirtAddr&): usize {
   this.addr >> 22
 }
 
-inline def getVpn0(this: VirtAddr&): usize {
+public inline def getVpn0(this: VirtAddr&): usize {
   (this.addr >> 12) & 0x3ff
 }
 
-inline def getVpn(this: VirtAddr&): usize {
+public inline def getVpn(this: VirtAddr&): usize {
   this.addr >> 12
 }
 
-inline def getOffset(this: VirtAddr&): usize {
+public inline def getOffset(this: VirtAddr&): usize {
   this.addr & 0xfff
 }
 
-inline def roundUp(this: VirtAddr&): VirtAddr {
+public inline def roundUp(this: VirtAddr&): VirtAddr {
   [] {(this.addr + 0xfff) & (~0xfff)}
 }
 
-inline def roundDown(this: VirtAddr&): VirtAddr {
+public inline def roundDown(this: VirtAddr&): VirtAddr {
   [] {this.addr & (~0xfff)}
 }
 
@@ -47,35 +47,35 @@ public struct PhysAddr {
   addr: usize,
 }
 
-inline def newPhysAddr(addr: usize): PhysAddr {
+public inline def newPhysAddr(addr: usize): PhysAddr {
   [] {addr}
 }
 
-inline def getAddr(this: PhysAddr&): usize {
+public inline def getAddr(this: PhysAddr&): usize {
   this.addr
 }
 
-inline def getPpn1(this: PhysAddr&): usize {
+public inline def getPpn1(this: PhysAddr&): usize {
   this.addr >> 22
 }
 
-inline def getPpn0(this: PhysAddr&): usize {
+public inline def getPpn0(this: PhysAddr&): usize {
   (this.addr >> 12) & 0x3ff
 }
 
-inline def getPpn(this: PhysAddr&): usize {
+public inline def getPpn(this: PhysAddr&): usize {
   this.addr >> 12
 }
 
-inline def getOffset(this: PhysAddr&): usize {
+public inline def getOffset(this: PhysAddr&): usize {
   this.addr & 0xfff
 }
 
-inline def roundUp(this: PhysAddr&): PhysAddr {
+public inline def roundUp(this: PhysAddr&): PhysAddr {
   [] {(this.addr + 0xfff) & (~0xfff)}
 }
 
-inline def roundDown(this: PhysAddr&): PhysAddr {
+public inline def roundDown(this: PhysAddr&): PhysAddr {
   [] {this.addr & (~0xfff)}
 }
 
@@ -84,31 +84,31 @@ public struct Page {
   addr: VirtAddr,
 }
 
-inline def newPage(addr: VirtAddr): Page {
+public inline def newPage(addr: VirtAddr): Page {
   [] {addr.roundDown()}
 }
 
-inline def newPage(vpn: usize): Page {
+public inline def newPage(vpn: usize): Page {
   [] {newVirtAddr(vpn << 12)}
 }
 
-inline def newPage(vpn1: usize, vpn0: usize): Page {
+public inline def newPage(vpn1: usize, vpn0: usize): Page {
   [] {newVirtAddr(vpn1, vpn0, 0)}
 }
 
-inline def getAddr(this: Page&): VirtAddr {
+public inline def getAddr(this: Page&): VirtAddr {
   this.addr
 }
 
-inline def getVpn1(this: Page&): usize {
+public inline def getVpn1(this: Page&): usize {
   this.addr.getVpn1()
 }
 
-inline def getVpn0(this: Page&): usize {
+public inline def getVpn0(this: Page&): usize {
   this.addr.getVpn0()
 }
 
-inline def getVpn(this: Page&): usize {
+public inline def getVpn(this: Page&): usize {
   this.addr.getVpn()
 }
 
@@ -117,34 +117,34 @@ public struct Frame {
   addr: PhysAddr,
 }
 
-inline def newFrame(addr: PhysAddr): Frame {
+public inline def newFrame(addr: PhysAddr): Frame {
   [] {addr.roundDown()}
 }
 
-inline def newFrame(ppn: usize): Frame {
+public inline def newFrame(ppn: usize): Frame {
   [] {newPhysAddr(ppn << 12)}
 }
 
-inline def newFrameFromSatp(): Frame {
+public inline def newFrameFromSatp(): Frame {
   newFrame(getSatp() & 0x3fffff)
 }
 
-inline def getAddr(this: Frame&): PhysAddr {
+public inline def getAddr(this: Frame&): PhysAddr {
   this.addr
 }
 
-inline def getPpn1(this: Frame&): usize {
+public inline def getPpn1(this: Frame&): usize {
   this.addr.getPpn1()
 }
 
-inline def getPpn0(this: Frame&): usize {
+public inline def getPpn0(this: Frame&): usize {
   this.addr.getPpn0()
 }
 
-inline def getPpn(this: Frame&): usize {
+public inline def getPpn(this: Frame&): usize {
   this.addr.getPpn()
 }
 
-inline def !=(this: Frame&, that: Frame): bool {
+public inline def !=(this: Frame&, that: Frame): bool {
   this.addr.getAddr() != that.addr.getAddr()
 }

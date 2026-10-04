@@ -1,4 +1,6 @@
-import proc.proc
+import geeos.proc.proc.getCurrentThread
+import geeos.mem.area.MemoryArea
+
 
 // User mappings are eager and remain fixed for the lifetime of a process.
 // Check their tracked permissions before accessing memory in supervisor mode.

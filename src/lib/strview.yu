@@ -1,5 +1,5 @@
-public import arch.arch
-public import lib.c.string
+import geeos.lib.c.string.strlen
+
 
 public struct StrView {
   str: u8*,
@@ -7,45 +7,45 @@ public struct StrView {
 }
 
 // create a new string view by a null terminated string
-inline def newStrView(str: u8*): StrView {
+public inline def newStrView(str: u8*): StrView {
   [] {str, strlen(str)}
 }
 
 // create a new string view by a slice of bytes
-inline def newStrView(buf: u8*, len: usize): StrView {
+public inline def newStrView(buf: u8*, len: usize): StrView {
   [] {buf, len}
 }
 
 // get string data of string view (not guarantee to be null terminated)
-inline def getStr(this: StrView&): u8* {
+public inline def getStr(this: StrView&): u8* {
   this.str
 }
 
 // get length of string view
-inline def getLen(this: StrView&): usize {
+public inline def getLen(this: StrView&): usize {
   this.len
 }
 
 // check whether the view is empty
-inline def empty(this: StrView&): bool {
+public inline def empty(this: StrView&): bool {
   this.len == 0
 }
 
 // get the specified character
-inline def at(this: StrView&, i: i32): u8 {
+public inline def at(this: StrView&, i: i32): u8 {
   this.str[i]
 }
-inline def at(this: StrView&, i: usize): u8 {
+public inline def at(this: StrView&, i: usize): u8 {
   this.str[i]
 }
 
 // get the first character
-inline def front(this: StrView&): u8 {
+public inline def front(this: StrView&): u8 {
   this.str[0]
 }
 
 // get the last character
-inline def back(this: StrView&): u8 {
+public inline def back(this: StrView&): u8 {
   this.str[this.len - 1]
 }
 
@@ -60,13 +60,13 @@ public def ==(this: StrView&, str: u8*): bool {
   }
   str[i] == '\0'
 }
-inline def !=(this: StrView&, str: u8*): bool {
+public inline def !=(this: StrView&, str: u8*): bool {
   !(this == str)
 }
-inline def ==(str: u8*, this: StrView&): bool {
+public inline def ==(str: u8*, this: StrView&): bool {
   this == str
 }
-inline def !=(str: u8*, this: StrView&): bool {
+public inline def !=(str: u8*, this: StrView&): bool {
   !(this == str)
 }
 
@@ -86,18 +86,18 @@ public def ==(this: StrView&, that: StrView&): bool {
     false
   }
 }
-inline def !=(this: StrView&, that: StrView&): bool {
+public inline def !=(this: StrView&, that: StrView&): bool {
   !(this == that)
 }
 
 // shrinks the view by moving its start forward
-inline def removePrefix(this: StrView var&, n: i32) {
+public inline def removePrefix(this: StrView var&, n: i32) {
   this.str += n
   this.len -= n as usize
 }
 
 // shrinks the view by moving its end backward
-inline def removeSuffix(this: StrView var&, n: i32) {
+public inline def removeSuffix(this: StrView var&, n: i32) {
   this.len -= n as usize
 }
 
@@ -109,7 +109,7 @@ public struct StrViewSplitIter {
 }
 
 // get split iterator
-inline def split(this: StrView&, delimiter: u8): StrViewSplitIter {
+public inline def split(this: StrView&, delimiter: u8): StrViewSplitIter {
   [] {this.str, this.len, delimiter}
 }
 
@@ -135,6 +135,6 @@ public def next(this: StrViewSplitIter var&): StrView {
 }
 
 // iterator method 'last'
-inline def last(this: StrViewSplitIter&): bool {
+public inline def last(this: StrViewSplitIter&): bool {
   this.len == 0
 }

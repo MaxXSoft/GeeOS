@@ -1,0 +1,7 @@
+// Synchronization primitives need these operations without importing process,
+// filesystem and thread implementations back into their own dependency graph.
+// The prefixed C symbols form a static kernel-internal interface; definitions
+// live in proc.proc and share its existing CPU state.
+public extern declare geeos_sched_current_tid: (): usize
+public extern declare geeos_sched_sleep: ()
+public extern declare geeos_sched_wake_up: (usize)

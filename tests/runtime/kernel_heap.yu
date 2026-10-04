@@ -1,7 +1,8 @@
-import lib.alloc
-import mem.heap
-import mem.consts
-import heap_cases
+import geeos.lib.alloc.heap
+import geeos.mem.heap.initHeapMem
+import geeos.mem.consts.HEAP_SIZE
+import runtime.heap_cases.runHeapCases
+
 
 def allocate(size: usize): u8 var* {
   heap.alloc(size)
