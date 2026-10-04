@@ -1,5 +1,5 @@
 import geeos.mem.handler.MemoryHandler
-import geeos.mem.attr.MemoryAttr
+import geeos.mem.attr.{MemoryAttr, newMemoryAttr}
 import geeos.mem.paging.{ActivePageTable, newPageRange}
 import geeos.arch.riscv.consts.PAGE_SIZE
 import geeos.lib.alloc.heap
@@ -56,7 +56,7 @@ public struct MemAreaList {
 }
 
 public def newMemAreaList(): MemAreaList {
-  [] {}
+  [] {[] {0, 0, null, newMemoryAttr()}, null}
 }
 
 public def del(this: MemAreaList var&) {

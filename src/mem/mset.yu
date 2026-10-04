@@ -1,7 +1,7 @@
 import geeos.mem.paging.{InactivePageTable, IptWithIter, newInactivePageTable}
 import geeos.mem.attr.MemoryAttr
 import geeos.mem.handler.MemoryHandler
-import geeos.mem.area.{MemAreaList, newMemArea}
+import geeos.mem.area.{MemAreaList, newMemArea, newMemAreaList}
 import geeos.lib.except.assert
 
 
@@ -13,7 +13,7 @@ public struct MemorySet {
 public def newMemorySet(): MemorySet {
   var pt = newInactivePageTable()
   pt.mapKernel()
-  [] {pt}
+  [] {pt, newMemAreaList()}
 }
 
 public def del(this: MemorySet var&) {
